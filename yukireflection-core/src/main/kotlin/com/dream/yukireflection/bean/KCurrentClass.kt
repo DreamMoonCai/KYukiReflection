@@ -1,0 +1,152 @@
+/*
+ * YukiReflection - An efficient Reflection API for Java and Android built in Kotlin.
+ * Copyright (C) 2019-2024 HighCapable
+ * https://github.com/HighCapable/YukiReflection
+ *
+ * Apache License Version 2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * This file is created by fankes on 2022/4/4.
+ * This file is modified by fankes on 2023/1/21.
+ */
+@file:Suppress("unused", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+
+package com.dream.yukireflection.bean
+
+import com.dream.yukireflection.factory.*
+import com.dream.yukireflection.finder.type.factory.KFunctionConditions
+import com.dream.yukireflection.finder.type.factory.KPropertyConditions
+import com.dream.yukireflection.finder.callable.KPropertyFinder
+import com.dream.yukireflection.finder.callable.KFunctionFinder
+import com.dream.yukireflection.finder.type.factory.KClassConditions
+import com.highcapable.yukireflection.bean.GenericClass
+import kotlin.reflect.KClass
+
+/**
+ * 当前实例的类操作对象
+ * @param classSet 当前实例的 [KClass]
+ * @param instance 当前实例本身
+ */
+class KCurrentClass constructor(private val classSet: KClass<*>, internal val instance: Any) {
+
+    /** 是否开启忽略错误警告功能 */
+    var isIgnoreErrorLogs = false
+
+    /**
+     * 获得当前 [classSet] 的 [KClass.name]
+     * @return [String]
+     */
+    val name get() = classSet.name
+
+    /**
+     * 获得当前 [classSet] 的 [KClass.simpleNameOrJvm]
+     * @return [String]
+     */
+    val simpleName get() = classSet.simpleNameOrJvm
+
+    /**
+     * 获得当前实例中的泛型父类
+     *
+     * 如果当前实例不存在泛型父类将返回 null
+     * @return [KGenericClass] or null
+     */
+    fun generic() = classSet.genericSuper()
+
+    /**
+     * 获得当前 [KClass] 的父类中来自尖括号的泛型对象
+     *
+     * [KClassConditions]同来筛选来自哪个父类/父接口
+     *
+     * @param initiate 实例方法体
+     * @return [GenericClass]
+     */
+    inline fun generic(initiate: KClassConditions) = classSet.genericSuper(initiate)
+
+    /**
+     * 调用父类实例
+     * @return [SuperClass]
+     */
+    fun superClass() = SuperClass(classSet.superclass!!)
+
+    /**
+     * 调用当前实例中的变量
+     * @param initiate 查找方法体
+     * @return [KPropertyFinder.Result.Instance]
+     */
+    inline fun property(initiate: KPropertyConditions) = classSet.property(initiate).result { if (isIgnoreErrorLogs) ignored() }.get(instance)
+
+    /**
+     * 调用当前实例中的方法
+     * @param initiate 查找方法体
+     * @return [KFunctionFinder.Result.Instance]
+     */
+    inline fun function(initiate: KFunctionConditions) = classSet.function(initiate).result { if (isIgnoreErrorLogs) ignored() }.get(instance)
+
+    /**
+     * 当前类的父类实例的类操作对象
+     *
+     * - 请使用 [superClass] 方法来获取 [SuperClass]
+     * @param superClassSet 父类 [KClass] 对象
+     */
+    inner class SuperClass internal constructor(private val superClassSet: KClass<*>) {
+
+        /**
+         * 获得当前 [classSet] 中父类的 [KClass.name]
+         * @return [String]
+         */
+        val name get() = superClassSet.name
+
+        /**
+         * 获得当前 [classSet] 中父类的 [KClass.simpleNameOrJvm]
+         * @return [String]
+         */
+        val simpleName get() = superClassSet.simpleNameOrJvm
+
+        /**
+         * 获得当前实例父类中的泛型父类
+         *
+         * 如果当前实例不存在泛型将返回 null
+         * @return [KGenericClass] or null
+         */
+        fun generic() = superClassSet.genericSuper()
+
+        /**
+         * 获得当前 [KClass] 的父类中来自尖括号的泛型对象
+         *
+         * [KClassConditions]同来筛选来自哪个父类/父接口
+         *
+         * @param initiate 实例方法体
+         * @return [GenericClass]
+         */
+        inline fun generic(initiate: KClassConditions) = superClassSet.genericSuper(initiate)
+
+        /**
+         * 调用父类实例中的变量
+         * @param initiate 查找方法体
+         * @return [KPropertyFinder.Result.Instance]
+         */
+        inline fun property(initiate: KPropertyConditions) = superClassSet.property(initiate).result { if (isIgnoreErrorLogs) ignored() }.get(instance)
+
+        /**
+         * 调用父类实例中的方法
+         * @param initiate 查找方法体
+         * @return [KFunctionFinder.Result.Instance]
+         */
+        inline fun function(initiate: KFunctionConditions) = superClassSet.function(initiate).result { if (isIgnoreErrorLogs) ignored() }.get(instance)
+
+        override fun toString() = "CurrentClass super [$superClassSet]"
+    }
+
+    override fun toString() = "CurrentClass [$classSet]"
+}

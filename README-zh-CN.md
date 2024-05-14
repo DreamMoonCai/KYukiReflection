@@ -26,7 +26,7 @@
 
 ## 开始使用
 
-[点击这里](https://highcapable.github.io/YukiReflection/zh-cn/) 前往文档页面查看更多详细教程和内容。
+[点击这里](https://dreammoonboy.github.io/YukiReflection/zh-cn/) 前往文档页面查看更多详细教程和内容。
 
 ## 项目推广
 

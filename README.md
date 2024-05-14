@@ -26,7 +26,7 @@ The name is taken from ["ももくり" heroine Yuki Kurihara](https://www.bilibi
 
 ## Get Started
 
-[Click here](https://highcapable.github.io/YukiReflection/en/) go to the documentation page for more detailed tutorials and content.
+[Click here](https://dreammoonboy.github.io/YukiReflection/en/) go to the documentation page for more detailed tutorials and content.
 
 ## Promotion
 

@@ -109,7 +109,7 @@ dependencies {
 
 ::: danger
 
-如果你的项目目前正在使用 [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI) 的 1.x.x 版本，请不要重复集成 **YukiReflection**，因为 **YukiHookAPI** 已经包含了其中的功能且存在针对相关功能的改动，重复集成会造成功能性冲突引发异常，此时你应该前往 **YukiHookAPI** 的 [文档](https://highcapable.github.io/YukiHookAPI/zh-cn/) 查看对应的使用教程。
+如果你的项目目前正在使用 [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI) 的 1.x.x 版本，请不要重复集成 **YukiReflection**，因为 **YukiHookAPI** 已经包含了其中的功能且存在针对相关功能的改动，重复集成会造成功能性冲突引发异常，此时你应该前往 **YukiHookAPI** 的 [文档](https://dreammoonboy.github.io/YukiHookAPI/zh-cn/) 查看对应的使用教程。
 
 **YukiHookAPI** 将在 **2.0.0** 版本完全分离 **YukiReflection**，届时你可以同时与 **YukiHookAPI** 使用。
 
@@ -124,8 +124,8 @@ dependencies {
 ```kt
 android {
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
         jvmTarget = "17"
@@ -138,8 +138,8 @@ android {
 ```groovy
 android {
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
     kotlinOptions {
         jvmTarget = '17'

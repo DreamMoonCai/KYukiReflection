@@ -7,12 +7,12 @@ group = property.project.groupName
 version = property.project.yukireflection.core.version
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
     compilerOptions {
         freeCompilerArgs = listOf(
             "-Xno-param-assertions",
@@ -24,6 +24,8 @@ kotlin {
 
 dependencies {
     compileOnly(autowire("libs/android-34.jar"))
+    implementation(org.jetbrains.kotlin.kotlin.reflect)
+    implementation(org.jetbrains.kotlin.kotlin.compiler.embeddable)
 }
 
 mavenPublishing {

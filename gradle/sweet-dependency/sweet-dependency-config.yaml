@@ -26,6 +26,11 @@ plugins:
     version: 0.27.0
 
 libraries:
+  org.jetbrains.kotlin:
+    kotlin-reflect:
+      version: 1.9.22
+    kotlin-compiler-embeddable:
+      version: 1.9.22
   androidx.compose:
     compose-bom:
       version: 2024.02.00
