@@ -25,14 +25,14 @@
 package com.dream.yukireflection.finder.classes.rules
 
 import com.dream.yukireflection.finder.callable.data.KFunctionRulesData
-import com.dream.yukireflection.finder.type.factory.KModifierConditions
+import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.bean.KVariousClass
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.type.defined.*
 import com.dream.yukireflection.finder.classes.rules.base.KBaseRules
 import com.dream.yukireflection.finder.classes.rules.result.KCallableRulesResult
-import com.dream.yukireflection.finder.type.factory.KTypeConditions
-import com.dream.yukireflection.finder.type.factory.KParameterConditions
+import com.dream.yukireflection.type.factory.KTypeConditions
+import com.dream.yukireflection.type.factory.KParameterConditions
 import com.highcapable.yukireflection.finder.type.factory.CountConditions
 import com.highcapable.yukireflection.finder.type.factory.NameConditions
 import com.highcapable.yukireflection.type.defined.*
@@ -124,7 +124,7 @@ class KFunctionRules internal constructor(private val rulesData: KFunctionRulesD
     fun param(vararg paramType: Any) {
         if (paramType.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")
         rulesData.paramTypes =
-            mutableListOf<Any>().apply { paramType.forEach { add(it.compat(tag = KBaseFinder.TAG_PARAMETER) ?: UndefinedKType) } }.toTypedArray()
+            mutableListOf<Any>().apply { paramType.forEach { add(it.compat(tag = KBaseFinder.TAG_PARAMETER) ?: UndefinedKotlin) } }.toTypedArray()
     }
 
     /**

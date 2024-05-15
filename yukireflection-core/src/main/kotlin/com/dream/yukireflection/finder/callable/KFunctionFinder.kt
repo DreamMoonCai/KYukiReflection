@@ -28,26 +28,23 @@ import com.dream.yukireflection.factory.hasExtends
 import com.dream.yukireflection.factory.superclass
 import com.dream.yukireflection.finder.base.KCallableBaseFinder
 import com.dream.yukireflection.finder.callable.data.KFunctionRulesData
-import com.dream.yukireflection.finder.type.factory.KModifierConditions
+import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.finder.tools.KReflectionTool
-import com.dream.yukireflection.finder.type.factory.KFunctionConditions
-import com.dream.yukireflection.finder.type.factory.KTypeConditions
-import com.dream.yukireflection.finder.type.factory.KParameterConditions
-import com.dream.yukireflection.type.defined.UndefinedKType
-import com.dream.yukireflection.type.defined.VagueKType
+import com.dream.yukireflection.type.factory.KFunctionConditions
+import com.dream.yukireflection.type.factory.KTypeConditions
+import com.dream.yukireflection.type.factory.KParameterConditions
+import com.dream.yukireflection.type.defined.UndefinedKotlin
+import com.dream.yukireflection.type.defined.VagueKotlin
 import com.highcapable.yukireflection.finder.type.factory.CountConditions
 import com.highcapable.yukireflection.finder.type.factory.NameConditions
 import com.highcapable.yukireflection.log.YLog
 import com.highcapable.yukireflection.utils.factory.runBlocking
-import kotlin.reflect.KClass
-import kotlin.reflect.KType
-import kotlin.reflect.KParameter
-import kotlin.reflect.KFunction
 import com.dream.yukireflection.bean.KVariousClass
+import com.dream.yukireflection.factory.isExtension
+import com.dream.yukireflection.finder.callable.KPropertyFinder.Result.Instance
 import java.lang.IllegalArgumentException
-import kotlin.reflect.KClassifier
-import kotlin.reflect.KTypeParameter
+import kotlin.reflect.*
 
 /**
  * [KFunction] 查找类
@@ -131,7 +128,7 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
      *
      * 如果同时使用了 [paramCount] 则 [paramType] 的数量必须与 [paramCount] 完全匹配
      *
-     * 如果 [KFunction] 中存在一些无意义又很长的类型 - 你可以使用 [VagueKType] 来替代它
+     * 如果 [KFunction] 中存在一些无意义又很长的类型 - 你可以使用 [VagueKotlin] 来替代它
      *
      * 例如下面这个参数结构 ↓
      *
@@ -155,7 +152,7 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
      */
     fun param(vararg paramType: Any): IndexTypeCondition {
         if (paramType.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")
-        rulesData.paramTypes = mutableListOf<Any>().apply { paramType.forEach { add(it.compat(TAG_PARAMETER) ?: UndefinedKType) } }.toTypedArray()
+        rulesData.paramTypes = mutableListOf<Any>().apply { paramType.forEach { add(it.compat(TAG_PARAMETER) ?: UndefinedKotlin) } }.toTypedArray()
         return IndexTypeCondition(IndexConfigType.MATCH)
     }
 
@@ -565,12 +562,31 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
          */
         inner class Instance internal constructor(private val instance: Any?, private val function: KFunction<*>?) {
 
+            private var extension:Any? = null
+
+            /**
+             * 修改 [extension] Receiver
+             *
+             * 当此属性是拓展属性时，你可能需要额外的一个this属性进行设置
+             *
+             * @param extension 拓展属性的thisRef
+             * @return [KFunction] 实例处理类
+             */
+            fun receiver(extension:Any?): Instance {
+                this.extension = extension
+                return this
+            }
+
             /**
              * 执行 [KFunction]
              * @param args 方法参数
              * @return [Any] or null
              */
-            private fun baseCall(vararg args: Any?) = runCatching { if (instance != null) function?.call(instance, *args) else function?.call(*args) }.getOrElse { if (it is IllegalArgumentException) errorMsg("An error occurred in the number of parameters. Check whether the instance exists or whether the number of parameters is correct.",it) else throw it }
+            private fun baseCall(vararg args: Any?) = runCatching {
+                if (function?.isExtension == true) {
+                    if (instance != null) function.call(instance,extension, *args) else function.call(extension,*args)
+                }else
+                if (instance != null) function?.call(instance, *args) else function?.call(*args) }.getOrElse { if (it is IllegalArgumentException) errorMsg("An error occurred in the number of parameters. Check whether the instance exists or whether the number of parameters is correct.",it) else throw it }
 
             /**
              * 执行 [KFunction] - 不指定返回值类型

@@ -24,9 +24,9 @@ package com.dream.yukireflection.finder.base
 
 import com.dream.yukireflection.bean.KGenericClass
 import com.dream.yukireflection.bean.KVariousClass
+import com.dream.yukireflection.factory.isCase
 import com.dream.yukireflection.factory.toKClass
-import com.dream.yukireflection.finder.base.KBaseFinder.Companion.checkSupportedTypes
-import com.dream.yukireflection.type.defined.UndefinedKType
+import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.finder.base.data.KBaseRulesData
 import kotlin.math.abs
 import kotlin.reflect.*
@@ -151,12 +151,13 @@ abstract class KBaseFinder {
                 is Array<*> -> generic.toList()
                 else -> error("$this match type \"${generic.javaClass}\" not allowed")
             }
-            var result:List<*>
-            genericsClasses.forEach {
-                result = condition.filterIsInstance(it)
-                if (result.isNotEmpty())return result
+            val result = arrayListOf<Any>()
+            condition.forEach { any ->
+                if (any != null && genericsClasses.any {it.kotlin.isCase(any)}){
+                    result += any
+                }
             }
-            error("$this match type \"${generic.javaClass}\" not allowed")
+            return result
         }
     }
 
@@ -169,8 +170,8 @@ abstract class KBaseFinder {
     internal fun Any?.compat(tag: String, loader: ClassLoader?) = when (val thisRef = this.checkSupportedTypes()) {
         null -> null
         is KClass<*>,is KTypeProjection,is KType,is KGenericClass -> thisRef
-        is String -> runCatching { thisRef.toKClass(loader) }.getOrNull() ?: UndefinedKType
-        is KVariousClass -> runCatching { thisRef.get(loader) }.getOrNull() ?: UndefinedKType
+        is String -> runCatching { thisRef.toKClass(loader) }.getOrNull() ?: UndefinedKotlin
+        is KVariousClass -> runCatching { thisRef.get(loader) }.getOrNull() ?: UndefinedKotlin
         else -> checkArrayGenerics(thisRef)
     }
 

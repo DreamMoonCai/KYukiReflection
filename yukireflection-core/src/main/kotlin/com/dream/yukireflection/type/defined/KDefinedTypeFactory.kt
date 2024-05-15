@@ -22,19 +22,59 @@
  */
 package com.dream.yukireflection.type.defined
 
-import com.dream.yukireflection.factory.kclassOf
-import kotlin.reflect.KClass
+import com.dream.yukireflection.bean.KGenericClass
+import com.dream.yukireflection.bean.KVariousClass
+import com.dream.yukireflection.factory.toKClass
+import com.dream.yukireflection.factory.type
+import com.dream.yukireflection.finder.base.KBaseFinder
 import com.highcapable.yukireflection.type.defined.UndefinedClass
+import com.highcapable.yukireflection.type.defined.UndefinedType
 import com.highcapable.yukireflection.type.defined.VagueClass
+import com.highcapable.yukireflection.type.defined.VagueType
+import kotlin.reflect.*
 
 /**
  * 得到未定义类型
  * @return [KClass]<[UndefinedClass]>
  */
-internal val UndefinedKType get() = kclassOf<UndefinedClass>()
+internal val UndefinedKotlin get() = UndefinedType.kotlin
 
 /**
  * 得到模糊类型
  * @return [KClass]<[VagueClass]>
  */
-val VagueKType get() = kclassOf<VagueClass>()
+val VagueKotlin get() = VagueType.kotlin
+
+/**
+ * 模糊根的泛型对象
+ *
+ * ```kotlin
+ *
+ * class ABC{
+ *     val temp:bbb<Int>
+ * }
+ *
+ * val vague = ABC::class.property { type = VagueKotlin.generic(Int::class) }
+ *
+ * vague --> val temp:bbb<Int>
+ *
+ * ```
+ *
+ * @param params 泛型参数
+ */
+fun KClass<VagueClass>.generic(vararg params:Any): ArrayList<Any> {
+    val pm = arrayListOf<Any>()
+    params.forEach {
+        when(it){
+            is KClassifier -> pm.add(KTypeProjection(KVariance.INVARIANT, it.type))
+            is KTypeProjection,is KVariance -> pm.add(it)
+            is KGenericClass -> pm.add(KTypeProjection(KVariance.INVARIANT, it.type))
+            is KType -> pm.add(KTypeProjection(KVariance.INVARIANT, it))
+            is KParameter -> pm.add(KTypeProjection(KVariance.INVARIANT, it.type))
+            is String -> pm.add(KTypeProjection(KVariance.INVARIANT, it.toKClass().type))
+            is KVariousClass -> pm.add(KTypeProjection(KVariance.INVARIANT,it.get().type))
+            else -> runCatching { KBaseFinder.checkArrayGenerics(it) }.getOrNull()?.let { pm.add(it) }
+        }
+    }
+    return pm
+}

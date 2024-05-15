@@ -25,7 +25,7 @@ package com.dream.yukireflection.finder.classes.rules
 import com.dream.yukireflection.finder.classes.rules.base.KBaseRules
 import com.dream.yukireflection.finder.classes.rules.result.KCallableRulesResult
 import com.dream.yukireflection.finder.callable.data.KCallableRulesData
-import com.dream.yukireflection.finder.type.factory.KModifierConditions
+import com.dream.yukireflection.type.factory.KModifierConditions
 import kotlin.reflect.KCallable
 
 /**

@@ -28,10 +28,10 @@ import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.finder.classes.rules.base.KBaseRules
 import com.dream.yukireflection.finder.classes.rules.result.KCallableRulesResult
 import com.dream.yukireflection.finder.callable.data.KConstructorRulesData
-import com.dream.yukireflection.finder.type.factory.KModifierConditions
-import com.dream.yukireflection.finder.type.factory.KParameterConditions
-import com.dream.yukireflection.type.defined.UndefinedKType
-import com.dream.yukireflection.type.defined.VagueKType
+import com.dream.yukireflection.type.factory.KModifierConditions
+import com.dream.yukireflection.type.factory.KParameterConditions
+import com.dream.yukireflection.type.defined.UndefinedKotlin
+import com.dream.yukireflection.type.defined.VagueKotlin
 import com.highcapable.yukireflection.bean.VariousClass
 import com.highcapable.yukireflection.finder.type.factory.CountConditions
 import kotlin.reflect.*
@@ -79,7 +79,7 @@ class KConstructorRules internal constructor(private val rulesData: KConstructor
      *
      * 如果同时使用了 [paramCount] 则 [paramType] 的数量必须与 [paramCount] 完全匹配
      *
-     * 如果 Constructor[KFunction] 中存在一些无意义又很长的类型 - 你可以使用 [VagueKType] 来替代它
+     * 如果 Constructor[KFunction] 中存在一些无意义又很长的类型 - 你可以使用 [VagueKotlin] 来替代它
      *
      * 例如下面这个参数结构 ↓
      *
@@ -101,7 +101,7 @@ class KConstructorRules internal constructor(private val rulesData: KConstructor
     fun param(vararg paramType: Any) {
         if (paramType.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")
         rulesData.paramTypes =
-            mutableListOf<Any>().apply { paramType.forEach { add(it.compat(tag = KBaseFinder.TAG_CONSTRUCTOR) ?: UndefinedKType) } }.toTypedArray()
+            mutableListOf<Any>().apply { paramType.forEach { add(it.compat(tag = KBaseFinder.TAG_CONSTRUCTOR) ?: UndefinedKotlin) } }.toTypedArray()
     }
 
     /**

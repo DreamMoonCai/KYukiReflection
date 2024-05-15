@@ -25,11 +25,12 @@
 package com.dream.yukireflection.bean
 
 import com.dream.yukireflection.factory.*
-import com.dream.yukireflection.finder.type.factory.KFunctionConditions
-import com.dream.yukireflection.finder.type.factory.KPropertyConditions
+import com.dream.yukireflection.type.factory.KFunctionConditions
+import com.dream.yukireflection.type.factory.KPropertyConditions
 import com.dream.yukireflection.finder.callable.KPropertyFinder
 import com.dream.yukireflection.finder.callable.KFunctionFinder
-import com.dream.yukireflection.finder.type.factory.KClassConditions
+import com.dream.yukireflection.type.factory.KClassConditions
+import com.dream.yukireflection.type.factory.KTypeBuildConditions
 import com.highcapable.yukireflection.bean.GenericClass
 import kotlin.reflect.KClass
 
@@ -56,25 +57,46 @@ class KCurrentClass constructor(private val classSet: KClass<*>, internal val in
     val simpleName get() = classSet.simpleNameOrJvm
 
     /**
+     * 获得当前实例中的泛型操作对象
+     *
+     *     class A<T> --> generic().type = A<*>
+     *
+     * @return [KGenericClass]
+     */
+    fun generic() = classSet.generic()
+
+    /**
+     * 获得当前实例中的泛型操作对象
+     *
+     * [KTypeBuildConditions]同来筛选如何构建这个this类型
+     *
+     * @param params 类型所需的参数 --> A<T> generic(String::class).type -> A<String>
+     * @param initiate 实例方法体
+     * @return [GenericClass]
+     */
+    inline fun generic(vararg params: Any,initiate: KTypeBuildConditions) = classSet.generic(*params, initiate = initiate)
+
+    /**
      * 获得当前实例中的泛型父类
      *
      * 如果当前实例不存在泛型父类将返回 null
      * @return [KGenericClass] or null
      */
-    fun generic() = classSet.genericSuper()
+    fun genericSuper() = runCatching { classSet.genericSuper() }.getOrNull()
 
     /**
-     * 获得当前 [KClass] 的父类中来自尖括号的泛型对象
+     * 获得当前 [KClass] 的父类中来自尖括号的泛型操作对象
      *
      * [KClassConditions]同来筛选来自哪个父类/父接口
      *
+     * 如果当前实例不存在泛型父类将返回 null
      * @param initiate 实例方法体
-     * @return [GenericClass]
+     * @return [GenericClass] or null
      */
-    inline fun generic(initiate: KClassConditions) = classSet.genericSuper(initiate)
+    inline fun genericSuper(initiate: KClassConditions) = runCatching { classSet.genericSuper(initiate) }.getOrNull()
 
     /**
-     * 调用父类实例
+     * 调用父类实例 只获取非接口的父类实例
      * @return [SuperClass]
      */
     fun superClass() = SuperClass(classSet.superclass!!)
@@ -114,22 +136,43 @@ class KCurrentClass constructor(private val classSet: KClass<*>, internal val in
         val simpleName get() = superClassSet.simpleNameOrJvm
 
         /**
-         * 获得当前实例父类中的泛型父类
+         * 获得当前 [classSet] 中父类的泛型操作对象
          *
-         * 如果当前实例不存在泛型将返回 null
-         * @return [KGenericClass] or null
+         *     class A<T> --> generic().type = A<*>
+         *
+         * @return [KGenericClass]
          */
-        fun generic() = superClassSet.genericSuper()
+        fun generic() = superClassSet.generic()
 
         /**
-         * 获得当前 [KClass] 的父类中来自尖括号的泛型对象
+         * 获得当前 [classSet] 中父类的泛型操作对象
          *
-         * [KClassConditions]同来筛选来自哪个父类/父接口
+         * [KTypeBuildConditions]同来筛选如何构建这个this类型
          *
+         * @param params 类型所需的参数 --> A<T> generic(String::class).type -> A<String>
          * @param initiate 实例方法体
          * @return [GenericClass]
          */
-        inline fun generic(initiate: KClassConditions) = superClassSet.genericSuper(initiate)
+        inline fun generic(vararg params: Any,initiate: KTypeBuildConditions) = superClassSet.generic(*params, initiate = initiate)
+
+        /**
+         * 获得当前 [classSet] 中父类的泛型父类
+         *
+         * 如果当前实例不存在泛型父类将返回 null
+         * @return [KGenericClass] or null
+         */
+        fun genericSuper() = runCatching { superClassSet.genericSuper() }.getOrNull()
+
+        /**
+         * 获得当前 [classSet] 中父类 [KClass] 的父类中来自尖括号的泛型操作对象
+         *
+         * [KClassConditions]同来筛选来自哪个父类/父接口
+         *
+         * 如果当前实例不存在泛型父类将返回 null
+         * @param initiate 实例方法体
+         * @return [GenericClass] or null
+         */
+        inline fun genericSuper(initiate: KClassConditions) = runCatching { superClassSet.genericSuper(initiate) }.getOrNull()
 
         /**
          * 调用父类实例中的变量
@@ -145,8 +188,8 @@ class KCurrentClass constructor(private val classSet: KClass<*>, internal val in
          */
         inline fun function(initiate: KFunctionConditions) = superClassSet.function(initiate).result { if (isIgnoreErrorLogs) ignored() }.get(instance)
 
-        override fun toString() = "CurrentClass super [$superClassSet]"
+        override fun toString() = "KCurrentClass super [$superClassSet]"
     }
 
-    override fun toString() = "CurrentClass [$classSet]"
+    override fun toString() = "KCurrentClass [$classSet]"
 }

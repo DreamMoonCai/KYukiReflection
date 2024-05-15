@@ -33,12 +33,10 @@ import com.dream.yukireflection.finder.callable.data.KCallableRulesData
 import com.dream.yukireflection.finder.callable.data.KConstructorRulesData
 import com.dream.yukireflection.finder.callable.data.KFunctionRulesData
 import com.dream.yukireflection.finder.callable.data.KPropertyRulesData
-import com.dream.yukireflection.type.defined.UndefinedKType
-import com.dream.yukireflection.type.defined.VagueKType
-import com.highcapable.yukireflection.YukiReflection
+import com.dream.yukireflection.type.defined.UndefinedKotlin
+import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.factory.kotlin
 import com.dream.yukireflection.finder.base.KBaseFinder
-import com.dream.yukireflection.finder.base.KBaseFinder.Companion.checkSupportedTypes
 import com.highcapable.yukireflection.finder.tools.ReflectionTool
 import com.highcapable.yukireflection.log.YLog
 import com.highcapable.yukireflection.type.defined.UndefinedType
@@ -160,13 +158,13 @@ object KReflectionTool {
                     }
 
                     /**
-                     * 检查类型中的 [KClass] 是否存在 - 即不存在 [UndefinedKType]
+                     * 检查类型中的 [KClass] 是否存在 - 即不存在 [UndefinedKotlin]
                      * @param type 类型
                      * @return [Boolean]
                      */
                     fun KCallableRulesData.exists(vararg type: Any?): Boolean {
                         if (type.isEmpty()) return true
-                        for (i in type.indices) if (type[i] == UndefinedKType) {
+                        for (i in type.indices) if (type[i] == UndefinedKotlin) {
                             YLog.warn(msg = "$objectName type[$i] mistake, it will be ignored in current conditions")
                             return false
                         }
@@ -261,7 +259,7 @@ object KReflectionTool {
      * @throws NoSuchFieldError 如果找不到 [KProperty]
      */
     internal fun findPropertys(classSet: KClass<*>?, rulesData: KPropertyRulesData) = rulesData.createResult { hasCondition ->
-        if (type == UndefinedKType) error("Property match type class is not found")
+        if (type == UndefinedKotlin) error("Property match type class is not found")
         if (classSet == null) return@createResult mutableListOf()
         if (hasCondition.not()) return@createResult classSet.existPropertys?.toList()?.toAccessibleKCallables() ?: mutableListOf()
         mutableListOf<KProperty<*>>().also { property ->
@@ -325,7 +323,7 @@ object KReflectionTool {
      * @throws NoSuchMethodError 如果找不到 [Function]
      */
     internal fun findFunctions(classSet: KClass<*>?, rulesData: KFunctionRulesData) = rulesData.createResult { hasCondition ->
-        if (returnType == UndefinedKType) error("Function match returnType class is not found")
+        if (returnType == UndefinedKotlin) error("Function match returnType class is not found")
         if (classSet == null) return@createResult mutableListOf()
         if (hasCondition.not()) return@createResult classSet.existFunctions?.toList()?.toAccessibleKCallables() ?: mutableListOf()
         paramTypes?.takeIf { it.isNotEmpty() }
@@ -440,7 +438,7 @@ object KReflectionTool {
         if (classSet == null) return@createResult mutableListOf()
         if (hasCondition.not()) return@createResult classSet.existConstructors?.toList()?.toAccessibleKCallables() ?: mutableListOf()
         paramTypes?.takeIf { it.isNotEmpty() }
-            ?.forEachIndexed { p, it -> if (it == UndefinedKType) error("Constructor match paramType[$p] class is not found") }
+            ?.forEachIndexed { p, it -> if (it == UndefinedKotlin) error("Constructor match paramType[$p] class is not found") }
         mutableListOf<KFunction<*>>().also { constructors ->
             classSet.existConstructors?.also { declares ->
                 var iParamTypes = -1
@@ -548,12 +546,12 @@ object KReflectionTool {
         get() = runCatching {
             sequence {
                 if (KYukiReflection.Configs.isUseJvmObtainCallables) {
-                    yieldAll(java.declaredFields.asSequence().mapNotNull { it.kotlin })
-                    yieldAll(java.declaredMethods.asSequence().mapNotNull { it.kotlin })
+                    yieldAll(((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence().mapNotNull { it.kotlin })
+                    yieldAll(((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence().mapNotNull { it.kotlin })
                     yieldAll(java.declaredConstructors.asSequence().mapNotNull { it.kotlin })
                 } else {
-                    yieldAll(declaredMemberProperties.asSequence())
-                    yieldAll(declaredFunctions.toList())
+                    yieldAll(((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence())
+                    yieldAll(((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).toList())
                     yieldAll(constructors.toList())
                 }
             }
@@ -566,7 +564,11 @@ object KReflectionTool {
      * @return [Sequence]<[KProperty]> or null
      */
     private val KClass<*>.existPropertys
-        get() = runCatching { if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredFields.asSequence().mapNotNull { it.kotlin } else declaredPropertys.asSequence() }.onFailure {
+        get() = runCatching {
+            if (KYukiReflection.Configs.isUseJvmObtainCallables)
+                ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence().mapNotNull { it.kotlin }
+            else ((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence()
+        }.onFailure {
             YLog.warn(msg = "Failed to get the declared Propertys in [$this] because got an exception", e = it)
         }.getOrNull()
 
@@ -575,7 +577,9 @@ object KReflectionTool {
      * @return [Sequence]<[KFunction]> or null
      */
     private val KClass<*>.existFunctions
-        get() = runCatching { if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredMethods.asSequence().mapNotNull { it.kotlin } else declaredFunctions.asSequence() }.onFailure {
+        get() = runCatching { if (KYukiReflection.Configs.isUseJvmObtainCallables)
+            ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence().mapNotNull { it.kotlin } else
+                ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).asSequence() }.onFailure {
             YLog.warn(msg = "Failed to get the declared Functions in [$this] because got an exception", e = it)
         }.getOrNull()
 
@@ -596,8 +600,8 @@ object KReflectionTool {
         mutableListOf<T>().also { list ->
             forEach { callable ->
                 runCatching {
-                    callable.isAccessible = true
                     list.add(callable)
+                    callable.isAccessible = true
                 }.onFailure { YLog.warn(msg = "Failed to access [$callable] because got an exception", e = it) }
             }
         }
@@ -615,7 +619,7 @@ object KReflectionTool {
      * @return [Boolean] 是否相等
      */
     private fun typeEq(compare: Any?, original: Any?): Boolean {
-        if (compare == original || compare == VagueKType)return true
+        if (compare == original || compare == VagueKotlin || original == VagueKotlin)return true
         if (compare == null || original == null) return false
         return when(compare){
             is KClassifier -> when(original){
@@ -625,8 +629,8 @@ object KReflectionTool {
             }
             is KTypeProjection -> when(original){
                 is KVariance -> compare.variance == original
-                is KType -> compare == original.arguments.first()
-                is KParameter -> compare == original.type.arguments.first()
+                is KType -> compare.variance == original.arguments.first().variance && compare.type?.generic() == original.arguments.first().type?.generic()
+                is KParameter -> compare.variance == original.type.arguments.first().variance && compare.type?.generic() == original.type.arguments.first().type?.generic()
                 else -> false
             }
             is KVariance -> when(original){
@@ -637,13 +641,13 @@ object KReflectionTool {
             }
             is KType -> when(original){
                 is KType -> original.generic() == compare.generic()
-                is KClassifier -> compare.classifier == original
-                is KParameter -> compare == original.type
+                is KClassifier -> compare.generic() == original
+                is KParameter -> compare.generic().equals(original.type)
                 else -> false
             }
             is KParameter -> when(original){
                 is KClassifier -> compare.type.classifier == original
-                is KType -> compare.type == original
+                is KType -> compare.type.generic() == original
                 is KParameter.Kind -> compare.kind == original
                 else -> false
             }
@@ -654,28 +658,50 @@ object KReflectionTool {
             is KGenericClass -> when(original){
                 is KType -> compare == original.generic()
                 is KClassifier -> compare.type.classifier == original
-                is KParameter -> compare.type == original.type
+                is KParameter -> compare == original
                 else -> false
             }
             else -> {
+                var eq = true
                 val result = runCatching {
                     KBaseFinder.checkArrayGenerics(compare)
                 }.getOrNull() ?: return false
-                result.filterIsInstance<KTypeProjection>().forEachIndexed { index, t ->
-                    return when(original){
-                        is KType -> t == original.arguments[index]
-                        is KParameter -> t == original.type.arguments[index]
-                        else -> false
+                when(original){
+                    is KType -> {
+                        if (original.arguments.size != result.size)return false
+                        result.forEachIndexed { index, t ->
+                            when(t){
+                                is KTypeProjection -> {
+                                    if (!eq) return false
+                                    eq = if (t.type?.classifier == VagueKotlin && t.variance == original.arguments[index].variance) true
+                                    else (t.variance == original.arguments[index].variance) && (t.type?.generic() == original.arguments[index].type?.generic())
+                                }
+                                is KVariance -> {
+                                    if (!eq) return false
+                                    eq = t == original.arguments.first().variance
+                                }
+                            }
+                        }
                     }
-                }
-                result.filterIsInstance<KVariance>().forEachIndexed { index, t ->
-                    return when(original){
-                        is KType -> t == original.arguments.first().variance
-                        is KParameter -> t == original.type.arguments.first().variance
-                        else -> false
+                    is KParameter -> {
+                        if (original.type.arguments.size != result.size)return false
+                        result.forEachIndexed { index, t ->
+                            when(t){
+                                is KTypeProjection -> {
+                                    if (!eq) return false
+                                    eq = if (t.type?.classifier == VagueKotlin && t.variance == original.type.arguments[index].variance) true
+                                    else (t.variance == original.type.arguments[index].variance) && (t.type?.generic() == original.type.arguments[index].type?.generic())
+                                }
+                                is KVariance -> {
+                                    if (!eq) return false
+                                    eq = t == original.type.arguments.first().variance
+                                }
+                            }
+                        }
                     }
+                    else -> return false
                 }
-                false
+                eq
             }
         }
     }
@@ -687,7 +713,7 @@ object KReflectionTool {
      * @param compare 用于比较的数组
      * @param original 方法、构造方法原始数组
      * @return [Boolean] 是否相等
-     * @throws IllegalStateException 如果 [VagueKType] 配置不正确
+     * @throws IllegalStateException 如果 [VagueKotlin] 配置不正确
      */
     private fun paramTypesEq(compare: Array<out Any>?, original: Array<out Any>?): Boolean {
         return when {
@@ -695,7 +721,7 @@ object KReflectionTool {
             (compare == null && original != null) || (compare != null && original == null) || (compare?.size != original?.size) -> false
             else -> {
                 if (compare == null || original == null) return false
-                if (compare.all { it == VagueKType }) error("The number of VagueType must be at least less than the count of paramTypes")
+                if (compare.all { it == VagueKotlin }) error("The number of VagueType must be at least less than the count of paramTypes")
                 for (i in compare.indices) return typeEq(compare[i],original[i])
                 true
             }

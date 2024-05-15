@@ -25,6 +25,7 @@
 
 package com.dream.yukireflection.finder.base.rules
 
+import com.dream.yukireflection.factory.*
 import java.lang.reflect.Field
 import java.lang.reflect.Member
 import java.lang.reflect.Method
@@ -218,17 +219,262 @@ class KModifierRules private constructor(private val instance: Any) {
      */
     val isStrict get() = Modifier.isStrict(modifiers).also { templates.add("<isStrict> ($it)") }
 
+
+    /**
+     * [KClass]、[KCallable] 所属类是否是 Kotlin 类
+     *
+     * @return [Boolean]
+     */
+    val isKotlin get() = (declaringClass?.isKotlin ?: false).also { templates.add("<isKotlin> ($it)") }
+
+    /**
+     * [KClass]、[KCallable] 所属类是否是 Kotlin 的 companion object
+     *
+     * 如下所示 ↓
+     *
+     * companion object{ val a = 1 } -> ::a isCompanion true
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isCompanion get() = (declaringClass?.kotlin?.isCompanion ?: false).also { templates.add("<isCompanion> ($it)") }
+
+    /**
+     * [KClass]、[KCallable] 所属类是否是 Kotlin Data 类
+     *
+     * 如下所示 ↓
+     *
+     * data class A(val a = 1) -> ::a isData true
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isData get() = (declaringClass?.kotlin?.isData ?: false).also { templates.add("<isData> ($it)") }
+
+    /**
+     * [KClass]、[KCallable] 所属类是否是 Kotlin 的 inner class
+     *
+     * 如下所示 ↓
+     *
+     * inner class A{ val a = 1 } -> ::a isInner true
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isInner get() = (declaringClass?.kotlin?.isInner ?: false).also { templates.add("<isInner> ($it)") }
+
+    /**
+     * [KClass]、[KCallable] 所属类是否是 Kotlin 的 sealed class
+     *
+     * 如下所示 ↓
+     *
+     * sealed class A{ val a = 1 } -> ::a isSealed true
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isSealed get() = (declaringClass?.kotlin?.isSealed ?: false).also { templates.add("<isSealed> ($it)") }
+
+    /**
+     * [KClass]、[KCallable] 所属类是否是 Kotlin 的 fun class
+     *
+     * 如下所示 ↓
+     *
+     * fun class A{ val a = 1 } -> ::a isFun true
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isFun get() = (declaringClass?.kotlin?.isFun ?: false).also { templates.add("<isFun> ($it)") }
+
+    /**
+     * [KClass]、[KCallable] 所属类是否是 Kotlin 的 value class
+     *
+     * 如下所示 ↓
+     *
+     * value class A{ val a = 1 } -> ::a isValue true
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isValue get() = (declaringClass?.kotlin?.isValue ?: false).also { templates.add("<isValue> ($it)") }
+
+    /**
+     * [KClass]、[KCallable] 所属类是否是 Kotlin 的 anonymous class
+     *
+     * 如下所示 ↓
+     *
+     * val a = object:{val b = 1} ::b isAnonymous true
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isAnonymous get() = (declaringClass?.kotlin?.isAnonymous ?: false).also { templates.add("<isAnonymous> ($it)") }
+
+    /**
+     * [KProperty] 是否是 Kotlin 的 const 属性
+     *
+     * 如下所示 ↓
+     *
+     * const val a = 1
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isConst get() = (asKProperty?.isConst ?: false).also { templates.add("<isConst> ($it)") }
+
+    /**
+     * [KProperty] 是否是 Kotlin 的 lateinit 属性
+     *
+     * 如下所示 ↓
+     *
+     * lateinit var a = 1
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isLateinit get() = (asKProperty?.isLateinit ?: false).also { templates.add("<isLateinit> ($it)") }
+
+    /**
+     * [KProperty] 是否是 Kotlin 的 var 属性
+     *
+     * 如下所示 ↓
+     *
+     * var a = 1
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isVar get() = (asKProperty?.isVar ?: false).also { templates.add("<isVar> ($it)") }
+
+    /**
+     * [KCallable] 是否是 Kotlin 的 suspend 属性
+     *
+     * 如下所示 ↓
+     *
+     * suspend fun a() = 1
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isSuspend get() = (asKCallable?.isSuspend ?: false).also { templates.add("<isSuspend> ($it)") }
+
+    /**
+     * [KFunction] 是否是 Kotlin 的 external 属性
+     *
+     * 如下所示 ↓
+     *
+     * external fun a()
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isExternal get() = (asKFunction?.isExternal ?: false).also { templates.add("<isExternal> ($it)") }
+
+    /**
+     * [KCallable] 是否是 Kotlin 的 extension 属性
+     *
+     * 如下所示 ↓
+     *
+     * fun A.a()
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isExtension get() = (asKCallable?.isExtension ?: false).also { templates.add("<isExtension> ($it)") }
+
+    /**
+     * [KFunction] 是否是 Kotlin 的 infix 属性
+     *
+     * 如下所示 ↓
+     *
+     * infix fun a(b:Int) = 1
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isInfix get() = (asKFunction?.isInfix ?: false).also { templates.add("<isInfix> ($it)") }
+
+    /**
+     * [KFunction] 是否是 Kotlin 的 operator 属性
+     *
+     * 如下所示 ↓
+     *
+     * operator fun a(b:Int) = 1
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isOperator get() = (asKFunction?.isOperator ?: false).also { templates.add("<isOperator> ($it)") }
+
+    /**
+     * [KFunction] 是否是 Kotlin 的 inline 属性
+     *
+     * 如下所示 ↓
+     *
+     * inline fun a(b:Int) = 1
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isInline get() = (asKFunction?.isInline ?: false).also { templates.add("<isInline> ($it)") }
+
+    /**
+     * [KClass]、[KCallable] 是否是 Kotlin 的 open 属性
+     *
+     * 如下所示 ↓
+     *
+     * open class A{ val a = 1 }
+     * open fun a(){}
+     * open val a = 1
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isOpen get() = when (instance) {
+        is KCallable<*> -> instance.isOpen
+        is KClass<*> -> instance.isOpen
+        else -> false
+    }.also { templates.add("<isOpen> ($it)") }
+
     /**
      * 获取当前对象的类型描述符
      * @return [Int]
      */
     private val modifiers
         get() = when (instance) {
-            is KFunction<*> -> (instance.javaMethod?.modifiers ?: instance.javaConstructor?.modifiers)?:0
-            is KProperty<*> -> instance.javaField?.modifiers ?: instance.javaGetter?.modifiers ?: (instance as KMutableProperty<*>).javaSetter?.modifiers ?: 0
+            is KCallable<*> -> instance.modifiers ?: 0
             is KClass<*> -> instance.java.modifiers
             else -> 0
         }
+
+    /**
+     * 获取当前对象的声明类
+     */
+    private val declaringClass
+        get() = when(instance){
+            is KCallable<*> -> instance.declaringClass?.java
+            is KClass<*> -> instance.java
+            else -> null
+        }
+
+    /**
+     * 获取当前对象的 [KCallable]
+     */
+    private val asKCallable
+        get() = instance as? KCallable<*>
+
+    /**
+     * 获取当前对象的 [KFunction]
+     */
+    private val asKFunction
+        get() = instance as? KFunction<*>
+
+    /**
+     * 获取当前对象的 [KProperty]
+     */
+    private val asKProperty
+        get() = instance as? KProperty<*>
 
     override fun toString() = "KModifierRules [$instance]"
 }

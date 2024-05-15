@@ -28,7 +28,8 @@ import com.dream.yukireflection.build.KTypeBuild
 import com.dream.yukireflection.factory.generic
 import com.dream.yukireflection.factory.kotlin
 import com.dream.yukireflection.factory.variance
-import com.dream.yukireflection.type.defined.VagueKType
+import com.dream.yukireflection.type.defined.VagueKotlin
+import com.dream.yukireflection.type.factory.KTypeBuildConditions
 import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 import kotlin.reflect.*
 
@@ -36,26 +37,27 @@ import kotlin.reflect.*
  * 对当前 [KType] 的泛型操作对象
  *
  * @param type 拥有类型声明信息的Kotlin类型 可能包含泛型信息
+ * @property ArrayList this存储当前泛型参数数组
  */
-class KGenericClass constructor(val type: KType) :ArrayList<KTypeProjection>(type.arguments){
+class KGenericClass constructor(val type: KType) :List<KTypeProjection> by type.arguments{
 
     /**
      * 是否检查方差
      *
      * 检查对比泛型的 in/out/默认
      *
-     * 影响比较相关操作，如;[equals]
+     * 影响比较相关操作，如:[equals]
      *
      * @see [KVariance]
      */
     var isVariance :Boolean? = null
 
     /**
-     * 是否检查方差
+     * 使用检查方差 快捷方法
      *
      * 检查对比泛型的 in/out/默认
      *
-     * 影响比较相关操作，如;[equals]
+     * 影响比较相关操作，如:[equals]
      *
      * @see [KVariance]
      */
@@ -65,7 +67,81 @@ class KGenericClass constructor(val type: KType) :ArrayList<KTypeProjection>(typ
     }
 
     /**
+     * 是否检查可空性
+     *
+     * 检查往往与类型是否带问号有关如:String->false,String?->true
+     *
+     * 影响比较相关操作，如:[equals]
+     *
+     * 默认不检查可空性
+     *
+     * @see [KType.isMarkedNullable]
+     */
+    var isMarkedNullable = false
+
+    /**
+     * 使用检查可空性 快捷方法
+     *
+     * 检查往往与类型是否带问号有关如:String->false,String?->true
+     *
+     * 影响比较相关操作，如:[equals]
+     *
+     * 默认不检查可空性
+     *
+     * @see [KType.isMarkedNullable]
+     */
+    fun checkMarkedNullable(): KGenericClass {
+        isMarkedNullable = true
+        return this
+    }
+
+    /**
+     * 是否检查注解一致性
+     *
+     * 检查往往与类型所携带的注解有关 ↓
+     *
+     * ```kotlin
+     * vararg abc:@UnsafeVariance Int
+     * ```
+     *
+     * 为true时检查两者type的注解是否同时包含满足条件
+     *
+     * 影响比较相关操作，如:[equals]
+     *
+     * 默认不检查注解一致性
+     *
+     * @see [KType.isMarkedNullable]
+     */
+    var isAnnotation = false
+
+    /**
+     * 使用检查注解一致性 快捷方法
+     *
+     * 检查往往与类型所携带的注解有关 ↓
+     *
+     * ```kotlin
+     * vararg abc:@UnsafeVariance Int
+     * ```
+     *
+     * 为true时检查两者type的注解是否同时包含满足条件
+     *
+     * 影响比较相关操作，如:[equals]
+     *
+     * 默认不检查注解一致性
+     *
+     * @see [KType.isMarkedNullable]
+     */
+    fun checkAnnotation(): KGenericClass {
+        isAnnotation = true
+        return this
+    }
+
+    /**
      * 为当前泛型操作对象使用指定方差构建类型映射
+     *
+     * 目标:[type]
+     * @param variance 方差类型
+     * @return [KTypeProjection] -> out/in/默认 [type]
      */
     fun variance(variance:KVariance = KVariance.INVARIANT): KTypeProjection = type.variance(variance)
 
@@ -74,11 +150,17 @@ class KGenericClass constructor(val type: KType) :ArrayList<KTypeProjection>(typ
      *
      * 此结果的 [KClass] 会泛型类型擦除
      *
+     *     当type为 List<List<String>>
+     *
+     *     错误示例 argument(0) -> List::class 无法获取进一步:argument(0).argument(0) KClass没有argument方法，当获得KClass后将进行擦除类型
+     *
+     *     应使用 generic(0).argument(0) -> String
+     *
      * - 在运行时局部变量的泛型会被擦除 - 获取不到时将会返回 null
      * @param index 数组下标 - 默认 0
      * @return [KClass] or null
      */
-    fun argument(index: Int = 0) = this[index].type?.kotlin
+    fun argument(index: Int = 0) = runCatching { this[index].type?.kotlin }.getOrNull()
 
     /**
      * 获得泛型参数数组下标的 泛型操作对象
@@ -91,33 +173,58 @@ class KGenericClass constructor(val type: KType) :ArrayList<KTypeProjection>(typ
      *
      * @param index 数组下标 - 默认 0
      * @param initiate 实例方法体
+     * @return [KGenericClass] 进行进行泛型使用
      */
     fun generic(index: Int = 0,initiate: KGenericClass.() -> Unit = {}) = this[index].type?.generic(initiate) ?: error("The type:$type index:$index arguments:${type.arguments} no further generics")
 
     /**
-     * 判断当前 [KGenericClass] 是否包含指定 泛型信息
+     * 判断当前 [KGenericClass] 是否包含指定泛型类型 根据[isVariance]测试是否检查方差
      *
      * 泛型信息 --- 直接投影类 泛型方差(不变、协变、逆变) 直接泛型类型 泛型擦除类型
      *
-     * @param projection [KTypeProjection] or [KType] or [KClassifier]/[KClass]/[KTypeParameter]
+     * @param element [KTypeProjection] or [KType] or [KClassifier]/[KClass]/[KTypeParameter]
      * @return [Boolean]
      */
-    fun contains(projection: Any) = when(projection){
-        is KTypeProjection -> type.arguments.contains(projection)
-        is KType -> type.arguments.any { it.type == projection }
-        is KClassifier -> type.arguments.any { it.type?.classifier == projection }
-        else -> false
+    @JvmName("contains_Any")
+    fun contains(element: Any) = type.arguments.any {
+        if (element is KTypeProjection && isVariance == true)
+            it.variance == element.variance && it.type?.generic() == element
+        else
+            it.type?.generic() == element
     }
 
     /**
-     * 通过当前 [KType] 构建一个新的 [KType]
+     * 判断当前 [KGenericClass] 是否包含指定泛型类型 根据[isVariance]测试是否检查方差
      *
-     * [KTypeBuild]是构建时可自定义的参数
+     * @param element [KTypeProjection]
+     * @return [Boolean]
+     */
+    override fun contains(element: KTypeProjection): Boolean = contains(element as Any)
+
+    /**
+     * 判断当前 [KGenericClass] 是否包含指定一批泛型类型 根据[isVariance]测试是否检查方差
+     *
+     * 包含判断数组不分顺序
+     *
+     * @param elements [Collection]
+     * @return [Boolean]
+     */
+    override fun containsAll(elements: Collection<KTypeProjection>): Boolean {
+        elements.forEach {
+            if (!contains(it))return false
+        }
+        return true
+    }
+
+    /**
+     * 通过当前 [KType] 构建一个新的 [KType] 并继续使用泛型操作对象
+     *
+     * [KTypeBuildConditions]是构建时可自定义的参数
      *
      * @param initiate 实例方法体
-     * @return [KTypeBuild]
+     * @return [KGenericClass] 新Type的泛型操作对象
      */
-    inline fun build(initiate: KTypeBuild.() -> Unit = {}) = KTypeBuild(type).apply(initiate).build().get().generic()
+    inline fun build(initiate: KTypeBuildConditions = {}) = KTypeBuild(type).apply(initiate).build().get().generic()
 
     /**
      * 获得泛型参数数组下标的 [KClass] 实例
@@ -136,6 +243,10 @@ class KGenericClass constructor(val type: KType) :ArrayList<KTypeProjection>(typ
 
     /**
      * 自动获取是否检查方差
+     *
+     * - 如果[isVariance]没有指定 - 只要有任何一个泛型参数包含非默认方差则返回true
+     *
+     * @return [Boolean]
      */
     private var isVarianceAutomatic:Boolean? = null
         get(){
@@ -160,6 +271,14 @@ class KGenericClass constructor(val type: KType) :ArrayList<KTypeProjection>(typ
         return "KGenericClass(isVariance=$isVarianceAutomatic,type=$type) & " + super.toString()
     }
 
+    /**
+     * 对目标类型是否一致进行判断
+     *
+     * 受[isVariance]影响
+     *
+     * @param other [KGenericClass] or [KType] or [KTypeProjection] or [KParameter] or [KProperty] or [KClassifier]/[KClass]/[KTypeParameter]
+     * @return [Boolean]
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other || (super.equals(other) && other is KGenericClass && type == other.type)) return true
 
@@ -173,6 +292,10 @@ class KGenericClass constructor(val type: KType) :ArrayList<KTypeProjection>(typ
             else -> return false
         }
 
+        if ((isMarkedNullable || otherGeneric.isMarkedNullable) && type.isMarkedNullable != otherGeneric.type.isMarkedNullable)return false
+
+        if ((isAnnotation || otherGeneric.isAnnotation) && type.arguments != otherGeneric.type.arguments)return false
+
         var isVariance = otherGeneric.isVariance
         if (isVariance == null){
             isVariance = isVarianceAutomatic!!.ifFalse { other is KGenericClass && isNotDefaultVariance(otherGeneric.type.arguments) } ?: true
@@ -183,8 +306,8 @@ class KGenericClass constructor(val type: KType) :ArrayList<KTypeProjection>(typ
         var isEq:Boolean
         type.arguments.forEachIndexed { index, kTypeProjection ->
             if (isVariance && kTypeProjection.variance != otherGeneric.type.arguments[index].variance)return false
-            isEq = kTypeProjection == KTypeProjection.STAR || kTypeProjection.type?.kotlin == VagueKType
-            isEq = isEq || kTypeProjection.type?.generic()?.setVariance(isVariance) == otherGeneric.type.arguments[index].type?.generic()?.setVariance(isVariance)
+            isEq = kTypeProjection == KTypeProjection.STAR || kTypeProjection.type?.kotlin == VagueKotlin
+            isEq = isEq || kTypeProjection.type?.generic()?.setVariance(isVariance)?.setMarkedNullable(isMarkedNullable)?.setAnnotation(isAnnotation) == otherGeneric.type.arguments[index].type?.generic()?.setVariance(isVariance)?.setMarkedNullable(isMarkedNullable)?.setAnnotation(isAnnotation)
             if (!isEq)return false
         }
         return type.classifier == otherGeneric.type.classifier
@@ -195,6 +318,22 @@ class KGenericClass constructor(val type: KType) :ArrayList<KTypeProjection>(typ
      */
     private fun setVariance(isVariance: Boolean): KGenericClass {
         this.isVariance = isVariance
+        return this
+    }
+
+    /**
+     * @see [checkMarkedNullable]
+     */
+    private fun setMarkedNullable(isMarkedNullable: Boolean): KGenericClass {
+        this.isMarkedNullable = isMarkedNullable
+        return this
+    }
+
+    /**
+     * @see [checkAnnotation]
+     */
+    private fun setAnnotation(isAnnotation: Boolean): KGenericClass {
+        this.isAnnotation = isAnnotation
         return this
     }
 

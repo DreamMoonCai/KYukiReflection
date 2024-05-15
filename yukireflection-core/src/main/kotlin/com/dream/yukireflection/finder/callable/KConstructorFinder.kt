@@ -27,16 +27,16 @@ package com.dream.yukireflection.finder.callable
 import com.dream.yukireflection.factory.hasExtends
 import com.dream.yukireflection.factory.superclass
 import com.dream.yukireflection.finder.base.KCallableBaseFinder
-import com.dream.yukireflection.type.defined.UndefinedKType
-import com.dream.yukireflection.type.defined.VagueKType
+import com.dream.yukireflection.type.defined.UndefinedKotlin
+import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.bean.KVariousClass
 import com.dream.yukireflection.finder.callable.data.KConstructorRulesData
 import com.dream.yukireflection.finder.tools.KReflectionTool
-import com.dream.yukireflection.finder.type.factory.KConstructorConditions
+import com.dream.yukireflection.type.factory.KConstructorConditions
 import com.highcapable.yukireflection.finder.type.factory.CountConditions
-import com.dream.yukireflection.finder.type.factory.KModifierConditions
-import com.dream.yukireflection.finder.type.factory.KParameterConditions
+import com.dream.yukireflection.type.factory.KModifierConditions
+import com.dream.yukireflection.type.factory.KParameterConditions
 import com.highcapable.yukireflection.log.YLog
 import com.highcapable.yukireflection.utils.factory.runBlocking
 import java.lang.IllegalArgumentException
@@ -99,7 +99,7 @@ class KConstructorFinder constructor(override val classSet: KClass<*>? = null) :
      *
      * 如果同时使用了 [paramCount] 则 [paramType] 的数量必须与 [paramCount] 完全匹配
      *
-     * 如果 Constructor [KFunction] 中存在一些无意义又很长的类型 - 你可以使用 [VagueKType] 来替代它
+     * 如果 Constructor [KFunction] 中存在一些无意义又很长的类型 - 你可以使用 [VagueKotlin] 来替代它
      *
      * 例如下面这个参数结构 ↓
      *
@@ -123,7 +123,7 @@ class KConstructorFinder constructor(override val classSet: KClass<*>? = null) :
      */
     fun param(vararg paramType: Any): IndexTypeCondition {
         if (paramType.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")
-        rulesData.paramTypes = mutableListOf<Any>().apply { paramType.forEach { add(it.compat(TAG_PARAMETER) ?: UndefinedKType) } }.toTypedArray()
+        rulesData.paramTypes = mutableListOf<Any>().apply { paramType.forEach { add(it.compat(TAG_PARAMETER) ?: UndefinedKotlin) } }.toTypedArray()
         return IndexTypeCondition(IndexConfigType.MATCH)
     }
 

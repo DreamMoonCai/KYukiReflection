@@ -30,9 +30,9 @@ import com.dream.yukireflection.finder.base.KCallableBaseFinder
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.finder.callable.data.KPropertyRulesData
 import com.dream.yukireflection.finder.tools.KReflectionTool
-import com.dream.yukireflection.finder.type.factory.KModifierConditions
-import com.dream.yukireflection.finder.type.factory.KTypeConditions
-import com.dream.yukireflection.finder.type.factory.KPropertyConditions
+import com.dream.yukireflection.type.factory.KModifierConditions
+import com.dream.yukireflection.type.factory.KTypeConditions
+import com.dream.yukireflection.type.factory.KPropertyConditions
 import com.highcapable.yukireflection.bean.CurrentClass
 import com.highcapable.yukireflection.factory.current
 import com.highcapable.yukireflection.finder.type.factory.NameConditions
@@ -41,6 +41,7 @@ import com.highcapable.yukireflection.utils.factory.runBlocking
 import kotlin.reflect.KProperty
 import kotlin.reflect.KClass
 import com.dream.yukireflection.bean.KVariousClass
+import com.dream.yukireflection.factory.isExtension
 import com.dream.yukireflection.factory.set
 import java.lang.IllegalArgumentException
 
@@ -433,13 +434,33 @@ class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KC
          */
         inner class Instance internal constructor(private val instance: Any?, private val property: KProperty<*>?) {
 
+            private var extension:Any? = null
+
+            /**
+             * 修改 [extension] Receiver
+             *
+             * 当此属性是拓展属性时，你可能需要额外的一个this属性进行设置
+             *
+             * @param extension 拓展属性的thisRef
+             * @return [KProperty] 实例处理类
+             */
+            fun receiver(extension:Any?):Instance{
+                this.extension = extension
+                return this
+            }
+
             /**
              * 获取当前 [KProperty] 自身的实例化对象
              *
              * - 若要直接获取不确定的实例对象 - 请调用 [any] 方法
              * @return [Any] or null
              */
-            private val self get() = runCatching { if (instance != null) property?.call(instance) else property?.call() }.getOrElse { if (it is IllegalArgumentException) errorMsg("Non static method but no instance is passed in.",it) else throw it }
+            private val self get() = runCatching {
+                if (property?.isExtension == true) {
+                    if (instance != null) property.call(instance,extension)
+                    else property.call(extension)
+                } else if (instance != null) property?.call(instance)
+                else property?.call() }.getOrElse { if (it is IllegalArgumentException) errorMsg("Non static method but no instance is passed in.",it) else throw it }
 
             /**
              * 获得当前 [KProperty] 自身 [self] 实例的类操作对象

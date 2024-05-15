@@ -24,7 +24,7 @@ package com.dream.yukireflection.finder.callable.data
 
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.highcapable.yukireflection.finder.type.factory.NameConditions
-import com.dream.yukireflection.finder.type.factory.KTypeConditions
+import com.dream.yukireflection.type.factory.KTypeConditions
 import kotlin.reflect.KProperty
 
 /**

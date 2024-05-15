@@ -11,6 +11,11 @@ import java.lang.reflect.Modifier;
 
 import static kotlin.jvm.internal.CallableReference.NO_RECEIVER;
 
+/**
+ * 引用方式创建相关Kotlin对象
+ * <p>
+ * 引用对象创建速度快懒加载只有使用时会耗时加载
+ */
 public class KReference {
     public enum Flags {
         NO_FLAGS(0),

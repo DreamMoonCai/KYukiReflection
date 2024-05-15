@@ -25,8 +25,8 @@ package com.dream.yukireflection.finder.base.data
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.finder.base.KBaseFinder.Companion.checkSupportedTypes
 import com.dream.yukireflection.finder.base.rules.KModifierRules
-import com.dream.yukireflection.finder.type.factory.KModifierConditions
-import com.dream.yukireflection.type.defined.VagueKType
+import com.dream.yukireflection.type.factory.KModifierConditions
+import com.dream.yukireflection.type.defined.VagueKotlin
 import com.highcapable.yukireflection.finder.base.rules.CountRules
 import com.highcapable.yukireflection.finder.base.rules.NameRules
 import com.highcapable.yukireflection.finder.base.rules.ObjectRules
@@ -108,9 +108,9 @@ internal abstract class KBaseRulesData internal constructor(
             forEach {
                 if (isFirst) isFirst = false else sb.append(", ")
                 when(val type = it.checkSupportedTypes()!!){
-                    is KClass<*> -> sb.append(type.takeIf { type.java.canonicalName != VagueKType.java.canonicalName }?.java?.canonicalName ?: "*vague*")
+                    is KClass<*> -> sb.append(type.takeIf { type.java.canonicalName != VagueKotlin.java.canonicalName }?.java?.canonicalName ?: "*vague*")
                     is KTypeParameter,is KType,is KTypeProjection,is KVariance -> sb.append(type.toString())
-                    else -> KBaseFinder.checkArrayGenerics(type)
+                    else -> sb.append(KBaseFinder.checkArrayGenerics(type))
                 }
             }
             sb.append(")")

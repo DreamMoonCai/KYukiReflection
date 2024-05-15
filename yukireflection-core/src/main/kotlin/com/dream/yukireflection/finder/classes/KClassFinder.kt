@@ -32,7 +32,7 @@ import com.dream.yukireflection.finder.classes.rules.KFunctionRules
 import com.dream.yukireflection.finder.classes.rules.KPropertyRules
 import com.dream.yukireflection.finder.classes.rules.base.KBaseRules
 import com.dream.yukireflection.finder.tools.KReflectionTool
-import com.dream.yukireflection.finder.type.factory.KModifierConditions
+import com.dream.yukireflection.type.factory.KModifierConditions
 import com.highcapable.yukireflection.finder.type.factory.NameConditions
 import com.highcapable.yukireflection.utils.factory.runBlocking
 import kotlin.reflect.KClass
