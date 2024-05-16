@@ -21,6 +21,15 @@ export default {
         sidebar: sideBarItems,
         sidebarDepth: 2,
         locales: {
+            '/kotlin/en/': {
+                navbar: navBarItems['/kotlin/en/'],
+                selectLanguageText: 'English (US)',
+                selectLanguageName: 'English',
+                editLinkText: 'Edit this page on GitHub',
+                tip: 'Tips',
+                warning: 'Notice',
+                danger: 'Pay Attention',
+            },
             '/en/': {
                 navbar: navBarItems['/en/'],
                 selectLanguageText: 'English (US)',
@@ -29,6 +38,21 @@ export default {
                 tip: 'Tips',
                 warning: 'Notice',
                 danger: 'Pay Attention',
+            },
+            '/kotlin/zh-cn/': {
+                navbar: navBarItems['/kotlin/zh-cn/'],
+                selectLanguageText: '简体中文 (CN)',
+                selectLanguageName: '简体中文',
+                editLinkText: '在 GitHub 上编辑此页',
+                notFound: ['这里什么都没有', '我们怎么到这来了？', '这是一个 404 页面', '看起来我们进入了错误的链接'],
+                backToHome: '回到首页',
+                contributorsText: '贡献者',
+                lastUpdatedText: '上次更新',
+                tip: '小提示',
+                warning: '注意',
+                danger: '特别注意',
+                openInNewWindow: '在新窗口中打开',
+                toggleColorMode: '切换颜色模式'
             },
             '/zh-cn/': {
                 navbar: navBarItems['/zh-cn/'],
@@ -52,7 +76,9 @@ export default {
         searchPlugin({
             isSearchable: (page) => page.path !== '/',
             locales: {
+                '/kotlin/en/': { placeholder: 'Search' },
                 '/en/': { placeholder: 'Search' },
+                '/kotlin/zh-cn/': { placeholder: '搜索' },
                 '/zh-cn/': { placeholder: '搜索' }
             }
         })
