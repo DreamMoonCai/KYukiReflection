@@ -3,6 +3,9 @@ home: true
 title: 首页
 heroImage: /images/logo.png
 actions:
+  - text: KYukiReflection
+    link: /zh-cn/kotlin/index
+    type: primary
   - text: 快速上手
     link: /zh-cn/guide/home
     type: primary

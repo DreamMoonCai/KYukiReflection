@@ -133,14 +133,6 @@ val LongKType get() = LongType.kotlin
 val DoubleKType get() = DoubleType.kotlin
 
 /**
- * 获得 [Unit] 类型
- *
- * 这是 Java 原始类型 (Primitive Type) - 它在字节码中的关键字为 "void"
- * @return [KClass]
- */
-val UnitKType get() = UnitType.kotlin
-
-/**
  * 获得 [Any] 类型
  *
  * 它等价于 Java 中的 [java.lang.Object]
@@ -226,7 +218,7 @@ val NumberKClass get() = NumberClass.kotlin
  * 它等价于 Java 中的 [java.lang.Void]
  * @return [KClass]<[Void]>
  */
-val UnitKClass get() = UnitClass.kotlin
+val UnitKClass get() = Unit::class.java.kotlin
 
 /**
  * 获得 [String] 类型
