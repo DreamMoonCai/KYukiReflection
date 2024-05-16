@@ -10,7 +10,7 @@ actions:
     link: /zh-cn/about/changelog
     type: secondary
   - text: KYukiReflection
-    link: /kotlin/zh-cn
+    link: /kotlin/zh-cn/
     type: secondary
 features:
   - title: 轻量优雅

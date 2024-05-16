@@ -32,6 +32,9 @@ import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.type.factory.KTypeBuildConditions
 import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 import kotlin.reflect.*
+import kotlin.reflect.full.staticFunctions
+import kotlin.reflect.full.valueParameters
+import kotlin.reflect.jvm.jvmErasure
 
 /**
  * 对当前 [KType] 的泛型操作对象

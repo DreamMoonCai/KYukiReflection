@@ -10,7 +10,7 @@ actions:
     link: /en/about/changelog
     type: secondary
   - text: KYukiReflection
-    link: /kotlin/en
+    link: /kotlin/en/
     type: secondary
 features:
   - title: Light and Elegant

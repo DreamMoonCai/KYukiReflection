@@ -2,6 +2,8 @@ import { i18n } from './utils';
 
 const baseApiPath = '/api/public/com/highcapable/yukireflection/';
 
+const baseKotlinApiPath = '/api/public/com/dream/yukireflection/';
+
 const navigationLinks = {
     start: [
         '/guide/home',
@@ -42,6 +44,9 @@ const navigationLinks = {
         baseApiPath + 'bean/VariousClass',
         baseApiPath + 'bean/CurrentClass',
         baseApiPath + 'bean/GenericClass'
+    ],
+    kotlinApi: [
+        baseKotlinApiPath + 'KYukiReflection',
     ],
     about: [
         '/about/changelog',
@@ -95,37 +100,37 @@ export const navBarItems = {
         children: [{
             text: 'Get Started',
             children: [
-                { text: 'Introduce', link: i18n.string(navigationLinks.start[0], '/kotlin/en') },
-                { text: 'Quick Start', link: i18n.string(navigationLinks.start[1], '/kotlin/en') }
+                { text: 'Introduce', link: i18n.string(navigationLinks.start[0], 'kotlin/en') },
+                { text: 'Quick Start', link: i18n.string(navigationLinks.start[1], 'kotlin/en') }
             ]
         }, {
             text: 'Configs',
             children: [
-                { text: 'API Basic Configs', link: i18n.string(navigationLinks.config[0], '/kotlin/en') },
-                { text: 'API Exception Handling', link: i18n.string(navigationLinks.config[1], '/kotlin/en') }
+                { text: 'API Basic Configs', link: i18n.string(navigationLinks.config[0], 'kotlin/en') },
+                { text: 'API Exception Handling', link: i18n.string(navigationLinks.config[1], 'kotlin/en') }
             ]
         }, {
             text: 'API Document',
-            children: [{ text: 'Document Introduction', link: i18n.string(navigationLinks.apiDocs[0], '/kotlin/en') }, {
+            children: [{ text: 'Document Introduction', link: i18n.string(navigationLinks.apiDocs[0], 'kotlin/en') }, {
                 text: 'Public API',
-                link: i18n.string(navigationLinks.publicApi[0], '/kotlin/en'),
-                activeMatch: i18n.string(navigationLinks.apiDocs[1], '/kotlin/en')
+                link: i18n.string(navigationLinks.kotlinApi[0], 'kotlin/en'),
+                activeMatch: i18n.string(navigationLinks.apiDocs[1], 'kotlin/en')
             }, {
                 text: 'Features',
-                link: i18n.string(navigationLinks.apiDocs[2], '/kotlin/en')
+                link: i18n.string(navigationLinks.apiDocs[2], 'kotlin/en')
             }]
         }, {
             text: 'About',
             children: [
-                { text: 'Changelog', link: i18n.string(navigationLinks.about[0], '/kotlin/en') },
-                { text: 'Looking for Future', link: i18n.string(navigationLinks.about[1], '/kotlin/en') },
-                { text: 'Contact Us', link: i18n.string(navigationLinks.about[2], '/kotlin/en') },
-                { text: 'About this Document', link: i18n.string(navigationLinks.about[3], '/kotlin/en') }
+                { text: 'Changelog', link: i18n.string(navigationLinks.about[0], 'kotlin/en') },
+                { text: 'Looking for Future', link: i18n.string(navigationLinks.about[1], 'kotlin/en') },
+                { text: 'Contact Us', link: i18n.string(navigationLinks.about[2], 'kotlin/en') },
+                { text: 'About this Document', link: i18n.string(navigationLinks.about[3], 'kotlin/en') }
             ]
         }]
     }, {
         text: 'Contact Us',
-        link: i18n.string(navigationLinks.about[2], '/kotlin/en')
+        link: i18n.string(navigationLinks.about[2], 'kotlin/en')
     }],
     '/en/': [{
         text: 'Navigation',
@@ -169,37 +174,37 @@ export const navBarItems = {
         children: [{
             text: '入门',
             children: [
-                { text: '介绍', link: i18n.string(navigationLinks.start[0], '/kotlin/zh-cn') },
-                { text: '快速开始', link: i18n.string(navigationLinks.start[1], '/kotlin/zh-cn') }
+                { text: '介绍', link: i18n.string(navigationLinks.start[0], 'kotlin/zh-cn') },
+                { text: '快速开始', link: i18n.string(navigationLinks.start[1], 'kotlin/zh-cn') }
             ]
         }, {
             text: '配置',
             children: [
-                { text: 'API 基本配置', link: i18n.string(navigationLinks.config[0], '/kotlin/zh-cn') },
-                { text: 'API 异常处理', link: i18n.string(navigationLinks.config[1], '/kotlin/zh-cn') }
+                { text: 'API 基本配置', link: i18n.string(navigationLinks.config[0], 'kotlin/zh-cn') },
+                { text: 'API 异常处理', link: i18n.string(navigationLinks.config[1], 'kotlin/zh-cn') }
             ]
         }, {
             text: 'API 文档',
-            children: [{ text: '文档介绍', link: i18n.string(navigationLinks.apiDocs[0], '/kotlin/zh-cn') }, {
+            children: [{ text: '文档介绍', link: i18n.string(navigationLinks.apiDocs[0], 'kotlin/zh-cn') }, {
                 text: 'Public API',
-                link: i18n.string(navigationLinks.publicApi[0], '/kotlin/zh-cn'),
-                activeMatch: i18n.string(navigationLinks.apiDocs[1], '/kotlin/zh-cn')
+                link: i18n.string(navigationLinks.kotlinApi[0], 'kotlin/zh-cn'),
+                activeMatch: i18n.string(navigationLinks.apiDocs[1], 'kotlin/zh-cn')
             }, {
                 text: '功能介绍',
-                link: i18n.string(navigationLinks.apiDocs[2], '/kotlin/zh-cn')
+                link: i18n.string(navigationLinks.apiDocs[2], 'kotlin/zh-cn')
             }]
         }, {
             text: '关于',
             children: [
-                { text: '更新日志', link: i18n.string(navigationLinks.about[0], '/kotlin/zh-cn') },
-                { text: '展望未来', link: i18n.string(navigationLinks.about[1], '/kotlin/zh-cn') },
-                { text: '联系我们', link: i18n.string(navigationLinks.about[2], '/kotlin/zh-cn') },
-                { text: '关于此文档', link: i18n.string(navigationLinks.about[3], '/kotlin/zh-cn') }
+                { text: '更新日志', link: i18n.string(navigationLinks.about[0], 'kotlin/zh-cn') },
+                { text: '展望未来', link: i18n.string(navigationLinks.about[1], 'kotlin/zh-cn') },
+                { text: '联系我们', link: i18n.string(navigationLinks.about[2], 'kotlin/zh-cn') },
+                { text: '关于此文档', link: i18n.string(navigationLinks.about[3], 'kotlin/zh-cn') }
             ]
         }]
     }, {
         text: '联系我们',
-        link: i18n.string(navigationLinks.about[2], '/kotlin/zh-cn')
+        link: i18n.string(navigationLinks.about[2], 'kotlin/zh-cn')
     }],
     '/zh-cn/': [{
         text: '导航',
@@ -255,7 +260,7 @@ export const sideBarItems = {
         children: [i18n.string(navigationLinks.apiDocs[0], '/kotlin/en'), {
             text: 'Public API' + i18n.space,
             collapsible: true,
-            children: i18n.array(navigationLinks.publicApi, '/kotlin/en')
+            children: i18n.array(navigationLinks.kotlinApi, '/kotlin/en')
         }, i18n.string(navigationLinks.apiDocs[2], '/kotlin/en')]
     }, {
         text: 'About',
@@ -286,23 +291,23 @@ export const sideBarItems = {
     '/kotlin/zh-cn/': [{
         text: '入门',
         collapsible: true,
-        children: i18n.array(navigationLinks.start, '/kotlin/zh-cn')
+        children: i18n.array(navigationLinks.start, 'kotlin/zh-cn')
     }, {
         text: '配置',
         collapsible: true,
-        children: i18n.array(navigationLinks.config, '/kotlin/zh-cn')
+        children: i18n.array(navigationLinks.config, 'kotlin/zh-cn')
     }, {
         text: 'API 文档',
         collapsible: true,
-        children: [i18n.string(navigationLinks.apiDocs[0], '/kotlin/zh-cn'), {
+        children: [i18n.string(navigationLinks.apiDocs[0], 'kotlin/zh-cn'), {
             text: 'Public API' + i18n.space,
             collapsible: true,
-            children: i18n.array(navigationLinks.publicApi, '/kotlin/zh-cn')
-        }, i18n.string(navigationLinks.apiDocs[2], '/kotlin/zh-cn')]
+            children: i18n.array(navigationLinks.kotlinApi, 'kotlin/zh-cn')
+        }, i18n.string(navigationLinks.apiDocs[2], 'kotlin/zh-cn')]
     }, {
         text: '关于',
         collapsible: true,
-        children: i18n.array(navigationLinks.about, '/kotlin/zh-cn')
+        children: i18n.array(navigationLinks.about, 'kotlin/zh-cn')
     }],
     '/zh-cn/': [{
         text: '入门',

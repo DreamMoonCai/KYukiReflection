@@ -23,8 +23,8 @@ export default {
         locales: {
             '/kotlin/en/': {
                 navbar: navBarItems['/kotlin/en/'],
-                selectLanguageText: 'English (US)',
-                selectLanguageName: 'English',
+                selectLanguageText: 'Kotlin - English (US)',
+                selectLanguageName: 'Kotlin - English',
                 editLinkText: 'Edit this page on GitHub',
                 tip: 'Tips',
                 warning: 'Notice',
@@ -41,8 +41,8 @@ export default {
             },
             '/kotlin/zh-cn/': {
                 navbar: navBarItems['/kotlin/zh-cn/'],
-                selectLanguageText: '简体中文 (CN)',
-                selectLanguageName: '简体中文',
+                selectLanguageText: 'Kotlin - 简体中文 (CN)',
+                selectLanguageName: 'Kotlin - 简体中文',
                 editLinkText: '在 GitHub 上编辑此页',
                 notFound: ['这里什么都没有', '我们怎么到这来了？', '这是一个 404 页面', '看起来我们进入了错误的链接'],
                 backToHome: '回到首页',
