@@ -384,6 +384,22 @@ class KModifierRules private constructor(private val instance: Any) {
     val isExtension get() = (asKCallable?.isExtension ?: false).also { templates.add("<isExtension> ($it)") }
 
     /**
+     * [KClass]、[KCallable] 是否是 Kotlin 的 顶级 属性
+     *
+     * 如下所示 ↓
+     *
+     * file A.kt
+     *
+     * fun a() -> ::a isTop true
+     *
+     * class A
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isTop get() = (asKCallable?.declaringClass?.isTop ?: (instance as? KClass<*>)?.isTop ?: false).also { templates.add("<isTop> ($it)") }
+
+    /**
      * [KFunction] 是否是 Kotlin 的 infix 属性
      *
      * 如下所示 ↓

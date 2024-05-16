@@ -82,7 +82,7 @@ export const configs = {
                 description: '一个使用 Kotlin 构建的用于 Java 和 Android 平台高效反射 API - 完全附加 Kotlin 高阶反射'
             },
             '/zh-cn/': {
-                lang: 'kotlin-zh-CN',
+                lang: 'zh-CN',
                 description: '一个使用 Kotlin 构建的用于 Java 和 Android 平台高效反射 API'
             }
         }

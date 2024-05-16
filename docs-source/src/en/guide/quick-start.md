@@ -147,13 +147,13 @@ android {
         targetCompatibility JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = '21'
     }
 }
 ```
 
 ::: warning
 
-Since API **1.0.3**, the Java version used by Kotlin defaults to 17, and versions 11 and below are no longer supported.
+Since API **1.0.3**, the Java version used by Kotlin defaults to 21, and versions 11 and below are no longer supported.
 
 :::
