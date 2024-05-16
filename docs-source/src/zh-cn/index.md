@@ -3,14 +3,14 @@ home: true
 title: 首页
 heroImage: /images/logo.png
 actions:
-  - text: KYukiReflection
-    link: /zh-cn/kotlin/index
-    type: primary
   - text: 快速上手
     link: /zh-cn/guide/home
     type: primary
   - text: 更新日志
     link: /zh-cn/about/changelog
+    type: secondary
+  - text: KYukiReflection
+    link: /zh-cn/kotlin/index
     type: secondary
 features:
   - title: 轻量优雅

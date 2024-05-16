@@ -3,14 +3,14 @@ home: true
 title: Home
 heroImage: /images/logo.png
 actions:
-  - text: KYukiReflection
-    link: /en/kotlin/index
-    type: primary
   - text: Get Started
     link: /en/guide/home
     type: primary
   - text: Changelog
     link: /en/about/changelog
+    type: secondary
+  - text: KYukiReflection
+    link: /en/kotlin/index
     type: secondary
 features:
   - title: Light and Elegant

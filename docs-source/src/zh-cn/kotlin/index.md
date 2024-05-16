@@ -11,7 +11,7 @@ actions:
     type: secondary
 features:
   - title: 符合直觉
-    description: KYukiReflection 来自 YukiReflection 在设计逻辑上遵循原来的大部分内容，使得 KYukiReflection 的体验与 YukiReflection 使用体验一致。
+    details: KYukiReflection 来自 YukiReflection 在设计逻辑上遵循原来的大部分内容，使得 KYukiReflection 的体验与 YukiReflection 使用体验一致。
   - title: 泛型细化
     details: 针对于 YukiReflection 支持比较薄弱的泛型相关，此套API完美适配了更多可能情况细化泛型体验。
   - title: 条件多元

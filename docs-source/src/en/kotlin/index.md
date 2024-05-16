@@ -11,7 +11,7 @@ actions:
     type: secondary
 features:
   - title: Intuitive
-    description: KYukiReflection comes from YukiReflection and follows most of the original content in terms of design logic, making the KYukiReflection experience consistent with the YukiReflection experience.
+    details: KYukiReflection comes from YukiReflection and follows most of the original content in terms of design logic, making the KYukiReflection experience consistent with the YukiReflection experience.
   - title: Generic Refinement
     details: For YukiReflection's relatively weak support for generics, this set of APIs perfectly adapts to more possible situations and refines the generic experience.
   - title: Multiple Conditions
