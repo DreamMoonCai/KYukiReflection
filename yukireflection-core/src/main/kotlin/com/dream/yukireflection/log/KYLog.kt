@@ -21,20 +21,20 @@
  */
 @file:Suppress("unused")
 
-package com.highcapable.yukireflection.log
+package com.dream.yukireflection.log
 
 import android.util.Log
-import com.highcapable.yukireflection.YukiReflection
-import com.highcapable.yukireflection.factory.hasClass
-import com.highcapable.yukireflection.utils.factory.dumpToString
+import com.dream.yukireflection.KYukiReflection
+import com.dream.yukireflection.factory.hasKClass
+import com.dream.yukireflection.utils.factory.dumpToString
 
 /**
  * 全局 Log 管理类
  */
-object YLog {
+object KYLog {
 
     /**
-     * 配置 [YLog]
+     * 配置 [KYLog]
      */
     object Configs {
 
@@ -45,7 +45,7 @@ object YLog {
          *
          * 你可以修改为你自己的文案
          */
-        var tag = YukiReflection.TAG
+        var tag = KYukiReflection.TAG
 
         /**
          * 是否启用调试日志的输出功能 - 默认启用
@@ -103,7 +103,7 @@ object YLog {
      * @param e 异常堆栈 - 默认空
      */
     private fun log(type: Type, msg: String, e: Throwable? = null) {
-        val isAndroid = "android.util.Log".hasClass()
+        val isAndroid = "android.util.Log".hasKClass()
 
         /**
          * 打印 Log

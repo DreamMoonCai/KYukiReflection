@@ -22,10 +22,10 @@
  */
 package com.dream.yukireflection.finder.base
 
+import com.dream.yukireflection.KYukiReflection
 import com.dream.yukireflection.factory.classLoader
-import com.highcapable.yukireflection.YukiReflection
-import com.highcapable.yukireflection.log.YLog
-import com.highcapable.yukireflection.utils.factory.await
+import com.dream.yukireflection.log.KYLog
+import com.dream.yukireflection.utils.factory.await
 import kotlin.reflect.*
 import kotlin.reflect.jvm.javaConstructor
 
@@ -83,7 +83,7 @@ abstract class KCallableBaseFinder internal constructor(private val tag: String,
      * @param msg 消息内容
      */
     internal fun debugMsg(msg: String) {
-        if (YukiReflection.Configs.isDebug) YLog.debug(msg)
+        if (KYukiReflection.Configs.isDebug) KYLog.debug(msg)
     }
 
     /**
@@ -99,8 +99,8 @@ abstract class KCallableBaseFinder internal constructor(private val tag: String,
         await {
             if (isIgnoreErrorLogs) return@await
             if (isAlwaysMode.not() && isUsingRemedyPlan) return@await
-            YLog.error(msg = "NoSuch$tag happend in [$classSet] $msg".trim(), e = e)
-            es.forEachIndexed { index, e -> YLog.error(msg = "Throwable [${index + 1}]", e = e) }
+            KYLog.error(msg = "NoSuch$tag happend in [$classSet] $msg".trim(), e = e)
+            es.forEachIndexed { index, e -> KYLog.error(msg = "Throwable [${index + 1}]", e = e) }
         }
     }
 }

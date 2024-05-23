@@ -32,8 +32,8 @@ import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.type.factory.KParameterConditions
 import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
-import com.highcapable.yukireflection.bean.VariousClass
-import com.highcapable.yukireflection.finder.type.factory.CountConditions
+import com.dream.yukireflection.type.factory.KCountConditions
+import com.dream.yukireflection.type.factory.KNamesConditions
 import kotlin.reflect.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
@@ -123,6 +123,45 @@ class KConstructorRules internal constructor(private val rulesData: KConstructor
     }
 
     /**
+     * 设置 Constructor[KFunction] 参数名称
+     *
+     * 如果 Constructor[KFunction] 中存在一些不太清楚的参数名称 - 你可以使用 [VagueKotlin].name 或者 空字符串 或者 "null" 来替代它
+     *
+     * 例如下面这个参数结构 ↓
+     *
+     * ```java
+     * Foo(String count, boolean un$abc, com.demo.Test ends)
+     * ```
+     *
+     * 此时就可以简单地写作 ↓
+     *
+     * ```kotlin
+     * paramName("count","","ends")
+     * ```
+     *
+     * @param paramName 参数名称数组
+     */
+    fun paramName(vararg paramName: String) {
+        if (paramName.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")
+        rulesData.paramNames = paramName
+    }
+
+
+    /**
+     * 设置 Constructor[KFunction] 参数名称条件
+     *
+     * 使用示例如下 ↓
+     *
+     * ```kotlin
+     * paramName { it.isNull() }
+     * ```
+     * @param conditions 条件方法体
+     */
+    fun paramName(conditions: KNamesConditions) {
+        rulesData.paramNamesConditions = conditions
+    }
+
+    /**
      * 设置 Constructor[KFunction] 参数个数范围
      *
      * 你可以不使用 [param] 指定参数类型而是仅使用此方法指定参数个数范围
@@ -150,7 +189,7 @@ class KConstructorRules internal constructor(private val rulesData: KConstructor
      * ```
      * @param conditions 条件方法体
      */
-    fun paramCount(conditions: CountConditions) {
+    fun paramCount(conditions: KCountConditions) {
         rulesData.paramCountConditions = conditions
     }
 

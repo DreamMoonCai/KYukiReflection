@@ -28,9 +28,14 @@ import com.dream.yukireflection.finder.classes.KClassFinder
 import com.dream.yukireflection.finder.callable.KConstructorFinder
 import com.dream.yukireflection.finder.callable.KFunctionFinder
 import com.dream.yukireflection.finder.callable.KPropertyFinder
-import com.highcapable.yukireflection.finder.base.rules.ObjectRules
+import com.dream.yukireflection.finder.base.rules.KCountRules
+import com.dream.yukireflection.finder.base.rules.KNameRules
+import com.dream.yukireflection.finder.base.rules.KObjectRules
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
+
+/** 定义 [ClassLoader] 装载实例方法体类型 */
+internal typealias KClassLoaderInitializer = () -> ClassLoader?
 
 /** 定义 [KTypeBuild] 方法体类型 */
 internal typealias KTypeBuildConditions = KTypeBuild.() -> Unit
@@ -47,11 +52,20 @@ internal typealias KFunctionConditions = KFunctionFinder.() -> Unit
 /** 定义 [KConstructorFinder] 方法体类型 */
 internal typealias KConstructorConditions = KConstructorFinder.() -> Unit
 
+/** 定义 [KNameRules] 方法体类型 */
+internal typealias KNameConditions = KNameRules.(String) -> Boolean
+
+/** 定义 [KCountRules] 方法体类型 */
+internal typealias KCountConditions = KCountRules.(Int) -> Boolean
+
 /** 定义 [KModifierRules] 方法体类型 */
 internal typealias KModifierConditions = KModifierRules.() -> Boolean
 
-/** 定义 [ObjectRules] 方法体类型 */
-internal typealias KTypeConditions = ObjectRules.(KType) -> Boolean
+/** 定义 [KObjectRules] 方法体类型 */
+internal typealias KTypeConditions = KObjectRules.(KType) -> Boolean
 
-/** 定义 [ObjectRules] 方法体类型 */
-internal typealias KParameterConditions = ObjectRules.(List<KParameter>) -> Boolean
+/** 定义 [KObjectRules] 方法体类型 */
+internal typealias KParameterConditions = KObjectRules.(List<KParameter>) -> Boolean
+
+/** 定义 [KObjectRules] 方法体类型 */
+internal typealias KNamesConditions = KObjectRules.(List<String?>) -> Boolean

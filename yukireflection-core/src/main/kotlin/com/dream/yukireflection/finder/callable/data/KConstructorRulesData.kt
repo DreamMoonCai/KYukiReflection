@@ -23,7 +23,8 @@
 package com.dream.yukireflection.finder.callable.data
 
 import com.dream.yukireflection.finder.base.KBaseFinder
-import com.highcapable.yukireflection.finder.type.factory.CountConditions
+import com.dream.yukireflection.type.factory.KCountConditions
+import com.dream.yukireflection.type.factory.KNamesConditions
 import com.dream.yukireflection.type.factory.KParameterConditions
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -32,6 +33,8 @@ import kotlin.reflect.KFunction
  * Constructor [KFunction] 规则查找数据类
  * @param paramTypes 参数类型数组
  * @param paramTypesConditions 参数类型条件
+ * @param paramNames 参数名称数组
+ * @param paramNamesConditions 参数名称条件
  * @param paramCount 参数个数
  * @param paramCountRange 参数个数范围
  * @param paramCountConditions 参数个数条件
@@ -39,9 +42,11 @@ import kotlin.reflect.KFunction
 internal class KConstructorRulesData internal constructor(
     var paramTypes: Array<out Any>? = null,
     var paramTypesConditions: KParameterConditions? = null,
+    var paramNames: Array<out String>? = null,
+    var paramNamesConditions: KNamesConditions? = null,
     var paramCount: Int = -1,
     var paramCountRange: IntRange = IntRange.EMPTY,
-    var paramCountConditions: CountConditions? = null
+    var paramCountConditions: KCountConditions? = null
 ) : KCallableRulesData() {
 
     override val templates
@@ -50,14 +55,16 @@ internal class KConstructorRulesData internal constructor(
             paramCountRange.takeIf { it.isEmpty().not() }?.let { "paramCountRange:[$it]" } ?: "",
             paramCountConditions?.let { "paramCountConditions:[existed]" } ?: "",
             paramTypes?.typeOfString()?.let { "paramTypes:[$it]" } ?: "",
-            paramTypesConditions?.let { "paramTypesConditions:[existed]" } ?: "", *super.templates
+            paramTypesConditions?.let { "paramTypesConditions:[existed]" } ?: "", *super.templates,
+            paramNames?.typeOfString()?.let { "paramNames:[$it]" } ?: "",
+            paramNamesConditions?.let { "paramNamesConditions:[existed]" } ?: "", *super.templates
         )
 
     override val objectName get() = KBaseFinder.TAG_CONSTRUCTOR
 
     override val isInitialize
-        get() = super.isInitializeOfSuper || paramTypes != null || paramTypesConditions != null || paramCount >= 0 ||
+        get() = super.isInitializeOfSuper || paramTypes != null || paramTypesConditions != null || paramNames != null || paramNamesConditions != null || paramCount >= 0 ||
             paramCountRange.isEmpty().not() || paramCountConditions != null
 
-    override fun toString() = "[$paramTypes][$paramTypesConditions][$paramCount][$paramCountRange]" + super.toString()
+    override fun toString() = "[$paramTypes][$paramTypesConditions][$paramNames][$paramNamesConditions][$paramCount][$paramCountRange]" + super.toString()
 }

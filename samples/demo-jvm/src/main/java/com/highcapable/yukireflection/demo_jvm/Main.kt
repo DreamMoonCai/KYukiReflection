@@ -46,15 +46,15 @@ import com.dream.yukireflection.factory.*
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.type.defined.generic
 import com.dream.yukireflection.type.kotlin.KCallableImplKClass
-import com.highcapable.yukireflection.YukiReflection
+import com.dream.yukireflection.KYukiReflection
 import com.highcapable.yukireflection.demo_jvm.test.Main
-import com.highcapable.yukireflection.factory.*
-import com.highcapable.yukireflection.type.java.StringClass
+import com.dream.yukireflection.factory.*
+import com.dream.yukireflection.type.kotlin.StringKClass
 import kotlin.reflect.KVariance
 
 @Composable
 fun MainLayout() {
-    val currentVersion = "${YukiReflection.TAG} Version: ${YukiReflection.VERSION}"
+    val currentVersion = "${KYukiReflection.TAG} Version: ${KYukiReflection.VERSION}"
     val operationState = remember { mutableStateOf("Waiting for your operation") }
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -80,9 +80,9 @@ fun MainLayout() {
         Button(
             onClick = {
                 operationState.value =
-                    classOf<Main>().buildOf("I am reflection call of new object") { param(StringClass) }
-                        ?.current()
-                        ?.method {
+                    kclassOf<Main>().buildOf("I am reflection call of new object") { param(StringKClass) }
+                        ?.currentKotlin()
+                        ?.function {
                             name = "getContent"
                             emptyParam()
                         }?.string() ?: ""
@@ -99,7 +99,7 @@ fun MainLayout() {
         }
         Button(
             onClick = {
-                operationState.value = classOf<Main>().method {
+                operationState.value = kclassOf<Main>().function {
                     name = "getStaticContent"
                     modifiers { isStatic }
                 }.get().string()
@@ -110,7 +110,7 @@ fun MainLayout() {
         }
         Button(
             onClick = {
-                classOf<Main>().field {
+                Main::class.property {
                     name = "staticContent"
                     modifiers { isStatic }
                 }.get().set("I am static! Modified by reflection")
@@ -128,10 +128,10 @@ fun MainLayout() {
 }
 
 fun main() = application {
-    YukiReflection.configs { isDebug = true }
+    KYukiReflection.configs { isDebug = true }
     Window(
         onCloseRequest = ::exitApplication,
-        title = YukiReflection.TAG,
+        title = KYukiReflection.TAG,
         resizable = false,
         state = rememberWindowState(width = 450.dp, height = 600.dp)
     ) { MaterialTheme(colorScheme = MaterialTheme.colorScheme.copy(primary = Color(0xFF31A4FF.toInt()))) { MainLayout() } }

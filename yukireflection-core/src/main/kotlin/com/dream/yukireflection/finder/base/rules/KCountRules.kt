@@ -22,26 +22,26 @@
  */
 @file:Suppress("unused")
 
-package com.highcapable.yukireflection.finder.base.rules
+package com.dream.yukireflection.finder.base.rules
 
-import java.lang.reflect.Member
+import kotlin.reflect.*
 
 /**
- * 这是一个模糊 [Class]、[Member] 数组 (下标) 个数条件实现类
+ * 这是一个模糊 [KClass]、[KCallable] 数组 (下标) 个数条件实现类
  *
- * 可对 R8 混淆后的 [Class]、[Member] 进行更加详细的定位
+ * 可对 R8 混淆后的 [KClass]、[KCallable] 进行更加详细的定位
  * @param instance 当前实例对象
  */
-class CountRules private constructor(private val instance: Int) {
+class KCountRules private constructor(private val instance: Int) {
 
     internal companion object {
 
         /**
          * 创建实例
          * @param instance 实例对象
-         * @return [CountRules]
+         * @return [KCountRules]
          */
-        internal fun with(instance: Int) = CountRules(instance)
+        internal fun with(instance: Int) = KCountRules(instance)
     }
 
     /**

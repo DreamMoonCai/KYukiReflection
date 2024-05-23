@@ -43,6 +43,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Icon
+import android.os.Build
 import android.text.Editable
 import android.text.GetChars
 import android.text.Spannable
@@ -52,19 +53,20 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.Size
 import android.util.SizeF
-import com.highcapable.yukireflection.type.android.*
+import com.dream.yukireflection.factory.kclassOf
+import kotlin.reflect.KClass
 
 /**
  * 获得 [Typeface] 类型
  * @return [KClass]<[Typeface]>
  */
-val TypefaceKClass get() = TypefaceClass.kotlin
+val TypefaceKClass get() = kclassOf<Typeface>()
 
 /**
  * 获得 [Bitmap] 类型
  * @return [KClass]<[Bitmap]>
  */
-val BitmapKClass get() = BitmapClass.kotlin
+val BitmapKClass get() = kclassOf<Bitmap>()
 
 /**
  * 获得 [Icon] 类型
@@ -72,166 +74,166 @@ val BitmapKClass get() = BitmapClass.kotlin
  * - 在 Android M (23) 及以上系统加入
  * @return [KClass]<[Icon]> or null
  */
-val IconKClass get() = IconClass?.kotlin
+val IconKClass get() = if (Build.VERSION.SDK_INT >= 23) kclassOf<Icon>() else null
 
 /**
  * 获得 [Outline] 类型
  * @return [KClass]<[Outline]>
  */
-val OutlineKClass get() = OutlineClass.kotlin
+val OutlineKClass get() = kclassOf<Outline>()
 
 /**
  * 获得 [Drawable] 类型
  * @return [KClass]<[Drawable]>
  */
-val DrawableKClass get() = DrawableClass.kotlin
+val DrawableKClass get() = kclassOf<Drawable>()
 
 /**
  * 获得 [GradientDrawable] 类型
  * @return [KClass]<[GradientDrawable]>
  */
-val GradientDrawableKClass get() = GradientDrawableClass.kotlin
+val GradientDrawableKClass get() = kclassOf<GradientDrawable>()
 
 /**
  * 获得 [ColorDrawable] 类型
  * @return [KClass]<[ColorDrawable]>
  */
-val ColorDrawableKClass get() = ColorDrawableClass.kotlin
+val ColorDrawableKClass get() = kclassOf<ColorDrawable>()
 
 /**
  * 获得 [BitmapDrawable] 类型
  * @return [KClass]<[BitmapDrawable]>
  */
-val BitmapDrawableKClass get() = BitmapDrawableClass.kotlin
+val BitmapDrawableKClass get() = kclassOf<BitmapDrawable>()
 
 /**
  * 获得 [Size] 类型
  * @return [KClass]<[Size]>
  */
-val SizeKClass get() = SizeClass.kotlin
+val SizeKClass get() = kclassOf<Size>()
 
 /**
  * 获得 [SizeF] 类型
  * @return [KClass]<[SizeF]>
  */
-val SizeFKClass get() = SizeFClass.kotlin
+val SizeFKClass get() = kclassOf<SizeF>()
 
 /**
  * 获得 [Rect] 类型
  * @return [KClass]<[Rect]>
  */
-val RectKClass get() = RectClass.kotlin
+val RectKClass get() = kclassOf<Rect>()
 
 /**
  * 获得 [RectF] 类型
  * @return [KClass]<[RectF]>
  */
-val RectFKClass get() = RectFClass.kotlin
+val RectFKClass get() = kclassOf<RectF>()
 
 /**
  * 获得 [NinePatch] 类型
  * @return [KClass]<[NinePatch]>
  */
-val NinePatchKClass get() = NinePatchClass.kotlin
+val NinePatchKClass get() = kclassOf<NinePatch>()
 
 /**
  * 获得 [Paint] 类型
  * @return [KClass]<[Paint]>
  */
-val PaintKClass get() = PaintClass.kotlin
+val PaintKClass get() = kclassOf<Paint>()
 
 /**
  * 获得 [TextPaint] 类型
  * @return [KClass]<[TextPaint]>
  */
-val TextPaintKClass get() = TextPaintClass.kotlin
+val TextPaintKClass get() = kclassOf<TextPaint>()
 
 /**
  * 获得 [Canvas] 类型
  * @return [KClass]<[Canvas]>
  */
-val CanvasKClass get() = CanvasClass.kotlin
+val CanvasKClass get() = kclassOf<Canvas>()
 
 /**
  * 获得 [Point] 类型
  * @return [KClass]<[Point]>
  */
-val PointKClass get() = PointClass.kotlin
+val PointKClass get() = kclassOf<Point>()
 
 /**
  * 获得 [PointF] 类型
  * @return [KClass]<[PointF]>
  */
-val PointFKClass get() = PointFClass.kotlin
+val PointFKClass get() = kclassOf<PointF>()
 
 /**
  * 获得 [Matrix] 类型
  * @return [KClass]<[Matrix]>
  */
-val MatrixKClass get() = MatrixClass.kotlin
+val MatrixKClass get() = kclassOf<Matrix>()
 
 /**
  * 获得 [ColorMatrix] 类型
  * @return [KClass]<[ColorMatrix]>
  */
-val ColorMatrixKClass get() = ColorMatrixClass.kotlin
+val ColorMatrixKClass get() = kclassOf<ColorMatrix>()
 
 /**
  * 获得 [ColorMatrixColorFilter] 类型
  * @return [KClass]<[ColorMatrixColorFilter]>
  */
-val ColorMatrixColorFilterKClass get() = ColorMatrixColorFilterClass.kotlin
+val ColorMatrixColorFilterKClass get() = kclassOf<ColorMatrixColorFilter>()
 
 /**
  * 获得 [TextUtils] 类型
  * @return [KClass]<[TextUtils]>
  */
-val TextUtilsKClass get() = TextUtilsClass.kotlin
+val TextUtilsKClass get() = kclassOf<TextUtils>()
 
 /**
  * 获得 [Editable] 类型
  * @return [KClass]<[Editable]>
  */
-val EditableKClass get() = EditableClass.kotlin
+val EditableKClass get() = kclassOf<Editable>()
 
 /**
  * 获得 [TextWatcher] 类型
  * @return [KClass]<[TextWatcher]>
  */
-val TextWatcherKClass get() = TextWatcherClass.kotlin
+val TextWatcherKClass get() = kclassOf<TextWatcher>()
 
 /**
  * 获得 [Editable.Factory] 类型
  * @return [KClass]<[Editable.Factory]>
  */
-val Editable_FactoryKClass get() = Editable_FactoryClass.kotlin
+val Editable_FactoryKClass get() = kclassOf<Editable.Factory>()
 
 /**
  * 获得 [GetChars] 类型
  * @return [KClass]<[GetChars]>
  */
-val GetCharsKClass get() = GetCharsClass.kotlin
+val GetCharsKClass get() = kclassOf<GetChars>()
 
 /**
  * 获得 [Spannable] 类型
  * @return [KClass]<[Spannable]>
  */
-val SpannableKClass get() = SpannableClass.kotlin
+val SpannableKClass get() = kclassOf<Spannable>()
 
 /**
  * 获得 [SpannableStringBuilder] 类型
  * @return [KClass]<[SpannableStringBuilder]>
  */
-val SpannableStringBuilderKClass get() = SpannableStringBuilderClass.kotlin
+val SpannableStringBuilderKClass get() = kclassOf<SpannableStringBuilder>()
 
 /**
  * 获得 [BitmapFactory] 类型
  * @return [KClass]<[BitmapFactory]>
  */
-val BitmapFactoryKClass get() = BitmapFactoryClass.kotlin
+val BitmapFactoryKClass get() = kclassOf<BitmapFactory>()
 
 /**
  * 获得 [BitmapFactory.Options] 类型
  * @return [KClass]<[BitmapFactory.Options]>
  */
-val BitmapFactory_OptionsKClass get() = BitmapFactory_OptionsClass.kotlin
+val BitmapFactory_OptionsKClass get() = kclassOf<BitmapFactory.Options>()

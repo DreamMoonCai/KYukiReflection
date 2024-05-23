@@ -25,17 +25,16 @@
 package com.dream.yukireflection.finder.classes.rules
 
 import com.dream.yukireflection.finder.callable.data.KFunctionRulesData
-import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.bean.KVariousClass
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.type.defined.*
 import com.dream.yukireflection.finder.classes.rules.base.KBaseRules
 import com.dream.yukireflection.finder.classes.rules.result.KCallableRulesResult
-import com.dream.yukireflection.type.factory.KTypeConditions
+import com.dream.yukireflection.type.factory.*
+import com.dream.yukireflection.type.factory.KModifierConditions
+import com.dream.yukireflection.type.factory.KNameConditions
 import com.dream.yukireflection.type.factory.KParameterConditions
-import com.highcapable.yukireflection.finder.type.factory.CountConditions
-import com.highcapable.yukireflection.finder.type.factory.NameConditions
-import com.highcapable.yukireflection.type.defined.*
+import com.dream.yukireflection.type.factory.KTypeConditions
 import kotlin.reflect.*
 import kotlin.reflect.KClass
 /**
@@ -102,7 +101,7 @@ class KFunctionRules internal constructor(private val rulesData: KFunctionRulesD
      *
      * 如果同时使用了 [paramCount] 则 [paramType] 的数量必须与 [paramCount] 完全匹配
      *
-     * 如果 [KFunction] 中存在一些无意义又很长的类型 - 你可以使用 [VagueType] 来替代它
+     * 如果 [KFunction] 中存在一些无意义又很长的类型 - 你可以使用 [VagueKotlin] 来替代它
      *
      * 例如下面这个参数结构 ↓
      *
@@ -146,10 +145,49 @@ class KFunctionRules internal constructor(private val rulesData: KFunctionRulesD
     }
 
     /**
+     * 设置 [KFunction] 参数名称
+     *
+     * 如果 [KFunction] 中存在一些不太清楚的参数名称 - 你可以使用 [VagueKotlin].name 或者 空字符串 或者 "null" 来替代它
+     *
+     * 例如下面这个参数结构 ↓
+     *
+     * ```java
+     * void foo(String count, boolean un$abc, com.demo.Test ends)
+     * ```
+     *
+     * 此时就可以简单地写作 ↓
+     *
+     * ```kotlin
+     * paramName("count","","ends")
+     * ```
+     *
+     * @param paramName 参数名称数组
+     */
+    fun paramName(vararg paramName: String) {
+        if (paramName.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")
+        rulesData.paramNames = paramName
+    }
+
+
+    /**
+     * 设置 [KFunction] 参数名称条件
+     *
+     * 使用示例如下 ↓
+     *
+     * ```kotlin
+     * paramName { it.isNull() }
+     * ```
+     * @param conditions 条件方法体
+     */
+    fun paramName(conditions: KNamesConditions) {
+        rulesData.paramNamesConditions = conditions
+    }
+
+    /**
      * 设置 [KFunction] 名称条件
      * @param conditions 条件方法体
      */
-    fun name(conditions: NameConditions) {
+    fun name(conditions: KNameConditions) {
         rulesData.nameConditions = conditions
     }
 
@@ -181,7 +219,7 @@ class KFunctionRules internal constructor(private val rulesData: KFunctionRulesD
      * ```
      * @param conditions 条件方法体
      */
-    fun paramCount(conditions: CountConditions) {
+    fun paramCount(conditions: KCountConditions) {
         rulesData.paramCountConditions = conditions
     }
 

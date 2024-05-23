@@ -24,12 +24,12 @@ package com.dream.yukireflection.finder.base.data
 
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.finder.base.KBaseFinder.Companion.checkSupportedTypes
+import com.dream.yukireflection.finder.base.rules.KCountRules
 import com.dream.yukireflection.finder.base.rules.KModifierRules
+import com.dream.yukireflection.finder.base.rules.KNameRules
+import com.dream.yukireflection.finder.base.rules.KObjectRules
 import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.type.defined.VagueKotlin
-import com.highcapable.yukireflection.finder.base.rules.CountRules
-import com.highcapable.yukireflection.finder.base.rules.NameRules
-import com.highcapable.yukireflection.finder.base.rules.ObjectRules
 import kotlin.reflect.*
 import kotlin.reflect.full.valueParameters
 
@@ -53,16 +53,16 @@ internal abstract class KBaseRulesData internal constructor(
     }
 
     /**
-     * [String] 转换为 [NameRules]
-     * @return [NameRules]
+     * [String] 转换为 [KNameRules]
+     * @return [KNameRules]
      */
-    internal fun String.cast() = NameRules.with(this)
+    internal fun String.cast() = KNameRules.with(this)
 
     /**
-     * [Int] 转换为 [CountRules]
-     * @return [CountRules]
+     * [Int] 转换为 [KCountRules]
+     * @return [KCountRules]
      */
-    internal fun Int.cast() = CountRules.with(this)
+    internal fun Int.cast() = KCountRules.with(this)
 
     /**
      * [KClass] 转换为 [KModifierRules]
@@ -77,22 +77,28 @@ internal abstract class KBaseRulesData internal constructor(
     internal fun KCallable<*>.cast() = KModifierRules.with(instance = this, uniqueValue)
 
     /**
-     * [KProperty.kType] 转换为 [ObjectRules]
-     * @return [ObjectRules]
+     * [KProperty.kType] 转换为 [KObjectRules]
+     * @return [KObjectRules]
      */
-    internal fun KProperty<*>.type() = ObjectRules.with(returnType)
+    internal fun KProperty<*>.type() = KObjectRules.with(returnType)
 
     /**
-     * [KFunction.valueParameters] 转换为 [ObjectRules]
-     * @return [ObjectRules]
+     * [KFunction.valueParameters] 转换为 [KObjectRules]
+     * @return [KObjectRules]
      */
-    internal fun KCallable<*>.paramTypes() = ObjectRules.with(valueParameters)
+    internal fun KCallable<*>.paramTypes() = KObjectRules.with(valueParameters)
 
     /**
-     * [KFunction.returnType] 转换为 [ObjectRules]
-     * @return [ObjectRules]
+     * [KFunction.valueParameters]name 转换为 [KObjectRules]
+     * @return [KObjectRules]
      */
-    internal fun KCallable<*>.returnType() = ObjectRules.with(returnType)
+    internal fun KCallable<*>.paramNames() = KObjectRules.with(valueParameters.map { it.name })
+
+    /**
+     * [KFunction.returnType] 转换为 [KObjectRules]
+     * @return [KObjectRules]
+     */
+    internal fun KCallable<*>.returnType() = KObjectRules.with(returnType)
 
     /**
      * 获取参数数组文本化内容

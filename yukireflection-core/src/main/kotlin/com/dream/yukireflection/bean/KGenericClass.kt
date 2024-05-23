@@ -42,7 +42,7 @@ import kotlin.reflect.jvm.jvmErasure
  * @param type 拥有类型声明信息的Kotlin类型 可能包含泛型信息
  * @property ArrayList this存储当前泛型参数数组
  */
-class KGenericClass constructor(val type: KType) :List<KTypeProjection> by type.arguments{
+class KGenericClass internal constructor(val type: KType) :List<KTypeProjection> by type.arguments{
 
     /**
      * 是否检查方差

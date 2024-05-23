@@ -88,7 +88,7 @@ fun param(vararg paramType: Any): IndexTypeCondition
 
 如果同时使用了 `paramCount` 则 `paramType` 的数量必须与 `paramCount` 完全匹配。
 
-如果 `Constructor` 中存在一些无意义又很长的类型，你可以使用 [VagueType](../../../type/defined/DefinedTypeFactory#vaguetype-field) 来替代它。
+如果 `Constructor` 中存在一些无意义又很长的类型，你可以使用 [VagueKotlin](../../../type/defined/DefinedTypeFactory#vaguetype-field) 来替代它。
 
 ::: danger
 

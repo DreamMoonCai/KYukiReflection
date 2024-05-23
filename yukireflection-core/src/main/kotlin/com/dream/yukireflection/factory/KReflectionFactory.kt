@@ -1,9 +1,11 @@
-@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+
 package com.dream.yukireflection.factory
 
 import com.dream.yukireflection.KYukiReflection
 import com.dream.yukireflection.bean.KCurrentClass
 import com.dream.yukireflection.bean.KGenericClass
+import com.dream.yukireflection.bean.KVariousClass
 import com.dream.yukireflection.build.KTypeBuild
 import com.dream.yukireflection.finder.base.rules.KModifierRules
 import com.dream.yukireflection.finder.classes.KClassFinder
@@ -17,41 +19,109 @@ import com.dream.yukireflection.type.factory.KConstructorConditions
 import com.dream.yukireflection.type.factory.KFunctionConditions
 import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.type.factory.KPropertyConditions
-import com.dream.yukireflection.type.kotlin.KCallableImplKClass
-import com.dream.yukireflection.type.kotlin.KPackageImplKClass
-import com.highcapable.yukireflection.bean.CurrentClass
-import com.highcapable.yukireflection.bean.GenericClass
-import com.highcapable.yukireflection.factory.extends
-import com.highcapable.yukireflection.factory.method
-import com.highcapable.yukireflection.factory.toClass
-import com.highcapable.yukireflection.factory.toClassOrNull
+import com.dream.yukireflection.type.kotlin.*
 import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
+import java.lang.ref.WeakReference
+import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import kotlin.jvm.internal.CallableReference
 import kotlin.jvm.internal.FunctionReference
-import kotlin.jvm.internal.FunctionReferenceImpl
 import kotlin.jvm.internal.PropertyReference
-import kotlin.jvm.internal.PropertyReference0Impl
 import kotlin.jvm.internal.Reflection
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
 import kotlin.reflect.jvm.internal.impl.descriptors.CallableMemberDescriptor
 
 /**
+ * 懒装载 [KClass] 实例
+ * @param instance 当前实例
+ * @param initialize 是否初始化
+ * @param loader [ClassLoader] 装载实例
+ */
+open class KLazyClass<T> internal constructor(
+    private val instance: Any,
+    private val initialize: Boolean,
+    private val loader: KClassLoaderInitializer?,
+) {
+
+    /** 当前实例 */
+    private var baseInstance: KClass<T & Any>? = null
+
+    /**
+     * 获取非空实例
+     * @return [KClass]<[T]>
+     */
+    internal val nonNull
+        get(): KClass<T & Any> {
+            if (baseInstance == null) baseInstance = when (instance) {
+                is String -> instance.toKClass(loader?.invoke(), initialize)
+                is KVariousClass -> instance.get(loader?.invoke(), initialize)
+                else -> error("Unknown lazy class type \"$instance\"")
+            } as KClass<T & Any>
+            return baseInstance ?: error("Exception has been thrown above")
+        }
+
+    /**
+     * 获取可空实例
+     * @return [KClass]<[T]> or null
+     */
+    internal val nullable
+        get(): KClass<T & Any>? {
+            if (baseInstance == null) baseInstance = when (instance) {
+                is String -> instance.toKClass(loader?.invoke(), initialize)
+                is KVariousClass -> instance.get(loader?.invoke(), initialize)
+                else -> error("Unknown lazy class type \"$instance\"")
+            } as KClass<T & Any>
+            return baseInstance
+        }
+
+    /**
+     * 非空实例
+     * @param instance 当前实例
+     * @param initialize 是否初始化
+     * @param loader [ClassLoader] 装载实例
+     */
+    class NonNull<T> internal constructor(
+        instance: Any,
+        initialize: Boolean,
+        loader: KClassLoaderInitializer?,
+    ) : KLazyClass<T>(instance, initialize, loader) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>) = nonNull
+    }
+
+    /**
+     * 可空实例
+     * @param instance 当前实例
+     * @param initialize 是否初始化
+     * @param loader [ClassLoader] 装载实例
+     */
+    class Nullable<T> internal constructor(
+        instance: Any,
+        initialize: Boolean,
+        loader: KClassLoaderInitializer?,
+    ) : KLazyClass<T>(instance, initialize, loader) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>) = nullable
+    }
+}
+
+/**
  * 将 [Class] 强行转换为 [KClass]
  *
  * @return [KClass]
  */
-val <T> Class<out T>.kotlinAs get() = this.kotlin as KClass<T & Any>
+inline val <T> Class<out T>.kotlinAs get() = this.kotlin as KClass<T & Any>
 
 /**
  * 将 [KType] 转换为 [KClass]
  *
  * -此行为将进行泛型擦除 如果KType是类似T:Number的类型此操作将返回Number 如果没有界限则为Any
  */
-val KType.kotlin get() = this.jvmErasure
+inline val KType.kotlin get() = this.jvmErasure
 
 /**
  * 获取当前 [KClass] 的顶级操作对象
@@ -60,7 +130,7 @@ val KType.kotlin get() = this.jvmErasure
  *
  * 顶层往往会在类名后增加Kt
  */
-val KClass<*>.top: KDeclarationContainer get() = java.top
+inline val KClass<*>.top: KDeclarationContainer get() = java.top
 
 /**
  * 检查此[KClass]是否是顶级类
@@ -69,14 +139,14 @@ val KClass<*>.top: KDeclarationContainer get() = java.top
  *
  * top作为KClass没法获得有用信息需要使用KClass<*>.top转换为可使用的顶级操作对象
  */
-val KClass<*>.isTop get() = jvmName.endsWith("Kt")
+inline val KClass<*>.isTop get() = jvmName.endsWith("Kt")
 
 /**
  * 检查此[KClass]是否存在与之对应的顶级类
  *
  * 如 此类是xx.kt文件 -> xxKt.class
  */
-val KClass<*>.existTop get() = isTop || "${name}Kt".toClassOrNull() != null
+inline val KClass<*>.existTop get() = isTop || "${name}Kt".toKClassOrNull() != null
 
 /**
  * 获取当前 [Class] 在Kotlin的顶级操作对象
@@ -85,31 +155,33 @@ val KClass<*>.existTop get() = isTop || "${name}Kt".toClassOrNull() != null
  *
  * 顶层往往会在类名后增加Kt
  */
-val Class<*>.top: KDeclarationContainer get() = Reflection.getOrCreateKotlinPackage(if (this.name.endsWith("Kt")) this else "${name}Kt".toClass())
+inline val Class<*>.top: KDeclarationContainer get() = Reflection.getOrCreateKotlinPackage(if (this.name.endsWith("Kt")) this else "${name}Kt".toKClass().java)
 
 /**
  * 获取顶层文件或类的 [KClass]
  */
-val KDeclarationContainer.kotlin get() = this as? KClass<*> ?: this::class.property { name = "jClass";superClass() }.get(this).cast<Class<*>>()?.kotlin ?: error("Unexpected class acquisition error.")
+val KDeclarationContainer.kotlin
+    get() = this as? KClass<*> ?: this::class.property { name = "jClass";superClass() }.get(this).cast<Class<*>>()?.kotlin
+    ?: error("Unexpected class acquisition error.")
 
 /**
  * 获取顶层文件或类的所有 [KProperty]
  */
 @Suppress("RecursivePropertyAccessor")
-val KDeclarationContainer.declaredTopPropertys:List<KProperty<*>> get() = if (this !is KClass<*>)members.filterIsInstance<KProperty<*>>() else top.declaredTopPropertys
+val KDeclarationContainer.declaredTopPropertys: List<KProperty<*>> get() = if (this !is KClass<*>) members.filterIsInstance<KProperty<*>>() else top.declaredTopPropertys
 
 /**
  * 获取顶层文件或类的所有 [KFunction]
  */
 @Suppress("RecursivePropertyAccessor")
-val KDeclarationContainer.declaredTopFunctions:List<KFunction<*>> get() = if (this !is KClass<*>)members.filterIsInstance<KFunction<*>>() else top.declaredTopFunctions
+val KDeclarationContainer.declaredTopFunctions: List<KFunction<*>> get() = if (this !is KClass<*>) members.filterIsInstance<KFunction<*>>() else top.declaredTopFunctions
 
 /**
  * 将 [KParameter] 转换为 [KClass]
  *
  * @see [KType.kotlin]
  */
-val KParameter.kotlin get() = this.type.jvmErasure
+inline val KParameter.kotlin get() = this.type.jvmErasure
 
 /**
  * 将 [KParameter] 转换为 [KClass]
@@ -117,7 +189,7 @@ val KParameter.kotlin get() = this.type.jvmErasure
  * @return Collection [KClass]
  * @see [KType.kotlin]
  */
-val Collection<KParameter>.kotlin get() = this.map { it.type.jvmErasure }.toTypedArray()
+inline val Collection<KParameter>.kotlin get() = this.map { it.type.jvmErasure }.toTypedArray()
 
 /**
  * 将 [KParameter] 转换为 [KType]
@@ -125,14 +197,15 @@ val Collection<KParameter>.kotlin get() = this.map { it.type.jvmErasure }.toType
  * @return Collection [KType]
  * @see [KType.kotlin]
  */
-val Collection<KParameter>.type get() = this.map { it.type }.toTypedArray()
+inline val Collection<KParameter>.type get() = this.map { it.type }.toTypedArray()
 
 /**
  * 将 [KProperty] 转换为 [KMutableProperty]
  *
  * @return [KMutableProperty]
  */
-val KProperty<*>?.toMutable get() = toMutableOrNull ?: error("Converted Failed [$this]:\n KProperty<*>.toMutable Generated by KReflectionFactory")
+inline val KProperty<*>?.toMutable
+    get() = toMutableOrNull ?: error("Converted Failed [$this]:\n KProperty<*>.toMutable Generated by KReflectionFactory")
 
 /**
  * 将 [KProperty] 转换为 [KMutableProperty]
@@ -141,25 +214,63 @@ val KProperty<*>?.toMutable get() = toMutableOrNull ?: error("Converted Failed [
  *
  * @return [KMutableProperty] or null
  */
-val KProperty<*>?.toMutableOrNull get() = this as? KMutableProperty
+inline val KProperty<*>?.toMutableOrNull get() = this as? KMutableProperty
 
 /**
- * 设置此 [KProperty] 的值
+ * 为当前属性设置值
  *
- * @param thisRef 此 [KProperty] 的this实例 可空
- * @param any 设置的值
+ * - isUseMember 开启时优先 Field > SetterMethod > [KProperty.call]
+ *
+ * - isUseMember 默认情况下只使用 [KProperty.call]
+ *
+ * @param thisRef 此属性的this实例对象
+ * @param value 属性所被设置的值
+ * @param extension 属性如果是拓展属性你还需要传入拓展属性的this对象
+ * @param isUseMember 是否优先将属性转换Java方式进行set
  */
-operator fun KProperty<*>.set(thisRef:Any? = null,any: Any?){
-    val mut = toMutableOrNull
-
-    if (mut == null)
-        javaField?.set(thisRef,any)
-    else
-        if (thisRef != null)
-            mut.setter.call(thisRef,any)
+inline fun KProperty<*>.set(thisRef: Any? = null, value: Any?, extension: Any? = null, isUseMember: Boolean = false) {
+    if (isUseMember || toMutableOrNull == null) {
+        val field = runCatching { javaField }.getOrNull()
+        if (field != null) {
+            field.isAccessible = true
+            field[thisRef] = value
+            return
+        }
+        val setter = runCatching { toMutableOrNull?.javaSetter }.getOrNull()
+        if (setter != null) {
+            setter.isAccessible = true
+            if (isExtension)
+                setter.invoke(thisRef, extension, value)
+            else
+                setter.invoke(thisRef, value)
+            return
+        }
+    }
+    val setter = toMutableOrNull?.setter ?: return
+    if (isExtension) {
+        if (thisRef == null) {
+            setter.call(extension, value)
+        } else
+            setter.call(thisRef, extension, value)
+    } else {
+        if (thisRef == null)
+            setter.call(value)
         else
-            mut.setter.call(any)
+            setter.call(thisRef, value)
+    }
 }
+
+/**
+ * 为当前属性设置值的快捷方式
+ *
+ * 快捷方式下拓展this为null，isUseMember为false
+ *
+ * @see [set]
+ *
+ * @param thisRef 此属性的this实例对象
+ * @param value 属性所被设置的值
+ */
+operator fun KProperty<*>.set(thisRef: Any? = null, value: Any?) = set(thisRef, value, null, false)
 
 /**
  * 获取属性 [KProperty] 的Kotlin返回类型
@@ -184,7 +295,7 @@ val <V> KProperty<V?>.kotlin: KClass<V & Any>
  *
  * @return [Boolean]
  */
-val KProperty<*>.isVar: Boolean
+inline val KProperty<*>.isVar: Boolean
     get() = when (this) {
         is KMutableProperty -> true
         else -> false
@@ -243,7 +354,7 @@ val <V> KCallable<V>.java: Class<V>
  *
  * @return KotlinClass对象实例 [KClass]
  */
-val <V> KCallable<V>.kotlin: KClass<V & Any>
+inline val <V> KCallable<V>.kotlin: KClass<V & Any>
     get() = java.kotlinAs
 
 /**
@@ -259,7 +370,7 @@ val <V> KCallable<V>.kotlin: KClass<V & Any>
  *
  * @return [CallableReference]
  */
-val KCallable<*>.ref
+inline val KCallable<*>.ref
     get() = this as CallableReference
 
 /**
@@ -267,7 +378,7 @@ val KCallable<*>.ref
  *
  * 即通过对此引用相关信息在目标类中查找得到细致信息
  */
-val CallableReference.impl:KCallable<*>?
+val CallableReference.impl: KCallable<*>?
     get() {
         when (this) {
             is FunctionReference -> {
@@ -299,7 +410,7 @@ val CallableReference.impl:KCallable<*>?
  *
  * @return [KClass]
  */
-val CallableReference.declaringKotlin
+inline val CallableReference.declaringKotlin
     get() = this.owner.kotlin
 
 /**
@@ -311,56 +422,56 @@ val CallableReference.declaringKotlin
  *
  * @return [Boolean]
  */
-val Class<*>.isKotlin: Boolean get() =  annotations.any { it.annotationClass.jvmName == Metadata::class.jvmName }
+inline val Class<*>.isKotlin: Boolean get() = annotations.any { it.annotationClass.jvmName == Metadata::class.jvmName }
 
 /**
  * 当前 [KClass] 的父类
  *
  * @return 父类 [KClass] 对象
  */
-val KClass<*>.superclass get() = superclasses.find { !it.java.isInterface }
+inline val KClass<*>.superclass get() = superclasses.find { !it.java.isInterface }
 
 /**
  * 当前 [KClass] 的密封类
  *
  * @return 密封类 [KClass] 对象
  */
-val KClass<*>.enclosingClass get() = this.java.enclosingClass?.kotlinAs
+inline val KClass<*>.enclosingClass get() = this.java.enclosingClass?.kotlinAs
 
 /**
  * 当前 [KClass] 的简易类名 未找到时通过java对象获取
  *
  * @return [String]
  */
-val KClass<*>.simpleNameOrJvm: String get() = this.simpleName ?: this.java.simpleName
+inline val KClass<*>.simpleNameOrJvm: String get() = this.simpleName ?: this.java.simpleName
 
 /**
  * 当前 [KClass] 是否是匿名类 - 来自Java
  *
  * @return [Boolean]
  */
-val KClass<*>.isAnonymous get() = this.java.isAnonymousClass
+inline val KClass<*>.isAnonymous get() = this.java.isAnonymousClass
 
 /**
  * 当前 [KClass] 的完整类名 未找到时通过java对象获取
  *
  * @return [String]
  */
-val KClass<*>.name: String get() = this.qualifiedName ?: this.jvmName
+inline val KClass<*>.name: String get() = this.qualifiedName ?: this.jvmName
 
 /**
  * 当前 [KClass] 是否有继承关系 - 父类是 [Any] 将被认为没有继承关系
  *
  * @return [Boolean]
  */
-val KClass<*>.hasExtends get() = superclass != Any::class
+inline val KClass<*>.hasExtends get() = superclass != Any::class
 
 /**
  * 当前 [KClass] 的所有接口
  *
  * @return List<[KClass]>
  */
-val KClass<*>.interfaces get() = superclasses.filter { it.java.isInterface }
+inline val KClass<*>.interfaces get() = superclasses.filter { it.java.isInterface }
 
 /**
  * 当前 [KClass] 的泛型列表
@@ -369,7 +480,7 @@ val KClass<*>.interfaces get() = superclasses.filter { it.java.isInterface }
  *
  * 附带继承(界限)信息
  */
-val KClass<*>.generics get() = typeParameters
+inline val KClass<*>.generics get() = typeParameters
 
 /**
  * 当前 [KClass] 的 [KType] 表示
@@ -378,7 +489,7 @@ val KClass<*>.generics get() = typeParameters
  *
  * 泛型参数信息由星射代替[KTypeProjection.STAR]
  */
-val KClassifier.type get() = starProjectedType
+inline val KClassifier.type get() = starProjectedType
 
 /**
  * 当前 [KType] 是否是基本类型
@@ -388,7 +499,39 @@ val KClassifier.type get() = starProjectedType
  * @see [KType.javaType]
  * @return [Boolean]
  */
-val KType.isPrimitive get() = java.isPrimitive
+inline val KType.isPrimitive get() = java.isPrimitive
+
+/**
+ * 自动转换当前 [KClass] 基于类为 Java 原始类型 (Primitive Type)
+ *
+ * 如果当前 [KClass] 为 Java 或 Kotlin 基本类型将自动执行类型转换
+ *
+ * 当前能够自动转换的基本类型如下 ↓
+ *
+ * - [java.lang.Boolean]
+ * - [java.lang.Integer]
+ * - [java.lang.Float]
+ * - [java.lang.Double]
+ * - [java.lang.Long]
+ * - [java.lang.Short]
+ * - [java.lang.Character]
+ * - [java.lang.Byte]
+ *
+ * 转换基本类型对于KClass并没有太大影响 Int::class == Int::class.toJavaPrimitiveType()
+ * 这仅改变他们的构成，即 Int::class.java != Int::class.toJavaPrimitiveType().java
+ * @return [KClass]
+ */
+fun KClass<*>.toJavaPrimitiveType() = when (this) {
+    BooleanKClass, BooleanKType -> BooleanKType
+    IntKClass, IntKType -> IntKType
+    FloatKClass, FloatKType -> FloatKType
+    DoubleKClass, DoubleKType -> DoubleKType
+    LongKClass, LongKType -> LongKType
+    ShortKClass, ShortKType -> ShortKType
+    CharKClass, CharKType -> CharKType
+    ByteKClass, ByteKType -> ByteKType
+    else -> this
+}
 
 /**
  * 当前 [KType] 的 [Class] 类型
@@ -397,7 +540,7 @@ val KType.isPrimitive get() = java.isPrimitive
  *
  * @return [Class]
  */
-val KType.java get() = kotlin.java
+inline val KType.java get() = kotlin.java
 
 /**
  * 当前 [KClass] 是否继承于 [other]
@@ -432,7 +575,7 @@ infix fun KClass<*>?.extends(other: KClass<*>?): Boolean {
  * @param other 需要判断的 [KClass]
  * @return [Boolean]
  */
-infix fun KClass<*>?.notExtends(other: KClass<*>?) = extends(other).not()
+inline infix fun KClass<*>?.notExtends(other: KClass<*>?) = extends(other).not()
 
 /**
  * [other] 是否可以转换为 [KClass]
@@ -440,14 +583,14 @@ infix fun KClass<*>?.notExtends(other: KClass<*>?) = extends(other).not()
  * @param other 需要判断的实例对象
  * @return [Boolean]
  */
-fun KClass<*>?.isCase(other: Any?) = this?.isInstance(other) ?: false
+inline fun KClass<*>?.isCase(other: Any?) = this?.isInstance(other) ?: false
 
 /**
  * 当前 [KClass] 的 ClassLoader
  *
  * @return [ClassLoader]
  */
-val KClass<*>.classLoader get() = this.java.classLoader!!
+inline val KClass<*>.classLoader get() = this.java.classLoader!!
 
 /**
  * 通过字符串类名转换为 [loader] 中的实体类
@@ -456,7 +599,8 @@ val KClass<*>.classLoader get() = this.java.classLoader!!
  * @return [KClass]
  * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
  */
-inline fun String.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) = KReflectionTool.findClassByName(name = this, loader, initialize)
+inline fun String.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) =
+    KReflectionTool.findClassByName(name = this, loader, initialize)
 
 /**
  * 通过字符串类名转换为 [loader] 中的实体类
@@ -500,8 +644,70 @@ inline fun <reified T> String.toKClassOrNull(loader: ClassLoader? = null, initia
  * @return [KClass]<[T]>
  * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
  */
-inline fun <reified T> kclassOf(loader: ClassLoader? = null, initialize: Boolean = false):KClass<T & Any> =
+inline fun <reified T> kclassOf(loader: ClassLoader? = null, initialize: Boolean = false): KClass<T & Any> =
     (loader?.let { T::class.java.name.toKClass(loader, initialize) } ?: T::class) as KClass<T & Any>
+
+/**
+ * 懒装载 [KClass]
+ * @param name 完整类名
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @param loader [ClassLoader] 装载实例 - 默认空 - 不填使用默认 [ClassLoader]
+ * @return [KLazyClass.NonNull]
+ */
+fun lazyKClass(name: String, initialize: Boolean = false, loader: KClassLoaderInitializer? = null) =
+    lazyKClass<Any>(name, initialize, loader)
+
+/**
+ * 懒装载 [KClass]<[T]>
+ * @param name 完整类名
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @param loader [ClassLoader] 装载实例 - 默认空 - 不填使用默认 [ClassLoader]
+ * @return [KLazyClass.NonNull]<[T]>
+ */
+@JvmName("lazyClass_Generics")
+inline fun <reified T> lazyKClass(name: String, initialize: Boolean = false, noinline loader: KClassLoaderInitializer? = null) =
+    KLazyClass.NonNull<T>(name, initialize, loader)
+
+/**
+ * 懒装载 [KClass]
+ * @param variousClass [KVariousClass]
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @param loader [ClassLoader] 装载实例 - 默认空 - 不填使用默认 [ClassLoader]
+ * @return [KLazyClass.NonNull]
+ */
+fun lazyKClass(variousClass: KVariousClass, initialize: Boolean = false, loader: KClassLoaderInitializer? = null) =
+    KLazyClass.NonNull<Any>(variousClass, initialize, loader)
+
+/**
+ * 懒装载 [KClass]
+ * @param name 完整类名
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @param loader [ClassLoader] 装载实例 - 默认空 - 不填使用默认 [ClassLoader]
+ * @return [KLazyClass.Nullable]
+ */
+fun lazyKClassOrNull(name: String, initialize: Boolean = false, loader: KClassLoaderInitializer? = null) =
+    lazyKClassOrNull<Any>(name, initialize, loader)
+
+/**
+ * 懒装载 [KClass]<[T]>
+ * @param name 完整类名
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @param loader [ClassLoader] 装载实例 - 默认空 - 不填使用默认 [ClassLoader]
+ * @return [KLazyClass.Nullable]<[T]>
+ */
+@JvmName("lazyClassOrNull_Generics")
+inline fun <reified T> lazyKClassOrNull(name: String, initialize: Boolean = false, noinline loader: KClassLoaderInitializer? = null) =
+    KLazyClass.Nullable<T>(name, initialize, loader)
+
+/**
+ * 懒装载 [KClass]
+ * @param variousClass [KVariousClass]
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @param loader [ClassLoader] 装载实例 - 默认空 - 不填使用默认 [ClassLoader]
+ * @return [KLazyClass.Nullable]
+ */
+fun lazyKClassOrNull(variousClass: KVariousClass, initialize: Boolean = false, loader: KClassLoaderInitializer? = null) =
+    KLazyClass.Nullable<Any>(variousClass, initialize, loader)
 
 /**
  * 通过字符串类名使用指定的 [ClassLoader] 查找是否存在
@@ -574,7 +780,7 @@ inline fun KClass<*>.constructor(initiate: KConstructorConditions = {}) = KConst
  * @param initiate 实例方法体
  * @return [KGenericClass]
  */
-inline fun KClass<*>.genericSuper(initiate: KClassConditions = {}):KGenericClass = supertypes.generic(initiate)
+inline fun KClass<*>.genericSuper(initiate: KClassConditions = {}): KGenericClass = supertypes.generic(initiate)
 
 /**
  * 为当前 [KClass] 构建细节Type 并获得其泛型操作对象
@@ -585,7 +791,8 @@ inline fun KClass<*>.genericSuper(initiate: KClassConditions = {}):KGenericClass
  * @param initiate 实例方法体
  * @return [KGenericClass]
  */
-inline fun KClass<*>.generic(vararg params:Any,initiate: KTypeBuildConditions = {}):KGenericClass = type.generic().build { params.isNotEmpty().ifTrue { param(*params) };initiate() }
+inline fun KClass<*>.generic(vararg params: Any, initiate: KTypeBuildConditions = {}): KGenericClass =
+    type.generic().build { params.isNotEmpty().ifTrue { param(*params) };initiate() }
 
 /**
  * 指定并获得类型方差版本
@@ -595,7 +802,7 @@ inline fun KClass<*>.generic(vararg params:Any,initiate: KTypeBuildConditions = 
  * @param variance 类型方差 默认没有任何方差
  * @return 包含方差映射的类型
  */
-inline fun KClass<*>.variance(variance:KVariance = KVariance.INVARIANT): KTypeProjection = KTypeProjection(variance,type)
+inline fun KClass<*>.variance(variance: KVariance = KVariance.INVARIANT): KTypeProjection = KTypeProjection(variance, type)
 
 /**
  * 获得当前 [KProperty] 的返回类型中来自尖括号的泛型操作对象
@@ -603,7 +810,7 @@ inline fun KClass<*>.variance(variance:KVariance = KVariance.INVARIANT): KTypePr
  * @param initiate 实例方法体
  * @return [KGenericClass]
  */
-inline fun KProperty<*>.generic(initiate: KGenericClass.() -> Unit = {}):KGenericClass = returnType.generic(initiate)
+inline fun KProperty<*>.generic(initiate: KGenericClass.() -> Unit = {}): KGenericClass = returnType.generic(initiate)
 
 /**
  * 获得当前 [KType] 的泛型操作对象
@@ -620,7 +827,8 @@ inline fun KType.generic(initiate: KGenericClass.() -> Unit = {}) = KGenericClas
  * @param initiate 实例方法体
  * @receiver [KTypeBuild]
  */
-inline fun KType.genericBuild(vararg params:Any,initiate: KTypeBuildConditions = {}) = generic().build { params.isNotEmpty().ifTrue { param(*params) };initiate() }
+inline fun KType.genericBuild(vararg params: Any, initiate: KTypeBuildConditions = {}) =
+    generic().build { params.isNotEmpty().ifTrue { param(*params) };initiate() }
 
 /**
  * 指定并获得类型方差版本
@@ -630,7 +838,7 @@ inline fun KType.genericBuild(vararg params:Any,initiate: KTypeBuildConditions =
  * @param variance 类型方差 默认没有任何方差
  * @return 包含方差映射的类型
  */
-inline fun KType.variance(variance:KVariance = KVariance.INVARIANT): KTypeProjection = KTypeProjection(variance,this)
+inline fun KType.variance(variance: KVariance = KVariance.INVARIANT): KTypeProjection = KTypeProjection(variance, this)
 
 /**
  * 获得当前 [KType] 数组的泛型操作对象
@@ -640,7 +848,7 @@ inline fun KType.variance(variance:KVariance = KVariance.INVARIANT): KTypeProjec
  * @param initiate 筛选获得泛型所在的Class
  * @return [KGenericClass]
  */
-inline fun Collection<KType>.generic(initiate: KClassConditions = {}):KGenericClass = this.type(this.kclass(initiate).get()).generic()
+inline fun Collection<KType>.generic(initiate: KClassConditions = {}): KGenericClass = this.type(this.kclass(initiate).get()).generic()
 
 /**
  * 获得当前 [KType] 数组的泛型操作对象
@@ -650,7 +858,7 @@ inline fun Collection<KType>.generic(initiate: KClassConditions = {}):KGenericCl
  * @param initiate 筛选获得泛型所在的Class
  * @return [KGenericClass]
  */
-inline fun Array<out KType>.generic(initiate: KClassConditions = {}):KGenericClass = this.type(this.kclass(initiate).get()).generic()
+inline fun Array<out KType>.generic(initiate: KClassConditions = {}): KGenericClass = this.type(this.kclass(initiate).get()).generic()
 
 /**
  * 获得当前实例的类操作对象 Kotlin版本
@@ -693,21 +901,23 @@ inline fun <T> KClass<*>.buildOf(vararg args: Any?, initiate: KConstructorCondit
 /**
  * 获取所有声明属性不包括父类
  */
-val KClass<*>.declaredPropertys: Collection<KProperty<*>>
+inline val KClass<*>.declaredPropertys: Collection<KProperty<*>>
     get() = declaredMembers.filterIsInstance<KProperty<*>>()
 
 /**
  * 获取当前 [KCallable] 是否为扩展方法
  */
-val KCallable<*>.isExtension
+inline val KCallable<*>.isExtension
     get() = descriptor?.extensionReceiverParameter != null
 
 /**
  * 获取当前 [KCallable] 的描述信息
  */
-val KCallable<*>.descriptor
+inline val KCallable<*>.descriptor
     get() =
-        KCallableImplKClass.java.method { name = "getDescriptor" }.get(if (KCallableImplKClass.isCase(this)) this else runCatching { ref }.getOrNull()?.impl ?: error("not impl error!!!")).invoke<CallableMemberDescriptor>()
+        KCallableImplKClass.java.getDeclaredMethod("getDescriptor").also { it.isAccessible = true }
+            .invoke(if (KCallableImplKClass.isCase(this)) this else runCatching { ref }.getOrNull()?.impl ?: error("not impl error!!!")
+            ) as? CallableMemberDescriptor?
 
 
 /**
@@ -717,7 +927,12 @@ val KCallable<*>.descriptor
  */
 @Suppress("DuplicatedCode")
 inline fun KClass<*>.allFunctions(isAccessible: Boolean = true, result: (index: Int, function: KFunction<*>) -> Unit) =
-    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence().mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).asSequence()).forEachIndexed { p, it -> result(p, it.also { e -> e.isAccessible = isAccessible }) }
+    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence()
+        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).asSequence()).forEachIndexed { p, it ->
+        result(
+            p,
+            it.also { e -> e.isAccessible = isAccessible })
+    }
 
 /**
  * 遍历当前类中的所有构造方法
@@ -725,7 +940,12 @@ inline fun KClass<*>.allFunctions(isAccessible: Boolean = true, result: (index: 
  * @param result 回调 - ([Int] 下标,Constructor [KFunction] 实例)
  */
 inline fun KClass<*>.allConstructors(isAccessible: Boolean = true, result: (index: Int, constructor: KFunction<*>) -> Unit) =
-    (if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredConstructors.asSequence().mapNotNull { it.kotlin } else constructors.asSequence()).forEachIndexed { p, it -> result(p, it.also { e -> e.isAccessible = isAccessible }) }
+    (if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredConstructors.asSequence()
+        .mapNotNull { it.kotlin } else constructors.asSequence()).forEachIndexed { p, it ->
+        result(
+            p,
+            it.also { e -> e.isAccessible = isAccessible })
+    }
 
 /**
  * 遍历当前类中的所有变量
@@ -734,7 +954,12 @@ inline fun KClass<*>.allConstructors(isAccessible: Boolean = true, result: (inde
  */
 @Suppress("DuplicatedCode")
 inline fun KClass<*>.allPropertys(isAccessible: Boolean = true, result: (index: Int, property: KProperty<*>) -> Unit) =
-    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence().mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence()).forEachIndexed { p, it -> result(p, it.also { e -> e.isAccessible = isAccessible }) }
+    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence()
+        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence()).forEachIndexed { p, it ->
+        result(
+            p,
+            it.also { e -> e.isAccessible = isAccessible })
+    }
 
 /**
  * 查找并得到类
@@ -760,8 +985,8 @@ inline fun Array<out KClass<*>>.kclass(initiate: KClassConditions) =
  * @return [KClassFinder.Result]
  */
 @JvmName("kclass_string")
-inline fun Collection<String>.kclass(loader: ClassLoader? = null, initialize: Boolean = false,initiate: KClassConditions) =
-    this.map { it.toKClass(loader,initialize) }.kclass(initiate)
+inline fun Collection<String>.kclass(loader: ClassLoader? = null, initialize: Boolean = false, initiate: KClassConditions) =
+    this.map { it.toKClass(loader, initialize) }.kclass(initiate)
 
 /**
  * 查找并得到类
@@ -769,8 +994,8 @@ inline fun Collection<String>.kclass(loader: ClassLoader? = null, initialize: Bo
  * @return [KClassFinder.Result]
  */
 @JvmName("kclass_string")
-inline fun Array<String>.kclass(loader: ClassLoader? = null, initialize: Boolean = false,initiate: KClassConditions) =
-    this.map { it.toKClass(loader,initialize) }.kclass(initiate)
+inline fun Array<String>.kclass(loader: ClassLoader? = null, initialize: Boolean = false, initiate: KClassConditions) =
+    this.map { it.toKClass(loader, initialize) }.kclass(initiate)
 
 /**
  * 查找并得到类
@@ -795,14 +1020,16 @@ inline fun Array<out KType>.kclass(initiate: KClassConditions) =
  * @param classSet 与[KType]一致的[KClass]
  * @return [KClassFinder.Result]
  */
-inline fun Collection<KType>.type(classSet: KClass<*>?) = this.find { it.kotlin == classSet } ?: error("Can't find this $classSet in [$this]:\n Collection<KType>.type Generated by KReflectionFactory")
+inline fun Collection<KType>.type(classSet: KClass<*>?) =
+    this.find { it.kotlin == classSet } ?: error("Can't find this $classSet in [$this]:\n Collection<KType>.type Generated by KReflectionFactory")
 
 /**
  * 通过 [KClass] 查找并得到与之一致的 [KType]
  * @param classSet 与[KType]一致的[KClass]
  * @return [KClassFinder.Result]
  */
-inline fun Array<out KType>.type(classSet: KClass<*>?) = this.find { it.kotlin == classSet } ?: error("Can't find this $classSet in [$this]:\n Array<out KType>.type Generated by KReflectionFactory")
+inline fun Array<out KType>.type(classSet: KClass<*>?) =
+    this.find { it.kotlin == classSet } ?: error("Can't find this $classSet in [$this]:\n Array<out KType>.type Generated by KReflectionFactory")
 
 /**
  * 通过 [T]的[KClass] 查找并得到与之一致的 [KType]
@@ -810,7 +1037,8 @@ inline fun Array<out KType>.type(classSet: KClass<*>?) = this.find { it.kotlin =
  * @return [KClassFinder.Result]
  */
 @JvmName(name = "type_Generics")
-inline fun <reified T> Collection<KType>.type() = this.find { it.kotlin == T::class } ?: error("Can't find this ${T::class} in [$this]:\n Collection<KType>.type Generated by KReflectionFactory")
+inline fun <reified T> Collection<KType>.type() =
+    this.find { it.kotlin == T::class } ?: error("Can't find this ${T::class} in [$this]:\n Collection<KType>.type Generated by KReflectionFactory")
 
 /**
  * 通过 [T]的[KClass] 查找并得到与之一致的 [KType]
@@ -818,7 +1046,278 @@ inline fun <reified T> Collection<KType>.type() = this.find { it.kotlin == T::cl
  * @return [KClassFinder.Result]
  */
 @JvmName(name = "type_Generics")
-inline fun <reified T> Array<out KType>.type() = this.find { it.kotlin == T::class } ?: error("Can't find this ${T::class} in [$this]:\n Array<out KType>.type Generated by KReflectionFactory")
+inline fun <reified T> Array<out KType>.type() =
+    this.find { it.kotlin == T::class } ?: error("Can't find this ${T::class} in [$this]:\n Array<out KType>.type Generated by KReflectionFactory")
+
+/**
+ * 将 [KFunction] 转换为 [KFunctionFinder.Result.Instance] 可执行类
+ *
+ * @param thisRef 执行所使用this对象
+ * @param extension 函数如果是拓展函数你还需要传入拓展函数的this对象
+ * @param isUseMember 是否优先将函数转换Java方式执行
+ */
+inline fun KFunction<*>.instance(thisRef: Any? = null, extension: Any? = null, isUseMember: Boolean = false) =
+    KFunctionFinder(declaringClass).Result().Instance(thisRef, this).receiver(extension).useMember(isUseMember)
+
+/**
+ * 将 [Constructor] 转换为 [KConstructorFinder.Result.Instance] 可执行类
+ *
+ * 这是 Constructor[KFunction] 的快捷方法
+ *
+ * @param isUseMember 是否优先将属性转换Java方式进行get/set
+ */
+inline fun Constructor<*>.instanceKotlin(isUseMember: Boolean = false) = kotlin.constructorInstance(isUseMember)
+
+/**
+ * 将 Constructor[KFunction] 转换为 [KConstructorFinder.Result.Instance] 可执行类
+ *
+ * @param isUseMember 是否优先将属性转换Java方式进行get/set
+ */
+inline fun KFunction<*>.constructorInstance(isUseMember: Boolean = false) =
+    KConstructorFinder(declaringClass).Result().Instance(this).useMember(isUseMember)
+
+/**
+ * 将 [KProperty] 转换为 [KPropertyFinder.Result.Instance] 可执行类
+ *
+ * @param thisRef 执行所使用this对象
+ * @param extension 属性如果是拓展属性你还需要传入拓展属性的this对象
+ * @param isUseMember 是否优先将属性转换Java方式进行get/set
+ */
+inline fun KProperty<*>.instance(thisRef: Any? = null, extension: Any? = null, isUseMember: Boolean = false) =
+    KPropertyFinder(declaringClass).Result().Instance(thisRef, this).receiver(extension).useMember(isUseMember)
+
+/**
+ * 委托绑定到指定类的相同特征的属性
+ *
+ * 假设thisRefClass Test中有以下属性 ↓
+ *
+ * ```kotlin
+ * class Test{
+ *  var test:String? = null
+ * }
+ * ```
+ *
+ * 在你的自定义类中使用以下方式简单映射绑定上 ↓
+ *
+ * ```kotlin
+ * var test:String? by BindingInstanceSupport.Nullable(Test::class,Test())
+ * test = "hello"
+ * ```
+ *
+ * 这适用于类和实例无法直接在代码中调用时的解决方案
+ *
+ * 通过此方法你可以快速为某个类进行特征映射，当然需要遵循一定的映射规则
+ *
+ * 过于复杂的映射规则，您可以尝试手动find查找而不是选择委托绑定
+ *
+ * @param T 映射属性的值类型
+ * @property thisRefClass 映射的属性所在的类
+ * @property thisRef 映射的属性调用时所需的实例
+ * @property extension 映射属性如果是拓展属性所需的拓展实例
+ * @property isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
+ * @property isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+ * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+ */
+open class BindingInstanceSupport<T>(
+    private val thisRefClass: KClass<*>,
+    private val thisRef: Any? = null,
+    private val extension: Any? = null,
+    private val isUseMember: Boolean = false,
+    private val isLazy: Boolean = true,
+    private val mappingRules: KPropertyFinder.(property: KProperty<*>) -> Unit = {
+        this.name = it.name
+        this.type = it.returnType
+    }
+) {
+    private var lazy: WeakReference<KPropertyFinder.Result.Instance>? = null
+
+    /**
+     * 获取非空实例-get
+     * @return T
+     */
+    internal fun nonNullGet(property: KProperty<*>): T {
+        return nullableGet(property) ?: error("Exception has been thrown above")
+    }
+
+    /**
+     * 获取可空实例-get
+     * @return T or null
+     */
+    internal fun nullableGet(property: KProperty<*>): T? {
+        return if (isLazy) {
+            if (lazy == null)
+                lazy = WeakReference(thisRefClass.property {
+                    mappingRules(property)
+                }.get(thisRef, extension, isUseMember))
+            lazy?.get()?.cast<T>()
+        } else thisRefClass.property {
+            mappingRules(property)
+        }.get(thisRef, extension, isUseMember).cast()
+    }
+
+    /**
+     * 获取非空实例-set
+     * @return T
+     */
+    internal fun nonNullSet(property: KProperty<*>, value: T) {
+        return nullableSet(property, value)
+    }
+
+    /**
+     * 获取可空实例-set
+     */
+    internal fun nullableSet(property: KProperty<*>, value: T?) {
+        if (isLazy) {
+            if (lazy == null)
+                lazy = WeakReference(thisRefClass.property {
+                    mappingRules(property)
+                }.get(thisRef, extension, isUseMember))
+            lazy?.get()?.set(value)
+        } else {
+            thisRefClass.property {
+                mappingRules(property)
+            }.get(thisRef, extension, isUseMember).set(value)
+        }
+    }
+
+    /**
+     * 非空实例
+     * @param T 映射属性的值类型
+     * @property thisRefClass 映射的属性所在的类
+     * @property thisRef 映射的属性调用时所需的实例
+     * @property extension 映射属性如果是拓展属性所需的拓展实例
+     * @property isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
+     * @property isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+     * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+     */
+    class NonNull<T> internal constructor(
+        private val thisRefClass: KClass<*>,
+        private val thisRef: Any? = null,
+        private val extension: Any? = null,
+        private val isUseMember: Boolean = false,
+        private val isLazy: Boolean = true,
+        private val mappingRules: KPropertyFinder.(property: KProperty<*>) -> Unit = {
+            this.name = it.name
+            this.type = it.returnType
+        }
+    ) : BindingInstanceSupport<T>(thisRefClass, thisRef, extension, isUseMember, isLazy, mappingRules) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>) = nonNullGet(property)
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) = nonNullSet(property, value)
+    }
+
+    /**
+     * 可空实例
+     * @param T 映射属性的值类型
+     * @property thisRefClass 映射的属性所在的类
+     * @property thisRef 映射的属性调用时所需的实例
+     * @property extension 映射属性如果是拓展属性所需的拓展实例
+     * @property isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
+     * @property isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+     * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+     */
+    class Nullable<T> internal constructor(
+        private val thisRefClass: KClass<*>,
+        private val thisRef: Any? = null,
+        private val extension: Any? = null,
+        private val isUseMember: Boolean = false,
+        private val isLazy: Boolean = true,
+        private val mappingRules: KPropertyFinder.(property: KProperty<*>) -> Unit = {
+            this.name = it.name
+            this.type = it.returnType
+        }
+    ) : BindingInstanceSupport<T>(thisRefClass, thisRef, extension, isUseMember, isLazy, mappingRules) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>) = nullableGet(property)
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) = nullableSet(property, value)
+    }
+}
+
+/**
+ * 委托绑定到指定类的相同特征的属性 非空实例
+ *
+ * 假设thisRefClass Test中有以下属性 ↓
+ *
+ * ```kotlin
+ * class Test{
+ *  var test:String = "otr"
+ * }
+ * ```
+ *
+ * 在你的自定义类中使用以下方式简单映射绑定上 ↓
+ *
+ * ```kotlin
+ * var test:String by Test::class.bindProperty(Test())
+ * test = "hello"
+ * ```
+ *
+ * 这适用于类和实例无法直接在代码中调用时的解决方案
+ *
+ * 通过此方法你可以快速为某个类进行特征映射，当然需要遵循一定的映射规则
+ *
+ * 过于复杂的映射规则，您可以尝试手动find查找而不是选择委托绑定
+ *
+ * @param T 映射属性的值类型
+ * @property BindingInstanceSupport.thisRefClass 映射的属性所在的类
+ * @param thisRef 映射的属性调用时所需的实例
+ * @param extension 映射属性如果是拓展属性所需的拓展实例
+ * @param isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
+ * @param isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+ * @param mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+ */
+inline fun <T> KClass<*>.bindProperty(
+    thisRef: Any? = null,
+    extension: Any? = null,
+    isUseMember: Boolean = false,
+    isLazy: Boolean = true,
+    noinline mappingRules: KPropertyFinder.(property: KProperty<*>) -> Unit = {
+        this.name = it.name
+        this.type = it.returnType
+    }
+) = BindingInstanceSupport.NonNull<T>(this, thisRef, extension, isUseMember, isLazy, mappingRules)
+
+/**
+ * 委托绑定到指定类的相同特征的属性 可空实例
+ *
+ * 假设thisRefClass Test中有以下属性 ↓
+ *
+ * ```kotlin
+ * class Test{
+ *  var test:String? = null
+ * }
+ * ```
+ *
+ * 在你的自定义类中使用以下方式简单映射绑定上 ↓
+ *
+ * ```kotlin
+ * var test:String? by Test::class.bindPropertyOrNull(Test())
+ * test = "hello"
+ * ```
+ *
+ * 这适用于类和实例无法直接在代码中调用时的解决方案
+ *
+ * 通过此方法你可以快速为某个类进行特征映射，当然需要遵循一定的映射规则
+ *
+ * 过于复杂的映射规则，您可以尝试手动find查找而不是选择委托绑定
+ *
+ * @param T 映射属性的值类型
+ * @property BindingInstanceSupport.thisRefClass 映射的属性所在的类
+ * @param thisRef 映射的属性调用时所需的实例
+ * @param extension 映射属性如果是拓展属性所需的拓展实例
+ * @param isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
+ * @param isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+ * @param mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+ */
+inline fun <T> KClass<*>.bindPropertyOrNull(
+    thisRef: Any? = null,
+    extension: Any? = null,
+    isUseMember: Boolean = false,
+    isLazy: Boolean = true,
+    noinline mappingRules: KPropertyFinder.(property: KProperty<*>) -> Unit = {
+        this.name = it.name
+        this.type = it.returnType
+    }
+) = BindingInstanceSupport.Nullable<T>(this, thisRef, extension, isUseMember, isLazy, mappingRules)
 
 /**
  * 复制自Kotlin ReflectJvmMapping文件

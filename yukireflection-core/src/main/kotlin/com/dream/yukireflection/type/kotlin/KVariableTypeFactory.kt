@@ -27,10 +27,7 @@ package com.dream.yukireflection.type.kotlin
 import android.os.Build
 import com.dream.yukireflection.factory.kclassOf
 import com.dream.yukireflection.factory.toKClass
-import com.highcapable.yukireflection.factory.classOf
-import com.highcapable.yukireflection.factory.toClass
-import com.highcapable.yukireflection.factory.toClassOrNull
-import com.highcapable.yukireflection.type.java.*
+import com.dream.yukireflection.factory.toKClassOrNull
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
@@ -57,7 +54,6 @@ import java.util.zip.ZipOutputStream
 import kotlin.reflect.*
 import java.lang.reflect.Array as JavaArray
 import java.util.function.Function as JavaFunction
-import com.highcapable.yukireflection.type.java.ArrayClass as JavaArrayClass
 
 /**
  * 获得任意类型的数组
@@ -66,7 +62,7 @@ import com.highcapable.yukireflection.type.java.ArrayClass as JavaArrayClass
  * @param type 类型
  * @return [KClass]<[Array]>
  */
-fun ArrayClass(type: KClass<*>) = JavaArrayClass(type.java).kotlin
+fun ArrayClass(type: KClass<*>) = (JavaArray.newInstance(type.java, 0).javaClass as Class<JavaArray>).kotlin
 
 /**
  * 获得 [Boolean] 类型
@@ -74,7 +70,7 @@ fun ArrayClass(type: KClass<*>) = JavaArrayClass(type.java).kotlin
  * 这是 Java 原始类型 (Primitive Type) - 它在字节码中的关键字为 "boolean"
  * @return [KClass]
  */
-val BooleanKType get() = BooleanType.kotlin
+val BooleanKType get() = Boolean::class.javaPrimitiveType?.kotlin ?: "boolean".toKClass()
 
 /**
  * 获得 [Char] 类型
@@ -82,7 +78,7 @@ val BooleanKType get() = BooleanType.kotlin
  * 这是 Java 原始类型 (Primitive Type) - 它在字节码中的关键字为 "char"
  * @return [KClass]
  */
-val CharKType get() = CharType.kotlin
+val CharKType get() = Char::class.javaPrimitiveType?.kotlin ?: "char".toKClass()
 
 /**
  * 获得 [Byte] 类型
@@ -90,7 +86,7 @@ val CharKType get() = CharType.kotlin
  * 这是 Java 原始类型 (Primitive Type) - 它在字节码中的关键字为 "byte"
  * @return [KClass]
  */
-val ByteKType get() = ByteType.kotlin
+val ByteKType get() = Byte::class.javaPrimitiveType?.kotlin ?: "byte".toKClass()
 
 /**
  * 获得 [Short] 类型
@@ -98,7 +94,7 @@ val ByteKType get() = ByteType.kotlin
  * 这是 Java 原始类型 (Primitive Type) - 它在字节码中的关键字为 "short"
  * @return [KClass]
  */
-val ShortKType get() = ShortType.kotlin
+val ShortKType get() = Short::class.javaPrimitiveType?.kotlin ?: "short".toKClass()
 
 /**
  * 获得 [Int] 类型
@@ -106,7 +102,7 @@ val ShortKType get() = ShortType.kotlin
  * 这是 Java 原始类型 (Primitive Type) - 它在字节码中的关键字为 "int"
  * @return [KClass]
  */
-val IntKType get() = IntType.kotlin
+val IntKType get() = Int::class.javaPrimitiveType?.kotlin ?: "int".toKClass()
 
 /**
  * 获得 [Float] 类型
@@ -114,7 +110,7 @@ val IntKType get() = IntType.kotlin
  * 这是 Java 原始类型 (Primitive Type) - 它在字节码中的关键字为 "float"
  * @return [KClass]
  */
-val FloatKType get() = FloatType.kotlin
+val FloatKType get() = Float::class.javaPrimitiveType?.kotlin ?: "float".toKClass()
 
 /**
  * 获得 [Long] 类型
@@ -122,7 +118,7 @@ val FloatKType get() = FloatType.kotlin
  * 这是 Java 原始类型 (Primitive Type) - 它在字节码中的关键字为 "long"
  * @return [KClass]
  */
-val LongKType get() = LongType.kotlin
+val LongKType get() = Long::class.javaPrimitiveType?.kotlin ?: "long".toKClass()
 
 /**
  * 获得 [Double] 类型
@@ -130,7 +126,7 @@ val LongKType get() = LongType.kotlin
  * 这是 Java 原始类型 (Primitive Type) - 它在字节码中的关键字为 "double"
  * @return [KClass]
  */
-val DoubleKType get() = DoubleType.kotlin
+val DoubleKType get() = Double::class.javaPrimitiveType?.kotlin ?: "double".toKClass()
 
 /**
  * 获得 [Any] 类型
@@ -138,7 +134,7 @@ val DoubleKType get() = DoubleType.kotlin
  * 它等价于 Java 中的 [java.lang.Object]
  * @return [KClass]<[Any]>
  */
-val AnyKClass get() = AnyClass.kotlin
+val AnyKClass get() = kclassOf<Any>()
 
 /**
  * 获得 [Boolean] 类型
@@ -146,7 +142,7 @@ val AnyKClass get() = AnyClass.kotlin
  * 它等价于 Java 中的 [java.lang.Boolean]
  * @return [KClass]<[Boolean]>
  */
-val BooleanKClass get() = BooleanClass.kotlin
+val BooleanKClass get() = kclassOf<Boolean>()
 
 /**
  * 获得 [Char] 类型
@@ -154,7 +150,7 @@ val BooleanKClass get() = BooleanClass.kotlin
  * 它等价于 Java 中的 [java.lang.Character]
  * @return [KClass]<[Char]>
  */
-val CharKClass get() = CharClass.kotlin
+val CharKClass get() = kclassOf<Char>()
 
 /**
  * 获得 [Byte] 类型
@@ -162,7 +158,7 @@ val CharKClass get() = CharClass.kotlin
  * 它等价于 Java 中的 [java.lang.Byte]
  * @return [KClass]<[Byte]>
  */
-val ByteKClass get() = ByteClass.kotlin
+val ByteKClass get() = kclassOf<Byte>()
 
 /**
  * 获得 [Short] 类型
@@ -170,7 +166,7 @@ val ByteKClass get() = ByteClass.kotlin
  * 它等价于 Java 中的 [java.lang.Short]
  * @return [KClass]<[Short]>
  */
-val ShortKClass get() = ShortClass.kotlin
+val ShortKClass get() = kclassOf<Short>()
 
 /**
  * 获得 [Int] 类型
@@ -178,7 +174,7 @@ val ShortKClass get() = ShortClass.kotlin
  * 它等价于 Java 中的 [java.lang.Integer]
  * @return [KClass]<[Int]>
  */
-val IntKClass get() = IntClass.kotlin
+val IntKClass get() = kclassOf<Int>()
 
 /**
  * 获得 [Float] 类型
@@ -186,7 +182,7 @@ val IntKClass get() = IntClass.kotlin
  * 它等价于 Java 中的 [java.lang.Float]
  * @return [KClass]<[Float]>
  */
-val FloatKClass get() = FloatClass.kotlin
+val FloatKClass get() = kclassOf<Float>()
 
 /**
  * 获得 [Long] 类型
@@ -194,7 +190,7 @@ val FloatKClass get() = FloatClass.kotlin
  * 它等价于 Java 中的 [java.lang.Long]
  * @return [KClass]<[Long]>
  */
-val LongKClass get() = LongClass.kotlin
+val LongKClass get() = kclassOf<Long>()
 
 /**
  * 获得 [Double] 类型
@@ -202,7 +198,7 @@ val LongKClass get() = LongClass.kotlin
  * 它等价于 Java 中的 [java.lang.Double]
  * @return [KClass]<[Double]>
  */
-val DoubleKClass get() = DoubleClass.kotlin
+val DoubleKClass get() = kclassOf<Double>()
 
 /**
  * 获得 [Number] 类型
@@ -210,7 +206,7 @@ val DoubleKClass get() = DoubleClass.kotlin
  * 它等价于 Java 中的 [java.lang.Number]
  * @return [KClass]<[Number]>
  */
-val NumberKClass get() = NumberClass.kotlin
+val NumberKClass get() = kclassOf<Number>()
 
 /**
  * 获得 [Unit] 类型
@@ -218,7 +214,7 @@ val NumberKClass get() = NumberClass.kotlin
  * 它等价于 Java 中的 [java.lang.Void]
  * @return [KClass]<[Void]>
  */
-val UnitKClass get() = Unit::class.java.kotlin
+val UnitKClass get() = kclassOf<Unit>()
 
 /**
  * 获得 [String] 类型
@@ -226,7 +222,7 @@ val UnitKClass get() = Unit::class.java.kotlin
  * 它等价于 Java 中的 [java.lang.String]
  * @return [KClass]<[String]>
  */
-val StringKClass get() = StringClass.kotlin
+val StringKClass get() = kclassOf<String>()
 
 /**
  * 获得 [CharSequence] 类型
@@ -234,13 +230,13 @@ val StringKClass get() = StringClass.kotlin
  * 它等价于 Java 中的 [java.lang.CharSequence]
  * @return [KClass]<[CharSequence]>
  */
-val CharSequenceKClass get() = CharSequenceClass.kotlin
+val CharSequenceKClass get() = kclassOf<CharSequence>()
 
 /**
  * 获得 [Serializable] 类型
  * @return [KClass]<[Serializable]>
  */
-val SerializableKClass get() = SerializableClass.kotlin
+val SerializableKClass get() = kclassOf<Serializable>()
 
 /**
  * 获得 [Array] 类型
@@ -248,7 +244,7 @@ val SerializableKClass get() = SerializableClass.kotlin
  * 它等价于 Java 中的 [java.lang.reflect.Array]
  * @return [KClass]<[JavaArray]>
  */
-val ArrayKClass get() = JavaArrayClass.kotlin
+val ArrayKClass get() = kclassOf<JavaArray>()
 
 /**
  * 获得 [Boolean] - [Array] 类型
@@ -256,7 +252,7 @@ val ArrayKClass get() = JavaArrayClass.kotlin
  * 这是 Java 原始类型 (Primitive Type) 数组 - 它在字节码中的关键字为 "boolean[]"
  * @return [KClass]<[JavaArray]>
  */
-val BooleanArrayKType get() = BooleanArrayType.kotlin
+val BooleanArrayKType get() = ArrayClass(BooleanKType)
 
 /**
  * 获得 [Char] - [Array] 类型
@@ -264,7 +260,7 @@ val BooleanArrayKType get() = BooleanArrayType.kotlin
  * 这是 Java 原始类型 (Primitive Type) 数组 - 它在字节码中的关键字为 "char[]"
  * @return [KClass]<[JavaArray]>
  */
-val CharArrayKType get() = CharArrayType.kotlin
+val CharArrayKType get() = ArrayClass(CharKType)
 
 /**
  * 获得 [Byte] - [Array] 类型
@@ -272,7 +268,7 @@ val CharArrayKType get() = CharArrayType.kotlin
  * 这是 Java 原始类型 (Primitive Type) 数组 - 它在字节码中的关键字为 "byte[]"
  * @return [KClass]<[JavaArray]>
  */
-val ByteArrayKType get() = ByteArrayType.kotlin
+val ByteArrayKType get() = ArrayClass(ByteKType)
 
 /**
  * 获得 [Short] - [Array] 类型
@@ -280,7 +276,7 @@ val ByteArrayKType get() = ByteArrayType.kotlin
  * 这是 Java 原始类型 (Primitive Type) 数组 - 它在字节码中的关键字为 "short[]"
  * @return [KClass]<[JavaArray]>
  */
-val ShortArrayKType get() = ShortArrayType.kotlin
+val ShortArrayKType get() = ArrayClass(ShortKType)
 
 /**
  * 获得 [Int] - [Array] 类型
@@ -288,7 +284,7 @@ val ShortArrayKType get() = ShortArrayType.kotlin
  * 这是 Java 原始类型 (Primitive Type) 数组 - 它在字节码中的关键字为 "int[]"
  * @return [KClass]<[JavaArray]>
  */
-val IntArrayKType get() = IntArrayType.kotlin
+val IntArrayKType get() = ArrayClass(IntKType)
 
 /**
  * 获得 [Float] - [Array] 类型
@@ -296,7 +292,7 @@ val IntArrayKType get() = IntArrayType.kotlin
  * 这是 Java 原始类型 (Primitive Type) 数组 - 它在字节码中的关键字为 "float[]"
  * @return [KClass]<[JavaArray]>
  */
-val FloatArrayKType get() = FloatArrayType.kotlin
+val FloatArrayKType get() = ArrayClass(FloatKType)
 
 /**
  * 获得 [Long] - [Array] 类型
@@ -304,7 +300,7 @@ val FloatArrayKType get() = FloatArrayType.kotlin
  * 这是 Java 原始类型 (Primitive Type) 数组 - 它在字节码中的关键字为 "long[]"
  * @return [KClass]<[JavaArray]>
  */
-val LongArrayKType get() = LongArrayType.kotlin
+val LongArrayKType get() = ArrayClass(LongKType)
 
 /**
  * 获得 [Double] - [Array] 类型
@@ -312,7 +308,7 @@ val LongArrayKType get() = LongArrayType.kotlin
  * 这是 Java 原始类型 (Primitive Type) 数组 - 它在字节码中的关键字为 "double[]"
  * @return [KClass]<[JavaArray]>
  */
-val DoubleArrayKType get() = DoubleArrayType.kotlin
+val DoubleArrayKType get() = ArrayClass(DoubleKType)
 
 /**
  * 获得 [Any] - [Array] 类型
@@ -320,7 +316,7 @@ val DoubleArrayKType get() = DoubleArrayType.kotlin
  * 它在 Java 中表示为：Object[]
  * @return [KClass]<[JavaArray]>
  */
-val AnyArrayKClass get() = AnyArrayClass.kotlin
+val AnyArrayKClass get() = ArrayClass(AnyKClass)
 
 /**
  * 获得 [Boolean] - [Array] 类型
@@ -328,7 +324,7 @@ val AnyArrayKClass get() = AnyArrayClass.kotlin
  * 它在 Java 中表示为：Boolean[]
  * @return [KClass]<[JavaArray]>
  */
-val BooleanArrayKClass get() = BooleanArrayClass.kotlin
+val BooleanArrayKClass get() = ArrayClass(BooleanKClass)
 
 /**
  * 获得 [Char] - [Array] 类型
@@ -336,7 +332,7 @@ val BooleanArrayKClass get() = BooleanArrayClass.kotlin
  * 它在 Java 中表示为：Character[]
  * @return [KClass]<[JavaArray]>
  */
-val CharArrayKClass get() = CharArrayClass.kotlin
+val CharArrayKClass get() = ArrayClass(CharKClass)
 
 /**
  * 获得 [Byte] - [Array] 类型
@@ -344,7 +340,7 @@ val CharArrayKClass get() = CharArrayClass.kotlin
  * 它在 Java 中表示为：Byte[]
  * @return [KClass]<[JavaArray]>
  */
-val ByteArrayKClass get() = ByteArrayClass.kotlin
+val ByteArrayKClass get() = ArrayClass(ByteKClass)
 
 /**
  * 获得 [Short] - [Array] 类型
@@ -352,7 +348,7 @@ val ByteArrayKClass get() = ByteArrayClass.kotlin
  * 它在 Java 中表示为：Short[]
  * @return [KClass]<[JavaArray]>
  */
-val ShortArrayKClass get() = ShortArrayClass.kotlin
+val ShortArrayKClass get() = ArrayClass(ShortKClass)
 
 /**
  * 获得 [Int] - [Array] 类型
@@ -360,7 +356,7 @@ val ShortArrayKClass get() = ShortArrayClass.kotlin
  * 它在 Java 中表示为：Integer[]
  * @return [KClass]<[JavaArray]>
  */
-val IntArrayKClass get() = IntArrayClass.kotlin
+val IntArrayKClass get() = ArrayClass(IntKClass)
 
 /**
  * 获得 [Float] - [Array] 类型
@@ -368,7 +364,7 @@ val IntArrayKClass get() = IntArrayClass.kotlin
  * 它在 Java 中表示为：Float[]
  * @return [KClass]<[JavaArray]>
  */
-val FloatArrayKClass get() = FloatArrayClass.kotlin
+val FloatArrayKClass get() = ArrayClass(FloatKClass)
 
 /**
  * 获得 [Long] - [Array] 类型
@@ -376,7 +372,7 @@ val FloatArrayKClass get() = FloatArrayClass.kotlin
  * 它在 Java 中表示为：Long[]
  * @return [KClass]<[JavaArray]>
  */
-val LongArrayKClass get() = LongArrayClass.kotlin
+val LongArrayKClass get() = ArrayClass(LongKClass)
 
 /**
  * 获得 [Double] - [Array] 类型
@@ -384,7 +380,7 @@ val LongArrayKClass get() = LongArrayClass.kotlin
  * 它在 Java 中表示为：Double[]
  * @return [KClass]<[JavaArray]>
  */
-val DoubleArrayKClass get() = DoubleArrayClass.kotlin
+val DoubleArrayKClass get() = ArrayClass(DoubleKClass)
 
 /**
  * 获得 [Number] - [Array] 类型
@@ -392,7 +388,7 @@ val DoubleArrayKClass get() = DoubleArrayClass.kotlin
  * 它在 Java 中表示为：Number[]
  * @return [KClass]<[JavaArray]>
  */
-val NumberArrayKClass get() = NumberArrayClass.kotlin
+val NumberArrayKClass get() = ArrayClass(NumberKClass)
 
 /**
  * 获得 [String] - [Array] 类型
@@ -400,7 +396,7 @@ val NumberArrayKClass get() = NumberArrayClass.kotlin
  * 它在 Java 中表示为：String[]
  * @return [KClass]<[JavaArray]>
  */
-val StringArrayKClass get() = StringArrayClass.kotlin
+val StringArrayKClass get() = ArrayClass(StringKClass)
 
 /**
  * 获得 [CharSequence] - [Array] 类型
@@ -408,139 +404,139 @@ val StringArrayKClass get() = StringArrayClass.kotlin
  * 它在 Java 中表示为：CharSequence[]
  * @return [KClass]<[JavaArray]>
  */
-val CharSequenceArrayKClass get() = CharSequenceArrayClass.kotlin
+val CharSequenceArrayKClass get() = ArrayClass(CharSequenceKClass)
 
 /**
  * 获得 [Cloneable] 类型
  * @return [KClass]<[Cloneable]>
  */
-val CloneableKClass get() = CloneableClass.kotlin
+val CloneableKClass get() = kclassOf<Cloneable>()
 
 /**
  * 获得 [List] 类型
  * @return [KClass]<[List]>
  */
-val ListKClass get() = ListClass.kotlin
+val ListKClass get() = kclassOf<List<*>>()
 
 /**
  * 获得 [ArrayList] 类型
  * @return [KClass]<[ArrayList]>
  */
-val ArrayListKClass get() = ArrayListClass.kotlin
+val ArrayListKClass get() = kclassOf<ArrayList<*>>()
 
 /**
  * 获得 [HashMap] 类型
  * @return [KClass]<[HashMap]>
  */
-val HashMapKClass get() = HashMapClass.kotlin
+val HashMapKClass get() = kclassOf<HashMap<*, *>>()
 
 /**
  * 获得 [HashSet] 类型
  * @return [KClass]<[HashSet]>
  */
-val HashSetKClass get() = HashSetClass.kotlin
+val HashSetKClass get() = kclassOf<HashSet<*>>()
 
 /**
  * 获得 [WeakHashMap] 类型
  * @return [KClass]<[WeakHashMap]>
  */
-val WeakHashMapKClass get() = WeakHashMapClass.kotlin
+val WeakHashMapKClass get() = kclassOf<WeakHashMap<*, *>>()
 
 /**
  * 获得 [WeakReference] 类型
  * @return [KClass]<[WeakReference]>
  */
-val WeakReferenceKClass get() = WeakReferenceClass.kotlin
+val WeakReferenceKClass get() = kclassOf<WeakReference<*>>()
 
 /**
  * 获得 [Enum] 类型
  * @return [KClass]<[Enum]>
  */
-val EnumKClass get() = EnumClass.kotlin
+val EnumKClass get() = kclassOf<Enum<*>>()
 
 /**
  * 获得 [Map] 类型
  * @return [KClass]<[Map]>
  */
-val MapKClass get() = MapClass.kotlin
+val MapKClass get() = kclassOf<Map<*, *>>()
 
 /**
  * 获得 [Map.Entry] 类型
  * @return [KClass]<[Map.Entry]>
  */
-val Map_EntryKClass get() = Map_EntryClass.kotlin
+val Map_EntryKClass get() = kclassOf<Map.Entry<*, *>>()
 
 /**
  * 获得 [Reference] 类型
  * @return [KClass]<[Reference]>
  */
-val ReferenceKClass get() = ReferenceClass.kotlin
+val ReferenceKClass get() = kclassOf<Reference<*>>()
 
 /**
  * 获得 [Vector] 类型
  * @return [KClass]<[Vector]>
  */
-val VectorKClass get() = VectorClass.kotlin
+val VectorKClass get() = kclassOf<Vector<*>>()
 
 /**
  * 获得 [File] 类型
  * @return [KClass]<[File]>
  */
-val FileKClass get() = FileClass.kotlin
+val FileKClass get() = kclassOf<File>()
 
 /**
  * 获得 [InputStream] 类型
  * @return [KClass]<[InputStream]>
  */
-val InputStreamKClass get() = InputStreamClass.kotlin
+val InputStreamKClass get() = kclassOf<InputStream>()
 
 /**
  * 获得 [OutputStream] 类型
  * @return [KClass]<[OutputStream]>
  */
-val OutputStreamKClass get() = OutputStreamClass.kotlin
+val OutputStreamKClass get() = kclassOf<OutputStream>()
 
 /**
  * 获得 [BufferedReader] 类型
  * @return [KClass]<[BufferedReader]>
  */
-val BufferedReaderKClass get() = BufferedReaderClass.kotlin
+val BufferedReaderKClass get() = kclassOf<BufferedReader>()
 
 /**
  * 获得 [Date] 类型
  * @return [KClass]<[Date]>
  */
-val DateKClass get() = DateClass.kotlin
+val DateKClass get() = kclassOf<Date>()
 
 /**
  * 获得 [TimeZone] 类型
  * @return [KClass]<[TimeZone]>
  */
-val TimeZoneKClass get() = TimeZoneClass.kotlin
+val TimeZoneKClass get() = kclassOf<TimeZone>()
 
 /**
  * 获得 [SimpleDateFormat] 类型
  * @return [KClass]<[SimpleDateFormat]>
  */
-val SimpleDateFormatKClass_Java get() = SimpleDateFormatClass_Java.kotlin
+val SimpleDateFormatKClass_Java get() = kclassOf<SimpleDateFormat>()
 
 /**
  * 获得 [Timer] 类型
  * @return [KClass]<[Timer]>
  */
-val TimerKClass get() = TimerClass.kotlin
+val TimerKClass get() = kclassOf<Timer>()
 
 /**
  * 获得 [TimerTask] 类型
  * @return [KClass]<[TimerTask]>
  */
-val TimerTaskKClass get() = TimerTaskClass.kotlin
+val TimerTaskKClass get() = kclassOf<TimerTask>()
 
 /**
  * 获得 [Thread] 类型
  * @return [KClass]<[Thread]>
  */
-val ThreadKClass get() = ThreadClass.kotlin
+val ThreadKClass get() = kclassOf<Thread>()
 
 /**
  * 获得 [Base64] 类型
@@ -548,271 +544,271 @@ val ThreadKClass get() = ThreadClass.kotlin
  * - 在 Android O (26) 及以上系统加入
  * @return [KClass]<[Base64]> or null
  */
-val Base64KClass_Java get() = Base64Class_Java?.kotlin
+val Base64KClass_Java get() = if (Build.VERSION.SDK_INT >= 26) kclassOf<Base64>() else null
 
 /**
  * 获得 [Observer] 类型
  * @return [KClass]<[Observer]>
  */
-val ObserverKClass get() = ObserverClass.kotlin
+val ObserverKClass get() = kclassOf<Observer>()
 
 /**
  * 获得 [Set] 类型
  * @return [KClass]<[Set]>
  */
-val SetKClass get() = SetClass.kotlin
+val SetKClass get() = kclassOf<Set<*>>()
 
 /**
  * 获得 [JSONObject] 类型
  * @return [KClass]<[JSONObject]>
  */
-val JSONObjectKClass get() = JSONObjectClass.kotlin
+val JSONObjectKClass get() = kclassOf<JSONObject>()
 
 /**
  * 获得 [JSONArray] 类型
  * @return [KClass]<[JSONArray]>
  */
-val JSONArrayKClass get() = JSONArrayClass.kotlin
+val JSONArrayKClass get() = kclassOf<JSONArray>()
 
 /**
  * 获得 [StringBuilder] 类型
  * @return [KClass]<[StringBuilder]>
  */
-val StringBuilderKClass get() = StringBuilderClass.kotlin
+val StringBuilderKClass get() = kclassOf<StringBuilder>()
 
 /**
  * 获得 [StringBuffer] 类型
  * @return [KClass]<[StringBuffer]>
  */
-val StringBufferKClass get() = StringBufferClass.kotlin
+val StringBufferKClass get() = kclassOf<StringBuffer>()
 
 /**
  * 获得 [ZipEntry] 类型
  * @return [KClass]<[ZipEntry]>
  */
-val ZipEntryKClass get() = ZipEntryClass.kotlin
+val ZipEntryKClass get() = kclassOf<ZipEntry>()
 
 /**
  * 获得 [ZipFile] 类型
  * @return [KClass]<[ZipFile]>
  */
-val ZipFileKClass get() = ZipFileClass.kotlin
+val ZipFileKClass get() = kclassOf<ZipFile>()
 
 /**
  * 获得 [ZipInputStream] 类型
  * @return [KClass]<[ZipInputStream]>
  */
-val ZipInputStreamKClass get() = ZipInputStreamClass.kotlin
+val ZipInputStreamKClass get() = kclassOf<ZipInputStream>()
 
 /**
  * 获得 [ZipOutputStream] 类型
  * @return [KClass]<[ZipOutputStream]>
  */
-val ZipOutputStreamKClass get() = ZipOutputStreamClass.kotlin
+val ZipOutputStreamKClass get() = kclassOf<ZipOutputStream>()
 
 /**
  * 获得 [HttpURLConnection] 类型
  * @return [KClass]<[HttpURLConnection]>
  */
-val HttpURLConnectionKClass get() = HttpURLConnectionClass.kotlin
+val HttpURLConnectionKClass get() = kclassOf<HttpURLConnection>()
 
 /**
  * 获得 [HttpCookie] 类型
  * @return [KClass]<[HttpCookie]>
  */
-val HttpCookieKClass get() = HttpCookieClass.kotlin
+val HttpCookieKClass get() = kclassOf<HttpCookie>()
 
 /**
  * 获得 [HttpClient] 类型
  * @return [KClass] or null
  */
-val HttpClientKClass get() = HttpClientClass?.kotlin
+val HttpClientKClass get() = "java.net.http.HttpClient".toKClassOrNull()
 
 /**
  * 获得 [AtomicBoolean] 类型
  * @return [KClass]<[AtomicBoolean]>
  */
-val AtomicBooleanKClass get() = AtomicBooleanClass.kotlin
+val AtomicBooleanKClass get() = kclassOf<AtomicBoolean>()
 
 /**
  * 获得 [Supplier] 类型
  * @return [KClass]<[Supplier]>
  */
-val SupplierKClass get() = SupplierClass.kotlin
+val SupplierKClass get() = kclassOf<Supplier<*>>()
 
 /**
  * 获得 [KClass] 类型
  * @return [KClass]<[KClass]>
  */
-val JavaKClass get() = JavaClass.kotlin
+val JavaKClass get() = kclassOf<Class<*>>()
 
 /**
  * 获得 [ClassLoader] 类型
  * @return [KClass]<[ClassLoader]>
  */
-val JavaKClassLoader get() = JavaClassLoader.kotlin
+val JavaKClassLoader get() = kclassOf<ClassLoader>()
 
 /**
  * 获得 [BaseDexClassLoader] 类型
  * @return [KClass]<[BaseDexClassLoader]>
  */
-val DalvikBaseDexClassLoaderKotlin get() = DalvikBaseDexClassLoader.kotlin
+val DalvikBaseDexClassLoaderKotlin get() = kclassOf<BaseDexClassLoader>()
 
 /**
  * 获得 [DexClassLoader] 类型
  * @return [KClass]<[DexClassLoader]>
  */
-val DalvikDexClassLoaderKotlin get() = DalvikDexClassLoader.kotlin
+val DalvikDexClassLoaderKotlin get() = kclassOf<DexClassLoader>()
 
 /**
  * 获得 [PathClassLoader] 类型
  * @return [KClass]<[PathClassLoader]>
  */
-val DalvikPathClassLoaderKotlin get() = DalvikPathClassLoader.kotlin
+val DalvikPathClassLoaderKotlin get() = kclassOf<PathClassLoader>()
 
 /**
  * 获得 [InMemoryDexClassLoader] 类型
  * @return [KClass]<[InMemoryDexClassLoader]>
  */
-val DalvikInMemoryDexClassLoaderKotlin get() = DalvikInMemoryDexClassLoader.kotlin
+val DalvikInMemoryDexClassLoaderKotlin get() = kclassOf<InMemoryDexClassLoader>()
 
 /**
  * 获得 [Method] 类型
  * @return [KClass]<[Method]>
  */
-val JavaMethodKClass get() = JavaMethodClass.kotlin
+val JavaMethodKClass get() = kclassOf<Method>()
 
 /**
  * 获得 [Field] 类型
  * @return [KClass]<[Field]>
  */
-val JavaFieldKClass get() = JavaFieldClass.kotlin
+val JavaFieldKClass get() = kclassOf<Field>()
 
 /**
  * 获得 [Constructor] 类型
  * @return [KClass]<[Constructor]>
  */
-val JavaConstructorKClass get() = JavaConstructorClass.kotlin
+val JavaConstructorKClass get() = kclassOf<Constructor<*>>()
 
 /**
  * 获得 [Member] 类型
  * @return [KClass]<[Member]>
  */
-val JavaMemberKClass get() = JavaMemberClass.kotlin
+val JavaMemberKClass get() = kclassOf<Member>()
 
 /**
  * 获得 [Annotation] 类型
  * @return [KClass]<[Annotation]>
  */
-val JavaAnnotationKClass get() = JavaAnnotationClass.kotlin
+val JavaAnnotationKClass get() = kclassOf<Annotation>()
 
 /**
  * 获得 [java.util.function.Function] 类型
  * @return [KClass]<[JavaFunction]>
  */
-val FunctionKClass get() = FunctionClass.kotlin
+val FunctionKClass get() = kclassOf<JavaFunction<*, *>>()
 
 /**
  * 获得 [Optional] 类型
  * @return [KClass]<[Optional]>
  */
-val OptionalKClass get() = OptionalClass.kotlin
+val OptionalKClass get() = kclassOf<Optional<*>>()
 
 /**
  * 获得 [OptionalInt] 类型
  * @return [KClass]<[OptionalInt]>
  */
-val OptionalIntKClass get() = OptionalIntClass.kotlin
+val OptionalIntKClass get() = kclassOf<OptionalInt>()
 
 /**
  * 获得 [OptionalLong] 类型
  * @return [KClass]<[OptionalLong]>
  */
-val OptionalLongKClass get() = OptionalLongClass.kotlin
+val OptionalLongKClass get() = kclassOf<OptionalLong>()
 
 /**
  * 获得 [OptionalDouble] 类型
  * @return [KClass]<[OptionalDouble]>
  */
-val OptionalDoubleKClass get() = OptionalDoubleClass.kotlin
+val OptionalDoubleKClass get() = kclassOf<OptionalDouble>()
 
 /**
  * 获得 [Objects] 类型
  * @return [KClass]<[Objects]>
  */
-val ObjectsKClass get() = ObjectsClass.kotlin
+val ObjectsKClass get() = kclassOf<Objects>()
 
 /**
  * 获得 [Runtime] 类型
  * @return [KClass]<[Runtime]>
  */
-val RuntimeKClass get() = RuntimeClass.kotlin
+val RuntimeKClass get() = kclassOf<Runtime>()
 
 /**
  * 获得 [NullPointerException] 类型
  * @return [KClass]<[NullPointerException]>
  */
-val NullPointerExceptionKClass get() = NullPointerExceptionClass.kotlin
+val NullPointerExceptionKClass get() = kclassOf<NullPointerException>()
 
 /**
  * 获得 [NumberFormatException] 类型
  * @return [KClass]<[NumberFormatException]>
  */
-val NumberFormatExceptionKClass get() = NumberFormatExceptionClass.kotlin
+val NumberFormatExceptionKClass get() = kclassOf<NumberFormatException>()
 
 /**
  * 获得 [IllegalStateException] 类型
  * @return [KClass]<[IllegalStateException]>
  */
-val IllegalStateExceptionKClass get() = IllegalStateExceptionClass.kotlin
+val IllegalStateExceptionKClass get() = kclassOf<IllegalStateException>()
 
 /**
  * 获得 [RuntimeException] 类型
  * @return [KClass]<[RuntimeException]>
  */
-val RuntimeExceptionKClass get() = RuntimeExceptionClass.kotlin
+val RuntimeExceptionKClass get() = kclassOf<RuntimeException>()
 
 /**
  * 获得 [ClassNotFoundException] 类型
  * @return [KClass]<[ClassNotFoundException]>
  */
-val ClassNotFoundExceptionKClass get() = ClassNotFoundExceptionClass.kotlin
+val ClassNotFoundExceptionKClass get() = kclassOf<ClassNotFoundException>()
 
 /**
  * 获得 [NoClassDefFoundError] 类型
  * @return [KClass]<[NoClassDefFoundError]>
  */
-val NoClassDefFoundErrorKClass get() = NoClassDefFoundErrorClass.kotlin
+val NoClassDefFoundErrorKClass get() = kclassOf<NoClassDefFoundError>()
 
 /**
  * 获得 [NoSuchMethodError] 类型
  * @return [KClass]<[NoSuchMethodError]>
  */
-val NoSuchMethodErrorKClass get() = NoSuchMethodErrorClass.kotlin
+val NoSuchMethodErrorKClass get() = kclassOf<NoSuchMethodError>()
 
 /**
  * 获得 [NoSuchFieldError] 类型
  * @return [KClass]<[NoSuchFieldError]>
  */
-val NoSuchFieldErrorKClass get() = NoSuchFieldErrorClass.kotlin
+val NoSuchFieldErrorKClass get() = kclassOf<NoSuchFieldError>()
 
 /**
  * 获得 [Error] 类型
  * @return [KClass]<[Error]>
  */
-val ErrorKClass get() = ErrorClass.kotlin
+val ErrorKClass get() = kclassOf<Error>()
 
 /**
  * 获得 [Exception] 类型
  * @return [KClass]<[Exception]>
  */
-val ExceptionKClass get() = ExceptionClass.kotlin
+val ExceptionKClass get() = kclassOf<Exception>()
 
 /**
  * 获得 [Throwable] 类型
  * @return [KClass]<[Throwable]>
  */
-val ThrowableKClass get() = ThrowableClass.kotlin
+val ThrowableKClass get() = kclassOf<Throwable>()
 
 /**
  * 获得 [KProperty] 类型

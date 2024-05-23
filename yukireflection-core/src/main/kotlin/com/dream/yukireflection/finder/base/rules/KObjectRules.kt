@@ -22,26 +22,26 @@
  */
 @file:Suppress("unused")
 
-package com.highcapable.yukireflection.finder.base.rules
+package com.dream.yukireflection.finder.base.rules
 
-import java.lang.reflect.Member
+import kotlin.reflect.*
 
 /**
  * 这是一个任意对象条件实现类
  *
- * 可对 R8 混淆后的 [Class]、[Member] 进行更加详细的定位
+ * 可对 R8 混淆后的 [KClass]、[KCallable] 进行更加详细的定位
  * @param instance 当前实例对象
  */
-class ObjectRules private constructor(private val instance: Any) {
+class KObjectRules private constructor(private val instance: Any) {
 
     internal companion object {
 
         /**
          * 创建实例
          * @param instance 实例对象
-         * @return [ObjectRules]
+         * @return [KObjectRules]
          */
-        internal fun with(instance: Any) = ObjectRules(instance)
+        internal fun with(instance: Any) = KObjectRules(instance)
     }
 
     override fun toString() = "ObjectRules [$instance]"

@@ -24,8 +24,7 @@
 
 package com.dream.yukireflection.finder.callable
 
-import com.dream.yukireflection.factory.hasExtends
-import com.dream.yukireflection.factory.superclass
+import com.dream.yukireflection.bean.KCurrentClass
 import com.dream.yukireflection.finder.base.KCallableBaseFinder
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.finder.callable.data.KPropertyRulesData
@@ -33,17 +32,16 @@ import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.type.factory.KTypeConditions
 import com.dream.yukireflection.type.factory.KPropertyConditions
-import com.highcapable.yukireflection.bean.CurrentClass
-import com.highcapable.yukireflection.factory.current
-import com.highcapable.yukireflection.finder.type.factory.NameConditions
-import com.highcapable.yukireflection.log.YLog
-import com.highcapable.yukireflection.utils.factory.runBlocking
 import kotlin.reflect.KProperty
 import kotlin.reflect.KClass
 import com.dream.yukireflection.bean.KVariousClass
-import com.dream.yukireflection.factory.isExtension
-import com.dream.yukireflection.factory.set
+import com.dream.yukireflection.factory.*
+import com.dream.yukireflection.log.KYLog
+import com.dream.yukireflection.type.factory.KNameConditions
+import com.dream.yukireflection.utils.factory.runBlocking
 import java.lang.IllegalArgumentException
+import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.javaGetter
 
 /**
  * [KProperty] 查找类
@@ -51,7 +49,7 @@ import java.lang.IllegalArgumentException
  * 可通过指定类型查找指定 [KProperty] 或一组 [KProperty]
  * @param classSet 当前需要查找的 [KClass] 实例
  */
-class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_PROPERTY, classSet) {
+class KPropertyFinder internal constructor(override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_PROPERTY, classSet) {
 
     override var rulesData = KPropertyRulesData()
 
@@ -130,7 +128,7 @@ class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KC
      * @param conditions 条件方法体
      * @return [KBaseFinder.IndexTypeCondition]
      */
-    fun name(conditions: NameConditions): IndexTypeCondition {
+    fun name(conditions: KNameConditions): IndexTypeCondition {
         rulesData.nameConditions = conditions
         return IndexTypeCondition(IndexConfigType.MATCH)
     }
@@ -261,7 +259,7 @@ class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KC
                 if (isFindSuccess) return
                 errorMsg(msg = "RemedyPlan failed after ${remedyPlans.size} attempts", es = errors, isAlwaysMode = true)
                 remedyPlans.clear()
-            } else YLog.warn(msg = "RemedyPlan is empty, forgot it?")
+            } else KYLog.warn(msg = "RemedyPlan is empty, forgot it?")
         }
 
         /**
@@ -313,9 +311,11 @@ class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KC
          *
          * - 若你设置了 [remedys] 请使用 [wait] 回调结果方法
          * @param instance [KProperty] 所在的实例对象 - 如果是静态可不填 - 默认 null
+         * @param extension 属性如果是拓展属性你还需要传入拓展属性的this对象
+         * @param isUseMember 是否优先将属性转换Java方式进行get/set
          * @return [Instance]
          */
-        fun get(instance: Any? = null) = Instance(instance, give())
+        fun get(instance: Any? = null,extension:Any? = null,isUseMember:Boolean = false) = Instance(instance, give()).receiver(extension).useMember(isUseMember)
 
         /**
          * 获得 [KProperty] 实例处理类数组
@@ -328,10 +328,12 @@ class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KC
          *
          * - 若你设置了 [remedys] 请使用 [waitAll] 回调结果方法
          * @param instance [KProperty] 所在的实例对象 - 如果是静态可不填 - 默认 null
+         * @param extension 属性如果是拓展属性你还需要传入拓展属性的this对象
+         * @param isUseMember 是否优先将属性转换Java方式进行get/set
          * @return [MutableList]<[Instance]>
          */
-        fun all(instance: Any? = null) =
-            mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(instance, it)) } }
+        fun all(instance: Any? = null,extension:Any? = null,isUseMember:Boolean = false) =
+            mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(instance, it).receiver(extension).useMember(isUseMember)) } }
 
         /**
          * 得到 [KProperty] 本身
@@ -434,6 +436,33 @@ class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KC
          */
         inner class Instance internal constructor(private val instance: Any?, private val property: KProperty<*>?) {
 
+            /**
+             * @see [useMember]
+             */
+            private var isUseMember = false
+
+            /**
+             * 是否将get/set使用Java方式获取或设置
+             *
+             * 为true时实例执行将通过将 Kotlin属性 转换为 JavaMember 方式执行
+             *
+             * 如果目标属性无法用Java方式描述则此设置将会自动忽略
+             *
+             * - 开启时优先 Field > GetterMethod > [KProperty.call]
+             *
+             * - 默认情况下只使用 [KProperty.call]
+             *
+             * @param use 是否优先将属性转换为Java方式进行get/set
+             * @return [Instance] 可继续向下监听
+             */
+            fun useMember(use:Boolean = true): Instance {
+                this.isUseMember = use
+                return this
+            }
+
+            /**
+             * @see [receiver]
+             */
             private var extension:Any? = null
 
             /**
@@ -449,25 +478,46 @@ class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KC
                 return this
             }
 
+            private fun baseCall(): Any? {
+                if (isUseMember){
+                    val field = runCatching { property?.javaField }.getOrNull()
+                    if (field != null){
+                        field.isAccessible = true
+                        return field[instance]
+                    }
+                    val getter = runCatching { property?.javaGetter }.getOrNull()
+                    if (getter != null){
+                        getter.isAccessible = true
+                        return if (property?.isExtension == true)
+                            getter.invoke(instance,extension)
+                        else
+                            getter.invoke(instance)
+                    }
+                }
+                return when {
+                    property?.isExtension == true -> {
+                        if (instance != null) property.call(instance,extension)
+                        else property.call(extension)
+                    }
+                    instance != null -> property?.call(instance)
+                    else -> property?.call()
+                }
+            }
+
             /**
              * 获取当前 [KProperty] 自身的实例化对象
              *
              * - 若要直接获取不确定的实例对象 - 请调用 [any] 方法
              * @return [Any] or null
              */
-            private val self get() = runCatching {
-                if (property?.isExtension == true) {
-                    if (instance != null) property.call(instance,extension)
-                    else property.call(extension)
-                } else if (instance != null) property?.call(instance)
-                else property?.call() }.getOrElse { if (it is IllegalArgumentException) errorMsg("Non static method but no instance is passed in.",it) else throw it }
+            private val self get() = runCatching { baseCall() }.getOrElse { if (it is IllegalArgumentException) errorMsg("Non static method but no instance is passed in.",it) else throw it }
 
             /**
              * 获得当前 [KProperty] 自身 [self] 实例的类操作对象
              * @param ignored 是否开启忽略错误警告功能 - 默认否
-             * @return [CurrentClass] or null
+             * @return [KCurrentClass] or null
              */
-            fun current(ignored: Boolean = false) = self?.current(ignored)
+            fun current(ignored: Boolean = false) = self?.currentKotlin(ignored)
 
             /**
              * 获得当前 [KProperty] 自身 [self] 实例的类操作对象
@@ -475,7 +525,7 @@ class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KC
              * @param initiate 方法体
              * @return [Any] or null
              */
-            inline fun current(ignored: Boolean = false, initiate: CurrentClass.() -> Unit) = self?.current(ignored, initiate)
+            inline fun current(ignored: Boolean = false, initiate: KCurrentClass.() -> Unit) = self?.currentKotlin(ignored, initiate)
 
             /**
              * 得到当前 [KProperty] 实例
@@ -581,7 +631,7 @@ class KPropertyFinder constructor(override val classSet: KClass<*>? = null) : KC
              * 设置当前 [KProperty] 实例
              * @param any 设置的实例内容
              */
-            fun set(any: Any?) = property?.set(instance,any)
+            fun set(any: Any?) = property?.set(instance,any,extension,isUseMember)
 
             /**
              * 设置当前 [KProperty] 实例为 true

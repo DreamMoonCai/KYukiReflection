@@ -24,8 +24,10 @@
 package com.dream.yukireflection
 
 import com.dream.yukireflection.factory.declaredPropertys
-import com.highcapable.yukireflection.YukiReflection
+import com.dream.yukireflection.log.KYLog
+import com.highcapable.yukireflection.generated.YukiReflectionProperties
 import org.jetbrains.kotlin.types.FlexibleTypeBoundsChecker
+import java.lang.reflect.Member
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredFunctions
 
@@ -37,10 +39,10 @@ import kotlin.reflect.full.declaredFunctions
 object KYukiReflection {
 
     /** 标签名称 */
-    const val TAG = "KYukiReflection"
+    const val TAG = YukiReflectionProperties.PROJECT_NAME
 
     /** 当前版本 */
-    const val VERSION = YukiReflection.VERSION
+    const val VERSION = YukiReflectionProperties.PROJECT_YUKIREFLECTION_CORE_VERSION
 
     /**
      * 配置 [KYukiReflection]
@@ -62,6 +64,22 @@ object KYukiReflection {
          * [KClass.declaredFunctions] --> [Class.getDeclaredMethods]
          */
         var isUseJvmObtainCallables = false
+
+        /**
+         * 配置 [KYLog.Configs] 相关参数
+         * @param initiate 方法体
+         */
+        inline fun debugLog(initiate: KYLog.Configs.() -> Unit) = KYLog.Configs.apply(initiate).build()
+
+        /**
+         * 是否开启调试模式 - 默认不启用
+         *
+         * 启用后将交由日志输出管理器打印详细日志 (例如反射查找功能的耗时) 到控制台
+         *
+         * 当 [KYLog.Configs.isEnable] 关闭后 [isDebug] 也将同时关闭
+         */
+        var isDebug = false
+
 
         /** 结束方法体 */
         internal fun build() = Unit

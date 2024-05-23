@@ -31,7 +31,6 @@ import com.dream.yukireflection.finder.callable.KPropertyFinder
 import com.dream.yukireflection.finder.callable.KFunctionFinder
 import com.dream.yukireflection.type.factory.KClassConditions
 import com.dream.yukireflection.type.factory.KTypeBuildConditions
-import com.highcapable.yukireflection.bean.GenericClass
 import kotlin.reflect.KClass
 
 /**
@@ -39,10 +38,10 @@ import kotlin.reflect.KClass
  * @param classSet 当前实例的 [KClass]
  * @param instance 当前实例本身
  */
-class KCurrentClass constructor(private val classSet: KClass<*>, internal val instance: Any) {
+class KCurrentClass internal constructor(private val classSet: KClass<*>, internal val instance: Any) {
 
     /** 是否开启忽略错误警告功能 */
-    var isIgnoreErrorLogs = false
+    internal var isIgnoreErrorLogs = false
 
     /**
      * 获得当前 [classSet] 的 [KClass.name]
@@ -72,7 +71,7 @@ class KCurrentClass constructor(private val classSet: KClass<*>, internal val in
      *
      * @param params 类型所需的参数 --> A<T> generic(String::class).type -> A<String>
      * @param initiate 实例方法体
-     * @return [GenericClass]
+     * @return [KGenericClass]
      */
     inline fun generic(vararg params: Any,initiate: KTypeBuildConditions) = classSet.generic(*params, initiate = initiate)
 
@@ -91,7 +90,7 @@ class KCurrentClass constructor(private val classSet: KClass<*>, internal val in
      *
      * 如果当前实例不存在泛型父类将返回 null
      * @param initiate 实例方法体
-     * @return [GenericClass] or null
+     * @return [KGenericClass] or null
      */
     inline fun genericSuper(initiate: KClassConditions) = runCatching { classSet.genericSuper(initiate) }.getOrNull()
 
@@ -151,7 +150,7 @@ class KCurrentClass constructor(private val classSet: KClass<*>, internal val in
          *
          * @param params 类型所需的参数 --> A<T> generic(String::class).type -> A<String>
          * @param initiate 实例方法体
-         * @return [GenericClass]
+         * @return [KGenericClass]
          */
         inline fun generic(vararg params: Any,initiate: KTypeBuildConditions) = superClassSet.generic(*params, initiate = initiate)
 
@@ -170,7 +169,7 @@ class KCurrentClass constructor(private val classSet: KClass<*>, internal val in
          *
          * 如果当前实例不存在泛型父类将返回 null
          * @param initiate 实例方法体
-         * @return [GenericClass] or null
+         * @return [KGenericClass] or null
          */
         inline fun genericSuper(initiate: KClassConditions) = runCatching { superClassSet.genericSuper(initiate) }.getOrNull()
 

@@ -22,9 +22,9 @@
  */
 package com.dream.yukireflection.finder.base
 
+import com.dream.yukireflection.KYukiReflection
 import com.dream.yukireflection.factory.classLoader
-import com.highcapable.yukireflection.YukiReflection
-import com.highcapable.yukireflection.log.YLog
+import com.dream.yukireflection.log.KYLog
 import kotlin.reflect.*
 
 /**
@@ -58,7 +58,7 @@ abstract class KClassBaseFinder internal constructor(internal open val classSet:
      * @param msg 消息内容
      */
     internal fun debugMsg(msg: String) {
-        if (YukiReflection.Configs.isDebug) YLog.debug(msg)
+        if (KYukiReflection.Configs.isDebug) KYLog.debug(msg)
     }
 
     /**
@@ -69,7 +69,7 @@ abstract class KClassBaseFinder internal constructor(internal open val classSet:
         if (isIgnoreErrorLogs) return
         /** 判断是否为 [LOADERSET_IS_NULL] */
         if (e?.message == LOADERSET_IS_NULL) return
-        YLog.error(msg = "NoClassDefFound happend in [$classSet]", e = e)
+        KYLog.error(msg = "NoClassDefFound happend in [$classSet]", e = e)
     }
 
     override fun failure(throwable: Throwable?) = error("DexClassFinder does not contain this usage")

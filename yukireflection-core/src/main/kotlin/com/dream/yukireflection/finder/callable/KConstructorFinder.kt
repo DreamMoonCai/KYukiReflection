@@ -31,19 +31,23 @@ import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.bean.KVariousClass
+import com.dream.yukireflection.finder.callable.KFunctionFinder.Result
+import com.dream.yukireflection.finder.callable.KPropertyFinder.Result.Instance
 import com.dream.yukireflection.finder.callable.data.KConstructorRulesData
 import com.dream.yukireflection.finder.tools.KReflectionTool
+import com.dream.yukireflection.log.KYLog
+import com.dream.yukireflection.type.factory.*
 import com.dream.yukireflection.type.factory.KConstructorConditions
-import com.highcapable.yukireflection.finder.type.factory.CountConditions
+import com.dream.yukireflection.type.factory.KCountConditions
 import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.type.factory.KParameterConditions
-import com.highcapable.yukireflection.log.YLog
-import com.highcapable.yukireflection.utils.factory.runBlocking
+import com.dream.yukireflection.utils.factory.runBlocking
 import java.lang.IllegalArgumentException
 import kotlin.reflect.*
 import kotlin.reflect.KClassifier
 import kotlin.reflect.KFunction
 import kotlin.reflect.KTypeParameter
+import kotlin.reflect.jvm.javaConstructor
 
 /**
  * Constructor [KFunction] 查找类
@@ -51,7 +55,7 @@ import kotlin.reflect.KTypeParameter
  * 可通过指定类型查找指定 Constructor [KFunction] 或一组 Constructor [KFunction]
  * @param classSet 当前需要查找的 [KClass] 实例
  */
-class KConstructorFinder constructor(override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_CONSTRUCTOR, classSet) {
+class KConstructorFinder internal constructor(override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_CONSTRUCTOR, classSet) {
 
     override var rulesData = KConstructorRulesData()
 
@@ -150,6 +154,45 @@ class KConstructorFinder constructor(override val classSet: KClass<*>? = null) :
     }
 
     /**
+     * 设置 Constructor[KFunction] 参数名称
+     *
+     * 如果 Constructor[KFunction] 中存在一些不太清楚的参数名称 - 你可以使用 [VagueKotlin].name 或者 空字符串 或者 "null" 来替代它
+     *
+     * 例如下面这个参数结构 ↓
+     *
+     * ```java
+     * Foo(String count, boolean un$abc, com.demo.Test ends)
+     * ```
+     *
+     * 此时就可以简单地写作 ↓
+     *
+     * ```kotlin
+     * paramName("count","","ends")
+     * ```
+     *
+     * @param paramName 参数名称数组
+     */
+    fun paramName(vararg paramName: String) {
+        if (paramName.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")
+        rulesData.paramNames = paramName
+    }
+
+
+    /**
+     * 设置 Constructor[KFunction] 参数名称条件
+     *
+     * 使用示例如下 ↓
+     *
+     * ```kotlin
+     * paramName { it.isNull() }
+     * ```
+     * @param conditions 条件方法体
+     */
+    fun paramName(conditions: KNamesConditions) {
+        rulesData.paramNamesConditions = conditions
+    }
+
+    /**
      * 顺序筛选字节码的下标
      * @return [KBaseFinder.IndexTypeCondition]
      */
@@ -206,7 +249,7 @@ class KConstructorFinder constructor(override val classSet: KClass<*>? = null) :
      * @param conditions 条件方法体
      * @return [KBaseFinder.IndexTypeCondition]
      */
-    fun paramCount(conditions: CountConditions): IndexTypeCondition {
+    fun paramCount(conditions: KCountConditions): IndexTypeCondition {
         rulesData.paramCountConditions = conditions
         return IndexTypeCondition(IndexConfigType.MATCH)
     }
@@ -303,7 +346,7 @@ class KConstructorFinder constructor(override val classSet: KClass<*>? = null) :
                 if (isFindSuccess) return
                 errorMsg(msg = "RemedyPlan failed after ${remedyPlans.size} attempts", es = errors, isAlwaysMode = true)
                 remedyPlans.clear()
-            } else YLog.warn(msg = "RemedyPlan is empty, forgot it?")
+            } else KYLog.warn(msg = "RemedyPlan is empty, forgot it?")
         }
 
         /**
@@ -348,12 +391,13 @@ class KConstructorFinder constructor(override val classSet: KClass<*>? = null) :
          *
          * - 若有多个 Constructor [KFunction] 结果只会返回第一个
          *
-         * - 在 [memberInstances] 结果为空时使用此方法将无法获得对象
+         * - 在 [callableInstances] 结果为空时使用此方法将无法获得对象
          *
          * - 若你设置了 [remedys] 请使用 [wait] 回调结果方法
+         * @param isUseMember 是否优先将构造函数转换Java方式进行构造
          * @return [Instance]
          */
-        fun get() = Instance(give())
+        fun get(isUseMember:Boolean = false) = Instance(give()).useMember(isUseMember)
 
         /**
          * 获得 Constructor [KFunction] 实例处理类数组
@@ -363,9 +407,10 @@ class KConstructorFinder constructor(override val classSet: KClass<*>? = null) :
          * - 在 [callableInstances] 结果为空时使用此方法将无法获得对象
          *
          * - 若你设置了 [remedys] 请使用 [waitAll] 回调结果方法
+         * @param isUseMember 是否优先将构造函数转换Java方式进行构造
          * @return [MutableList]<[Instance]>
          */
-        fun all() = mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(it)) } }
+        fun all(isUseMember:Boolean = false) = mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(it).useMember(isUseMember)) } }
 
         /**
          * 得到 Constructor [KFunction] 本身
@@ -466,11 +511,44 @@ class KConstructorFinder constructor(override val classSet: KClass<*>? = null) :
         inner class Instance internal constructor(private val constructor: KFunction<*>?) {
 
             /**
+             * @see [useMember]
+             */
+            private var isUseMember = false
+
+            /**
+             * 是否将构造函数转换为Java方式构造
+             *
+             * 为true时实例执行将通过将 Kotlin函数 转换为 JavaMember 方式执行
+             *
+             * 如果目标属性无法用Java方式描述则此设置将会自动忽略
+             *
+             * - 开启时优先 Constructor > [KProperty.call]
+             *
+             * - 默认情况下只使用 [KProperty.call]
+             *
+             * @param use 是否优先将构造函数转换为Java方式进行构造
+             * @return [Instance] 可继续向下监听
+             */
+            fun useMember(use:Boolean = true): Instance {
+                this.isUseMember = use
+                return this
+            }
+
+            /**
              * 执行 Constructor [KFunction] 创建目标实例
              * @param args Constructor [KFunction] 参数
              * @return [Any] or null
              */
-            private fun baseCall(vararg args: Any?) = runCatching { constructor?.call(*args) }.getOrElse { if (it is IllegalArgumentException) errorMsg("An error occurred in the number of parameters. Check whether the number of parameters is correct.",it) else throw it }
+            private fun baseCall(vararg args: Any?) = runCatching {
+                if (isUseMember){
+                    val constructor = runCatching { constructor?.javaConstructor }.getOrNull()
+                    if (constructor != null){
+                        constructor.isAccessible = true
+                        return@runCatching constructor.newInstance(*args)
+                    }
+                }
+                constructor?.call(*args)
+            }.getOrElse { if (it is IllegalArgumentException) errorMsg("An error occurred in the number of parameters. Check whether the number of parameters is correct.",it) else throw it }
 
             /**
              * 执行 Constructor [KFunction] 创建目标实例 - 不指定目标实例类型

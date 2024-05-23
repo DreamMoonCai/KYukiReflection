@@ -33,8 +33,8 @@ import com.dream.yukireflection.finder.classes.rules.KPropertyRules
 import com.dream.yukireflection.finder.classes.rules.base.KBaseRules
 import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.type.factory.KModifierConditions
-import com.highcapable.yukireflection.finder.type.factory.NameConditions
-import com.highcapable.yukireflection.utils.factory.runBlocking
+import com.dream.yukireflection.type.factory.KNameConditions
+import com.dream.yukireflection.utils.factory.runBlocking
 import kotlin.reflect.KClass
 import kotlin.reflect.KCallable
 import kotlin.reflect.KProperty
@@ -45,7 +45,7 @@ import kotlin.reflect.KFunction
  *
  * @param classSet 当前需要查找的 List<[KClass]> 数组
  */
-class KClassFinder constructor(classSet: Collection<KClass<*>>? = null) : KClassBaseFinder(classSet) {
+class KClassFinder internal constructor(classSet: Collection<KClass<*>>? = null) : KClassBaseFinder(classSet) {
 
     override var rulesData = KClassRulesData()
 
@@ -177,7 +177,7 @@ class KClassFinder constructor(classSet: Collection<KClass<*>>? = null) : KClass
      * 只会查找匹配到的 [Class.getName]
      * @param conditions 条件方法体
      */
-    fun fullName(conditions: NameConditions) {
+    fun fullName(conditions: KNameConditions) {
         rulesData.fullNameConditions = conditions
     }
 
@@ -187,7 +187,7 @@ class KClassFinder constructor(classSet: Collection<KClass<*>>? = null) : KClass
      * 只会查找匹配到的 [Class.getSimpleName]
      * @param conditions 条件方法体
      */
-    fun simpleName(conditions: NameConditions) {
+    fun simpleName(conditions: KNameConditions) {
         rulesData.simpleNameConditions = conditions
     }
 
@@ -197,7 +197,7 @@ class KClassFinder constructor(classSet: Collection<KClass<*>>? = null) : KClass
      * 设置后将首先使用 [Class.getSimpleName] - 若为空则会使用 [Class.getName] 进行处理
      * @param conditions 条件方法体
      */
-    fun singleName(conditions: NameConditions) {
+    fun singleName(conditions: KNameConditions) {
         rulesData.singleNameConditions = conditions
     }
 
@@ -408,7 +408,7 @@ class KClassFinder constructor(classSet: Collection<KClass<*>>? = null) : KClass
                     setInstance(result)
                 }.result { ms -> classInstances.takeIf { it.isNotEmpty() }?.forEach { debugMsg(msg = "Find Class [$it] takes ${ms}ms") } }
             }
-            Result().also { e ->
+            Result().also {
                 startProcess()
             }
         } else Result(isNotFound = true, Throwable(LOADERSET_IS_NULL))

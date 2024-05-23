@@ -47,85 +47,88 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
-import com.highcapable.yukireflection.type.android.*
+import com.dream.yukireflection.factory.kclassOf
+import com.dream.yukireflection.factory.toKClass
+import com.dream.yukireflection.factory.toKClassOrNull
+import kotlin.reflect.KClass
 
 /**
  * 获得 [android.R] 类型
  * @return [KClass]<[android.R]>
  */
-val AndroidRKClass get() = AndroidRClass.kotlin
+val AndroidRKClass get() = kclassOf<android.R>()
 
 /**
  * 获得 [Context] 类型
  * @return [KClass]<[Context]>
  */
-val ContextKClass get() = ContextClass.kotlin
+val ContextKClass get() = kclassOf<Context>()
 
 /**
  * 获得 [ContextImpl] 类型
  * @return [KClass]
  */
-val ContextImplKClass get() = ContextImplClass.kotlin
+val ContextImplKClass get() = "android.app.ContextImpl".toKClass()
 
 /**
  * 获得 [ContextWrapper] 类型
  * @return [KClass]<[ContextWrapper]>
  */
-val ContextWrapperKClass get() = ContextWrapperClass.kotlin
+val ContextWrapperKClass get() = kclassOf<ContextWrapper>()
 
 /**
  * 获得 [Application] 类型
  * @return [KClass]<[Application]>
  */
-val ApplicationKClass get() = ApplicationClass.kotlin
+val ApplicationKClass get() = kclassOf<Application>()
 
 /**
  * 获得 [ApplicationInfo] 类型
  * @return [KClass]<[ApplicationInfo]>
  */
-val ApplicationInfoKClass get() = ApplicationInfoClass.kotlin
+val ApplicationInfoKClass get() = kclassOf<ApplicationInfo>()
 
 /**
  * 获得 [Instrumentation] 类型
  * @return [KClass]<[Instrumentation]>
  */
-val InstrumentationKClass get() = InstrumentationClass.kotlin
+val InstrumentationKClass get() = kclassOf<Instrumentation>()
 
 /**
  * 获得 [PackageInfo] 类型
  * @return [KClass]<[PackageInfo]>
  */
-val PackageInfoKClass get() = PackageInfoClass.kotlin
+val PackageInfoKClass get() = kclassOf<PackageInfo>()
 
 /**
  * 获得 [ApplicationPackageManager] 类型
  * @return [KClass]
  */
-val ApplicationPackageManagerKClass get() = ApplicationPackageManagerClass.kotlin
+val ApplicationPackageManagerKClass get() = "android.app.ApplicationPackageManager".toKClass()
 
 /**
  * 获得 [ActivityThread] 类型
  * @return [KClass]
  */
-val ActivityThreadKClass get() = ActivityThreadClass.kotlin
+val ActivityThreadKClass get() = "android.app.ActivityThread".toKClass()
 
 /**
  * 获得 [ActivityManager] 类型
  * @return [KClass]<[ActivityManager]>
  */
-val ActivityManagerKClass get() = ActivityManagerClass.kotlin
+val ActivityManagerKClass get() = kclassOf<ActivityManager>()
 
 /**
  * 获得 [IActivityManager] 类型
  * @return [KClass]
  */
-val IActivityManagerKClass get() = IActivityManagerClass.kotlin
+val IActivityManagerKClass get() = "android.app.IActivityManager".toKClass()
 
 /**
  * 获得 [ActivityManagerNative] 类型
  * @return [KClass]
  */
-val ActivityManagerNativeKClass get() = ActivityManagerNativeClass.kotlin
+val ActivityManagerNativeKClass get() = "android.app.ActivityManagerNative".toKClass()
 
 /**
  * 获得 [IActivityTaskManager] 类型
@@ -133,7 +136,7 @@ val ActivityManagerNativeKClass get() = ActivityManagerNativeClass.kotlin
  * - 在 Android O (26) 及以上系统加入
  * @return [KClass] or null
  */
-val IActivityTaskManagerKClass get() = IActivityTaskManagerClass?.kotlin
+val IActivityTaskManagerKClass get() = "android.app.IActivityTaskManager".toKClassOrNull()
 
 /**
  * 获得 [ActivityTaskManager] 类型
@@ -141,205 +144,205 @@ val IActivityTaskManagerKClass get() = IActivityTaskManagerClass?.kotlin
  * - 在 Android O (26) 及以上系统加入
  * @return [KClass] or null
  */
-val ActivityTaskManagerKClass get() = ActivityTaskManagerClass?.kotlin
+val ActivityTaskManagerKClass get() = "android.app.ActivityTaskManager".toKClassOrNull()
 
 /**
  * 获得 [IPackageManager] 类型
  * @return [KClass]
  */
-val IPackageManagerKClass get() = IPackageManagerClass.kotlin
+val IPackageManagerKClass get() = "android.content.pm.IPackageManager".toKClass()
 
 /**
  * 获得 [ClientTransaction] 类型
  * @return [KClass]
  */
-val ClientTransactionKClass get() = ClientTransactionClass.kotlin
+val ClientTransactionKClass get() = "android.app.servertransaction.ClientTransaction".toKClass()
 
 /**
  * 获得 [LoadedApk] 类型
  * @return [KClass]
  */
-val LoadedApkKClass get() = LoadedApkClass.kotlin
+val LoadedApkKClass get() = "android.app.LoadedApk".toKClass()
 
 /**
  * 获得 [Singleton] 类型
  * @return [KClass]
  */
-val SingletonKClass get() = SingletonClass.kotlin
+val SingletonKClass get() = "android.util.Singleton".toKClass()
 
 /**
  * 获得 [Activity] 类型
  * @return [KClass]<[Activity]>
  */
-val ActivityKClass get() = ActivityClass.kotlin
+val ActivityKClass get() = kclassOf<Activity>()
 
 /**
  * 获得 [Looper] 类型
  * @return [KClass]<[Looper]>
  */
-val LooperKClass get() = LooperClass.kotlin
+val LooperKClass get() = kclassOf<Looper>()
 
 /**
  * 获得 [Fragment] 类型 - Support
  * @return [KClass]
  */
-val FragmentKClass_AndroidSupport get() = FragmentClass_AndroidSupport.kotlin
+val FragmentClass_AndroidSupport get() = "android.support.v4.app.Fragment".toKClass()
 
 /**
  * 获得 [Fragment] 类型 - AndroidX
  * @return [KClass]
  */
-val FragmentKClass_AndroidX get() = FragmentClass_AndroidX.kotlin
+val FragmentClass_AndroidX get() = "androidx.fragment.app.Fragment".toKClass()
 
 /**
  * 获得 [FragmentActivity] 类型 - Support
  * @return [KClass]
  */
-val FragmentActivityKClass_AndroidSupport get() = FragmentActivityClass_AndroidSupport.kotlin
+val FragmentActivityClass_AndroidSupport get() = "android.support.v4.app.FragmentActivity".toKClass()
 
 /**
  * 获得 [FragmentActivity] 类型 - AndroidX
  * @return [KClass]
  */
-val FragmentActivityKClass_AndroidX get() = FragmentActivityClass_AndroidX.kotlin
+val FragmentActivityClass_AndroidX get() = "androidx.fragment.app.FragmentActivity".toKClass()
 
 /**
  * 获得 [DocumentFile] 类型 - AndroidX
  * @return [KClass]
  */
-val DocumentFileKClass get() = DocumentFileClass.kotlin
+val DocumentFileKClass get() = "androidx.documentfile.provider.DocumentFile".toKClass()
 
 /**
  * 获得 [Service] 类型
  * @return [KClass]<[Service]>
  */
-val ServiceKClass get() = ServiceClass.kotlin
+val ServiceKClass get() = kclassOf<Service>()
 
 /**
  * 获得 [Binder] 类型
  * @return [KClass]<[Binder]>
  */
-val BinderKClass get() = BinderClass.kotlin
+val BinderKClass get() = kclassOf<Binder>()
 
 /**
  * 获得 [IBinder] 类型
  * @return [KClass]<[IBinder]>
  */
-val IBinderKClass get() = IBinderClass.kotlin
+val IBinderKClass get() = kclassOf<IBinder>()
 
 /**
  * 获得 [BroadcastReceiver] 类型
  * @return [KClass]<[BroadcastReceiver]>
  */
-val BroadcastReceiverKClass get() = BroadcastReceiverClass.kotlin
+val BroadcastReceiverKClass get() = kclassOf<BroadcastReceiver>()
 
 /**
  * 获得 [Bundle] 类型
  * @return [KClass]<[Bundle]>
  */
-val BundleKClass get() = BundleClass.kotlin
+val BundleKClass get() = kclassOf<Bundle>()
 
 /**
  * 获得 [BaseBundle] 类型
  * @return [KClass]<[BaseBundle]>
  */
-val BaseBundleKClass get() = BaseBundleClass.kotlin
+val BaseBundleKClass get() = kclassOf<BaseBundle>()
 
 /**
  * 获得 [Resources] 类型
  * @return [KClass]<[Resources]>
  */
-val ResourcesKClass get() = ResourcesClass.kotlin
+val ResourcesKClass get() = kclassOf<Resources>()
 
 /**
  * 获得 [Configuration] 类型
  * @return [KClass]<[Configuration]>
  */
-val ConfigurationKClass get() = ConfigurationClass.kotlin
+val ConfigurationKClass get() = kclassOf<Configuration>()
 
 /**
  * 获得 [ConfigurationInfo] 类型
  * @return [KClass]<[ConfigurationInfo]>
  */
-val ConfigurationInfoKClass get() = ConfigurationInfoClass.kotlin
+val ConfigurationInfoKClass get() = kclassOf<ConfigurationInfo>()
 
 /**
  * 获得 [ContentResolver] 类型
  * @return [KClass]<[ContentResolver]>
  */
-val ContentResolverKClass get() = ContentResolverClass.kotlin
+val ContentResolverKClass get() = kclassOf<ContentResolver>()
 
 /**
  * 获得 [ContentProvider] 类型
  * @return [KClass]<[ContentProvider]>
  */
-val ContentProviderKClass get() = ContentProviderClass.kotlin
+val ContentProviderKClass get() = kclassOf<ContentProvider>()
 
 /**
  * 获得 [Settings] 类型
  * @return [KClass]<[Settings]>
  */
-val SettingsKClass get() = SettingsClass.kotlin
+val SettingsKClass get() = kclassOf<Settings>()
 
 /**
  * 获得 [Settings.System] 类型
  * @return [KClass]<[Settings.System]>
  */
-val Settings_SystemKClass get() = Settings_SystemClass.kotlin
+val Settings_SystemKClass get() = kclassOf<Settings.System>()
 
 /**
  * 获得 [Settings.Secure] 类型
  * @return [KClass]<[Settings.Secure]>
  */
-val Settings_SecureKClass get() = Settings_SecureClass.kotlin
+val Settings_SecureKClass get() = kclassOf<Settings.Secure>()
 
 /**
  * 获得 [TypedArray] 类型
  * @return [KClass]<[TypedArray]>
  */
-val TypedArrayKClass get() = TypedArrayClass.kotlin
+val TypedArrayKClass get() = kclassOf<TypedArray>()
 
 /**
  * 获得 [TypedValue] 类型
  * @return [KClass]<[TypedValue]>
  */
-val TypedValueKClass get() = TypedValueClass.kotlin
+val TypedValueKClass get() = kclassOf<TypedValue>()
 
 /**
  * 获得 [SparseArray] 类型
  * @return [KClass]<[SparseArray]>
  */
-val SparseArrayKClass get() = SparseArrayClass.kotlin
+val SparseArrayKClass get() = kclassOf<SparseArray<*>>()
 
 /**
  * 获得 [SparseIntArray] 类型
  * @return [KClass]<[SparseIntArray]>
  */
-val SparseIntArrayKClass get() = SparseIntArrayClass.kotlin
+val SparseIntArrayKClass get() = kclassOf<SparseIntArray>()
 
 /**
  * 获得 [SparseBooleanArray] 类型
  * @return [KClass]<[SparseBooleanArray]>
  */
-val SparseBooleanArrayKClass get() = SparseBooleanArrayClass.kotlin
+val SparseBooleanArrayKClass get() = kclassOf<SparseBooleanArray>()
 
 /**
  * 获得 [SparseLongArray] 类型
  * @return [KClass]<[SparseLongArray]>
  */
-val SparseLongArrayKClass get() = SparseLongArrayClass.kotlin
+val SparseLongArrayKClass get() = kclassOf<SparseLongArray>()
 
 /**
  * 获得 [LongSparseArray] 类型
  * @return [KClass]<[LongSparseArray]>
  */
-val LongSparseArrayKClass get() = LongSparseArrayClass.kotlin
+val LongSparseArrayKClass get() = kclassOf<LongSparseArray<*>>()
 
 /**
  * 获得 [ArrayMap] 类型
  * @return [KClass]<[ArrayMap]>
  */
-val ArrayMapKClass get() = ArrayMapClass.kotlin
+val ArrayMapKClass get() = kclassOf<ArrayMap<*, *>>()
 
 /**
  * 获得 [ArraySet] 类型
@@ -347,43 +350,43 @@ val ArrayMapKClass get() = ArrayMapClass.kotlin
  * - 在 Android M (23) 及以上系统加入
  * @return [KClass]<[ArraySet]> or null
  */
-val ArraySetKClass get() = ArraySetClass?.kotlin
+val ArraySetKClass get() = if (Build.VERSION.SDK_INT >= 23) kclassOf<ArraySet<*>>() else null
 
 /**
  * 获得 [Handler] 类型
  * @return [KClass]<[Handler]>
  */
-val HandlerKClass get() = HandlerClass.kotlin
+val HandlerKClass get() = kclassOf<Handler>()
 
 /**
  * 获得 [Handler.Callback] 类型
  * @return [KClass]<[Handler.Callback]>
  */
-val Handler_CallbackKClass get() = Handler_CallbackClass.kotlin
+val Handler_CallbackKClass get() = kclassOf<Handler.Callback>()
 
 /**
  * 获得 [Message] 类型
  * @return [KClass]<[Message]>
  */
-val MessageKClass get() = MessageClass.kotlin
+val MessageKClass get() = kclassOf<Message>()
 
 /**
  * 获得 [MessageQueue] 类型
  * @return [KClass]<[MessageQueue]>
  */
-val MessageQueueKClass get() = MessageQueueClass.kotlin
+val MessageQueueKClass get() = kclassOf<MessageQueue>()
 
 /**
  * 获得 [Messenger] 类型
  * @return [KClass]<[Messenger]>
  */
-val MessengerKClass get() = MessengerClass.kotlin
+val MessengerKClass get() = kclassOf<Messenger>()
 
 /**
  * 获得 [AsyncTask] 类型
  * @return [KClass]<[AsyncTask]>
  */
-val AsyncTaskKClass get() = AsyncTaskClass.kotlin
+val AsyncTaskKClass get() = kclassOf<AsyncTask<*, *, *>>()
 
 /**
  * 获得 [SimpleDateFormat] 类型
@@ -391,19 +394,19 @@ val AsyncTaskKClass get() = AsyncTaskClass.kotlin
  * - 在 Android N (24) 及以上系统加入
  * @return [KClass]<[SimpleDateFormat]> or null
  */
-val SimpleDateFormatKClass_Android get() = SimpleDateFormatClass_Android?.kotlin
+val SimpleDateFormatClass_Android get() = if (Build.VERSION.SDK_INT >= 24) kclassOf<SimpleDateFormat>() else null
 
 /**
  * 获得 [Base64] 类型
  * @return [KClass]<[Base64]>
  */
-val Base64KClass_Android get() = Base64Class_Android.kotlin
+val Base64Class_Android get() = kclassOf<Base64>()
 
 /**
  * 获得 [Window] 类型
  * @return [KClass]<[Window]>
  */
-val WindowKClass get() = WindowClass.kotlin
+val WindowKClass get() = kclassOf<Window>()
 
 /**
  * 获得 [WindowMetrics] 类型
@@ -411,13 +414,13 @@ val WindowKClass get() = WindowClass.kotlin
  * - 在 Android R (30) 及以上系统加入
  * @return [KClass]<[WindowMetrics]> or null
  */
-val WindowMetricsKClass get() = WindowMetricsClass?.kotlin
+val WindowMetricsKClass get() = if (Build.VERSION.SDK_INT >= 30) kclassOf<WindowMetrics>() else null
 
 /**
  * 获得 [WindowInsets] 类型
  * @return [KClass]<[WindowInsets]>
  */
-val WindowInsetsKClass get() = WindowInsetsClass.kotlin
+val WindowInsetsKClass get() = kclassOf<WindowInsets>()
 
 /**
  * 获得 [WindowInsets.Type] 类型
@@ -425,217 +428,217 @@ val WindowInsetsKClass get() = WindowInsetsClass.kotlin
  * - 在 Android R (30) 及以上系统加入
  * @return [KClass]<[WindowInsets.Type]> or null
  */
-val WindowInsets_TypeKClass get() = WindowInsets_TypeClass?.kotlin
+val WindowInsets_TypeKClass get() = if (Build.VERSION.SDK_INT >= 30) kclassOf<WindowInsets.Type>() else null
 
 /**
  * 获得 [WindowManager] 类型
  * @return [KClass]<[WindowManager]>
  */
-val WindowManagerKClass get() = WindowManagerClass.kotlin
+val WindowManagerKClass get() = kclassOf<WindowManager>()
 
 /**
  * 获得 [WindowManager.LayoutParams] 类型
  * @return [KClass]<[WindowManager.LayoutParams]>
  */
-val WindowManager_LayoutParamsKClass get() = WindowManager_LayoutParamsClass.kotlin
+val WindowManager_LayoutParamsKClass get() = kclassOf<WindowManager.LayoutParams>()
 
 /**
  * 获得 [ViewManager] 类型
  * @return [KClass]<[ViewManager]>
  */
-val ViewManagerKClass get() = ViewManagerClass.kotlin
+val ViewManagerKClass get() = kclassOf<ViewManager>()
 
 /**
  * 获得 [Parcel] 类型
  * @return [KClass]<[Parcel]>
  */
-val ParcelKClass get() = ParcelClass.kotlin
+val ParcelKClass get() = kclassOf<Parcel>()
 
 /**
  * 获得 [Parcelable] 类型
  * @return [KClass]<[Parcelable]>
  */
-val ParcelableKClass get() = ParcelableClass.kotlin
+val ParcelableKClass get() = kclassOf<Parcelable>()
 
 /**
  * 获得 [Parcelable.Creator] 类型
  * @return [KClass]<[Parcelable.Creator]>
  */
-val Parcelable_CreatorKClass get() = Parcelable_CreatorClass.kotlin
+val Parcelable_CreatorKClass get() = kclassOf<Parcelable.Creator<*>>()
 
 /**
  * 获得 [Dialog] 类型
  * @return [KClass]<[Dialog]>
  */
-val DialogKClass get() = DialogClass.kotlin
+val DialogKClass get() = kclassOf<Dialog>()
 
 /**
  * 获得 [AlertDialog] 类型
  * @return [KClass]<[AlertDialog]>
  */
-val AlertDialogKClass get() = AlertDialogClass.kotlin
+val AlertDialogKClass get() = kclassOf<AlertDialog>()
 
 /**
  * 获得 [DisplayMetrics] 类型
  * @return [KClass]<[DisplayMetrics]>
  */
-val DisplayMetricsKClass get() = DisplayMetricsClass.kotlin
+val DisplayMetricsKClass get() = kclassOf<DisplayMetrics>()
 
 /**
  * 获得 [Display] 类型
  * @return [KClass]<[Display]>
  */
-val DisplayKClass get() = DisplayClass.kotlin
+val DisplayKClass get() = kclassOf<Display>()
 
 /**
  * 获得 [Toast] 类型
  * @return [KClass]<[Toast]>
  */
-val ToastKClass get() = ToastClass.kotlin
+val ToastKClass get() = kclassOf<Toast>()
 
 /**
  * 获得 [Intent] 类型
  * @return [KClass]<[Intent]>
  */
-val IntentKClass get() = IntentClass.kotlin
+val IntentKClass get() = kclassOf<Intent>()
 
 /**
  * 获得 [ComponentInfo] 类型
  * @return [KClass]<[ComponentInfo]>
  */
-val ComponentInfoKClass get() = ComponentInfoClass.kotlin
+val ComponentInfoKClass get() = kclassOf<ComponentInfo>()
 
 /**
  * 获得 [ComponentName] 类型
  * @return [KClass]<[ComponentName]>
  */
-val ComponentNameKClass get() = ComponentNameClass.kotlin
+val ComponentNameKClass get() = kclassOf<ComponentName>()
 
 /**
  * 获得 [PendingIntent] 类型
  * @return [KClass]<[PendingIntent]>
  */
-val PendingIntentKClass get() = PendingIntentClass.kotlin
+val PendingIntentKClass get() = kclassOf<PendingIntent>()
 
 /**
  * 获得 [ColorStateList] 类型
  * @return [KClass]<[ColorStateList]>
  */
-val ColorStateListKClass get() = ColorStateListClass.kotlin
+val ColorStateListKClass get() = kclassOf<ColorStateList>()
 
 /**
  * 获得 [ContentValues] 类型
  * @return [KClass]<[ContentValues]>
  */
-val ContentValuesKClass get() = ContentValuesClass.kotlin
+val ContentValuesKClass get() = kclassOf<ContentValues>()
 
 /**
  * 获得 [SharedPreferences] 类型
  * @return [KClass]<[SharedPreferences]>
  */
-val SharedPreferencesKClass get() = SharedPreferencesClass.kotlin
+val SharedPreferencesKClass get() = kclassOf<SharedPreferences>()
 
 /**
  * 获得 [MediaPlayer] 类型
  * @return [KClass]<[MediaPlayer]>
  */
-val MediaPlayerKClass get() = MediaPlayerClass.kotlin
+val MediaPlayerKClass get() = kclassOf<MediaPlayer>()
 
 /**
  * 获得 [ProgressDialog] 类型
  * @return [KClass]<[ProgressDialog]>
  */
-val ProgressDialogKClass get() = ProgressDialogClass.kotlin
+val ProgressDialogKClass get() = kclassOf<ProgressDialog>()
 
 /**
  * 获得 [Log] 类型
  * @return [KClass]<[Log]>
  */
-val LogKClass get() = LogClass.kotlin
+val LogKClass get() = kclassOf<Log>()
 
 /**
  * 获得 [Build] 类型
  * @return [KClass]<[Build]>
  */
-val BuildKClass get() = BuildClass.kotlin
+val BuildKClass get() = kclassOf<Build>()
 
 /**
  * 获得 [Xml] 类型
  * @return [KClass]<[Xml]>
  */
-val XmlKClass get() = XmlClass.kotlin
+val XmlKClass get() = kclassOf<Xml>()
 
 /**
  * 获得 [ContrastColorUtil] 类型
  * @return [KClass]
  */
-val ContrastColorUtilKClass get() = ContrastColorUtilClass.kotlin
+val ContrastColorUtilKClass get() = "com.android.internal.util.ContrastColorUtil".toKClass()
 
 /**
  * 获得 [StatusBarNotification] 类型
  * @return [KClass]<[StatusBarNotification]>
  */
-val StatusBarNotificationKClass get() = StatusBarNotificationClass.kotlin
+val StatusBarNotificationKClass get() = kclassOf<StatusBarNotification>()
 
 /**
  * 获得 [Notification] 类型
  * @return [KClass]<[Notification]>
  */
-val NotificationKClass get() = NotificationClass.kotlin
+val NotificationKClass get() = kclassOf<Notification>()
 
 /**
  * 获得 [Notification.Builder] 类型
  * @return [KClass]<[Notification.Builder]>
  */
-val Notification_BuilderKClass get() = Notification_BuilderClass.kotlin
+val Notification_BuilderKClass get() = kclassOf<Notification.Builder>()
 
 /**
  * 获得 [Notification.Action] 类型
  * @return [KClass]<[Notification.Action]>
  */
-val Notification_ActionKClass get() = Notification_ActionClass.kotlin
+val Notification_ActionKClass get() = kclassOf<Notification.Action>()
 
 /**
  * 获得 [DialogInterface] 类型
  * @return [KClass]<[DialogInterface]>
  */
-val DialogInterfaceKClass get() = DialogInterfaceClass.kotlin
+val DialogInterfaceKClass get() = kclassOf<DialogInterface>()
 
 /**
  * 获得 [DialogInterface.OnClickListener] 类型
  * @return [KClass]<[DialogInterface.OnClickListener]>
  */
-val DialogInterface_OnClickListenerKClass get() = DialogInterface_OnClickListenerClass.kotlin
+val DialogInterface_OnClickListenerKClass get() = kclassOf<DialogInterface.OnClickListener>()
 
 /**
  * 获得 [DialogInterface.OnCancelListener] 类型
  * @return [KClass]<[DialogInterface.OnCancelListener]>
  */
-val DialogInterface_OnCancelListenerKClass get() = DialogInterface_OnCancelListenerClass.kotlin
+val DialogInterface_OnCancelListenerKClass get() = kclassOf<DialogInterface.OnCancelListener>()
 
 /**
  * 获得 [DialogInterface.OnDismissListener] 类型
  * @return [KClass]<[DialogInterface.OnDismissListener]>
  */
-val DialogInterface_OnDismissListenerKClass get() = DialogInterface_OnDismissListenerClass.kotlin
+val DialogInterface_OnDismissListenerKClass get() = kclassOf<DialogInterface.OnDismissListener>()
 
 /**
  * 获得 [Environment] 类型
  * @return [KClass]<[Environment]>
  */
-val EnvironmentKClass get() = EnvironmentClass.kotlin
+val EnvironmentKClass get() = kclassOf<Environment>()
 
 /**
  * 获得 [Process] 类型
  * @return [KClass]<[Process]>
  */
-val ProcessKClass get() = ProcessClass.kotlin
+val ProcessKClass get() = kclassOf<Process>()
 
 /**
  * 获得 [Vibrator] 类型
  * @return [KClass]<[Vibrator]>
  */
-val VibratorKClass get() = VibratorClass.kotlin
+val VibratorKClass get() = kclassOf<Vibrator>()
 
 /**
  * 获得 [VibrationEffect] 类型
@@ -643,7 +646,7 @@ val VibratorKClass get() = VibratorClass.kotlin
  * - 在 Android O (26) 及以上系统加入
  * @return [KClass]<[VibrationEffect]> or null
  */
-val VibrationEffectKClass get() = VibrationEffectClass?.kotlin
+val VibrationEffectKClass get() = if (Build.VERSION.SDK_INT >= 26) kclassOf<VibrationEffect>() else null
 
 /**
  * 获得 [VibrationAttributes] 类型
@@ -651,31 +654,31 @@ val VibrationEffectKClass get() = VibrationEffectClass?.kotlin
  * - 在 Android R (30) 及以上系统加入
  * @return [KClass]<[VibrationAttributes]> or null
  */
-val VibrationAttributesKClass get() = VibrationAttributesClass?.kotlin
+val VibrationAttributesKClass get() = if (Build.VERSION.SDK_INT >= 30) kclassOf<VibrationAttributes>() else null
 
 /**
  * 获得 [SystemClock] 类型
  * @return [KClass]<[SystemClock]>
  */
-val SystemClockKClass get() = SystemClockClass.kotlin
+val SystemClockKClass get() = kclassOf<SystemClock>()
 
 /**
  * 获得 [PowerManager] 类型
  * @return [KClass]<[PowerManager]>
  */
-val PowerManagerKClass get() = PowerManagerClass.kotlin
+val PowerManagerKClass get() = kclassOf<PowerManager>()
 
 /**
  * 获得 [PowerManager.WakeLock] 类型
  * @return [KClass]<[PowerManager.WakeLock]>
  */
-val PowerManager_WakeLockKClass get() = PowerManager_WakeLockClass.kotlin
+val PowerManager_WakeLockKClass get() = kclassOf<PowerManager.WakeLock>()
 
 /**
  * 获得 [UserHandle] 类型
  * @return [KClass]<[UserHandle]>
  */
-val UserHandleKClass get() = UserHandleClass.kotlin
+val UserHandleKClass get() = kclassOf<UserHandle>()
 
 /**
  * 获得 [ShortcutInfo] 类型
@@ -683,7 +686,7 @@ val UserHandleKClass get() = UserHandleClass.kotlin
  * - 在 Android N_MR1 (25) 及以上系统加入
  * @return [KClass]<[ShortcutInfo]> or null
  */
-val ShortcutInfoKClass get() = ShortcutInfoClass?.kotlin
+val ShortcutInfoKClass get() = if (Build.VERSION.SDK_INT >= 25) kclassOf<ShortcutInfo>() else null
 
 /**
  * 获得 [ShortcutManager] 类型
@@ -691,7 +694,7 @@ val ShortcutInfoKClass get() = ShortcutInfoClass?.kotlin
  * - 在 Android R (30) 及以上系统加入
  * @return [KClass]<[ShortcutManager]> or null
  */
-val ShortcutManagerKClass get() = ShortcutManagerClass?.kotlin
+val ShortcutManagerKClass get() = if (Build.VERSION.SDK_INT >= 30) kclassOf<ShortcutManager>() else null
 
 /**
  * 获得 [ShortcutQuery] 类型
@@ -699,118 +702,118 @@ val ShortcutManagerKClass get() = ShortcutManagerClass?.kotlin
  * - 在 Android N_MR1 (25) 及以上系统加入
  * @return [KClass]<[ShortcutQuery]> or null
  */
-val ShortcutQueryKClass get() = ShortcutQueryClass?.kotlin
+val ShortcutQueryKClass get() = if (Build.VERSION.SDK_INT >= 25) kclassOf<ShortcutQuery>() else null
 
 /**
  * 获得 [KeyboardShortcutInfo] 类型
  * @return [KClass]<[KeyboardShortcutInfo]>
  */
-val KeyboardShortcutInfoKClass get() = KeyboardShortcutInfoClass.kotlin
+val KeyboardShortcutInfoKClass get() = kclassOf<KeyboardShortcutInfo>()
 
 /**
  * 获得 [KeyboardShortcutGroup] 类型
  * @return [KClass]<[KeyboardShortcutGroup]>
  */
-val KeyboardShortcutGroupKClass get() = KeyboardShortcutGroupClass.kotlin
+val KeyboardShortcutGroupKClass get() = kclassOf<KeyboardShortcutGroup>()
 
 /**
  * 获得 [ShortcutIconResource] 类型
  * @return [KClass]<[ShortcutIconResource]>
  */
-val ShortcutIconResourceKClass get() = ShortcutIconResourceClass.kotlin
+val ShortcutIconResourceKClass get() = kclassOf<ShortcutIconResource>()
 
 /**
  * 获得 [AssetManager] 类型
  * @return [KClass]<[AssetManager]>
  */
-val AssetManagerKClass get() = AssetManagerClass.kotlin
+val AssetManagerKClass get() = kclassOf<AssetManager>()
 
 /**
  * 获得 [AppWidgetManager] 类型
  * @return [KClass]<[AppWidgetManager]>
  */
-val AppWidgetManagerKClass get() = AppWidgetManagerClass.kotlin
+val AppWidgetManagerKClass get() = kclassOf<AppWidgetManager>()
 
 /**
  * 获得 [AppWidgetProvider] 类型
  * @return [KClass]<[AppWidgetProvider]>
  */
-val AppWidgetProviderKClass get() = AppWidgetProviderClass.kotlin
+val AppWidgetProviderKClass get() = kclassOf<AppWidgetProvider>()
 
 /**
  * 获得 [AppWidgetProviderInfo] 类型
  * @return [KClass]<[AppWidgetProviderInfo]>
  */
-val AppWidgetProviderInfoKClass get() = AppWidgetProviderInfoClass.kotlin
+val AppWidgetProviderInfoKClass get() = kclassOf<AppWidgetProviderInfo>()
 
 /**
  * 获得 [AppWidgetHost] 类型
  * @return [KClass]<[AppWidgetHost]>
  */
-val AppWidgetHostKClass get() = AppWidgetHostClass.kotlin
+val AppWidgetHostKClass get() = kclassOf<AppWidgetHost>()
 
 /**
  * 获得 [ActivityInfo] 类型
  * @return [KClass]<[ActivityInfo]>
  */
-val ActivityInfoKClass get() = ActivityInfoClass.kotlin
+val ActivityInfoKClass get() = kclassOf<ActivityInfo>()
 
 /**
  * 获得 [ResolveInfo] 类型
  * @return [KClass]<[ResolveInfo]>
  */
-val ResolveInfoKClass get() = ResolveInfoClass.kotlin
+val ResolveInfoKClass get() = kclassOf<ResolveInfo>()
 
 /**
  * 获得 [Property] 类型
  * @return [KClass]<[Property]>
  */
-val PropertyKClass get() = PropertyClass.kotlin
+val PropertyKClass get() = kclassOf<Property<*, *>>()
 
 /**
  * 获得 [IntProperty] 类型
  * @return [KClass]<[IntProperty]>
  */
-val IntPropertyKClass get() = IntPropertyClass.kotlin
+val IntPropertyKClass get() = kclassOf<IntProperty<*>>()
 
 /**
  * 获得 [FloatProperty] 类型
  * @return [KClass]<[FloatProperty]>
  */
-val FloatPropertyKClass get() = FloatPropertyClass.kotlin
+val FloatPropertyKClass get() = kclassOf<FloatProperty<*>>()
 
 /**
  * 获得 [SQLiteDatabase] 类型
  * @return [KClass]<[SQLiteDatabase]>
  */
-val SQLiteDatabaseKClass get() = SQLiteDatabaseClass.kotlin
+val SQLiteDatabaseKClass get() = kclassOf<SQLiteDatabase>()
 
 /**
  * 获得 [StrictMode] 类型
  * @return [KClass]<[StrictMode]>
  */
-val StrictModeKClass get() = StrictModeClass.kotlin
+val StrictModeKClass get() = kclassOf<StrictMode>()
 
 /**
  * 获得 [AccessibilityManager] 类型
  * @return [KClass]<[AccessibilityManager]>
  */
-val AccessibilityManagerKClass get() = AccessibilityManagerClass.kotlin
+val AccessibilityManagerKClass get() = kclassOf<AccessibilityManager>()
 
 /**
  * 获得 [AccessibilityEvent] 类型
  * @return [KClass]<[AccessibilityEvent]>
  */
-val AccessibilityEventKClass get() = AccessibilityEventClass.kotlin
+val AccessibilityEventKClass get() = kclassOf<AccessibilityEvent>()
 
 /**
  * 获得 [AccessibilityNodeInfo] 类型
  * @return [KClass]<[AccessibilityNodeInfo]>
  */
-val AccessibilityNodeInfoKClass get() = AccessibilityNodeInfoClass.kotlin
+val AccessibilityNodeInfoKClass get() = kclassOf<AccessibilityNodeInfo>()
 
 /**
  * 获得 [IInterface] 类型
  * @return [KClass]<[IInterface]>
  */
-val IInterfaceKClass get() = IInterfaceClass.kotlin
+val IInterfaceKClass get() = kclassOf<IInterface>()

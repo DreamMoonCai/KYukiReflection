@@ -28,23 +28,25 @@ import com.dream.yukireflection.factory.hasExtends
 import com.dream.yukireflection.factory.superclass
 import com.dream.yukireflection.finder.base.KCallableBaseFinder
 import com.dream.yukireflection.finder.callable.data.KFunctionRulesData
-import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.finder.tools.KReflectionTool
-import com.dream.yukireflection.type.factory.KFunctionConditions
-import com.dream.yukireflection.type.factory.KTypeConditions
-import com.dream.yukireflection.type.factory.KParameterConditions
 import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
-import com.highcapable.yukireflection.finder.type.factory.CountConditions
-import com.highcapable.yukireflection.finder.type.factory.NameConditions
-import com.highcapable.yukireflection.log.YLog
-import com.highcapable.yukireflection.utils.factory.runBlocking
 import com.dream.yukireflection.bean.KVariousClass
 import com.dream.yukireflection.factory.isExtension
 import com.dream.yukireflection.finder.callable.KPropertyFinder.Result.Instance
+import com.dream.yukireflection.log.KYLog
+import com.dream.yukireflection.type.factory.*
+import com.dream.yukireflection.type.factory.KFunctionConditions
+import com.dream.yukireflection.type.factory.KModifierConditions
+import com.dream.yukireflection.type.factory.KParameterConditions
+import com.dream.yukireflection.type.factory.KTypeConditions
+import com.dream.yukireflection.utils.factory.runBlocking
 import java.lang.IllegalArgumentException
+import com.dream.yukireflection.bean.KGenericClass
+import com.dream.yukireflection.finder.callable.KPropertyFinder.Result
 import kotlin.reflect.*
+import kotlin.reflect.jvm.javaMethod
 
 /**
  * [KFunction] 查找类
@@ -52,7 +54,7 @@ import kotlin.reflect.*
  * 可通过指定类型查找指定 [KFunction] 或一组 [KFunction]
  * @param classSet 当前需要查找的 [KClass] 实例
  */
-class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_FUNCTION, classSet) {
+class KFunctionFinder internal constructor(override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_FUNCTION, classSet) {
 
     override var rulesData = KFunctionRulesData()
 
@@ -162,7 +164,7 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
      * 使用示例如下 ↓
      *
      * ```kotlin
-     * param { it[1] == StringClass || it[2].name == "java.lang.String" }
+     * param { it[1].kotlin == StringClass || it[2].kotlin.name == "java.lang.String" || it[3].name = "size" }
      * ```
      *
      * - 无参 [KFunction] 请使用 [emptyParam] 设置查找条件
@@ -176,6 +178,45 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
     fun param(conditions: KParameterConditions): IndexTypeCondition {
         rulesData.paramTypesConditions = conditions
         return IndexTypeCondition(IndexConfigType.MATCH)
+    }
+
+    /**
+     * 设置 [KFunction] 参数名称
+     *
+     * 如果 [KFunction] 中存在一些不太清楚的参数名称 - 你可以使用 [VagueKotlin].name 或者 空字符串 或者 "null" 来替代它
+     *
+     * 例如下面这个参数结构 ↓
+     *
+     * ```java
+     * void foo(String count, boolean un$abc, com.demo.Test ends)
+     * ```
+     *
+     * 此时就可以简单地写作 ↓
+     *
+     * ```kotlin
+     * paramName("count","","ends")
+     * ```
+     *
+     * @param paramName 参数名称数组
+     */
+    fun paramName(vararg paramName: String) {
+        if (paramName.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")
+        rulesData.paramNames = paramName
+    }
+
+
+    /**
+     * 设置 [KFunction] 参数名称条件
+     *
+     * 使用示例如下 ↓
+     *
+     * ```kotlin
+     * paramName { it.isNull() }
+     * ```
+     * @param conditions 条件方法体
+     */
+    fun paramName(conditions: KNamesConditions) {
+        rulesData.paramNamesConditions = conditions
     }
 
     /**
@@ -207,7 +248,7 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
      * @param conditions 条件方法体
      * @return [KBaseFinder.IndexTypeCondition]
      */
-    fun name(conditions: NameConditions): IndexTypeCondition {
+    fun name(conditions: KNameConditions): IndexTypeCondition {
         rulesData.nameConditions = conditions
         return IndexTypeCondition(IndexConfigType.MATCH)
     }
@@ -263,7 +304,7 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
      * @param conditions 条件方法体
      * @return [KBaseFinder.IndexTypeCondition]
      */
-    fun paramCount(conditions: CountConditions): IndexTypeCondition {
+    fun paramCount(conditions: KCountConditions): IndexTypeCondition {
         rulesData.paramCountConditions = conditions
         return IndexTypeCondition(IndexConfigType.MATCH)
     }
@@ -394,7 +435,7 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
                 if (isFindSuccess) return
                 errorMsg(msg = "RemedyPlan failed after ${remedyPlans.size} attempts", es = errors, isAlwaysMode = true)
                 remedyPlans.clear()
-            } else YLog.warn(msg = "RemedyPlan is empty, forgot it?")
+            } else KYLog.warn(msg = "RemedyPlan is empty, forgot it?")
         }
 
         /**
@@ -439,27 +480,31 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
          *
          * - 若有多个 [KFunction] 结果只会返回第一个
          *
-         * - 在 [memberInstances] 结果为空时使用此方法将无法获得对象
+         * - 在 [callableInstances] 结果为空时使用此方法将无法获得对象
          *
          * - 若你设置了 [remedys] 请使用 [wait] 回调结果方法
          * @param instance 所在实例
+         * @param extension 函数如果是拓展函数你还需要传入拓展函数的this对象
+         * @param isUseMember 是否优先将函数转换Java方式执行
          * @return [Instance]
          */
-        fun get(instance: Any? = null) = Instance(instance, give())
+        fun get(instance: Any? = null,extension:Any? = null,isUseMember:Boolean = false) = Instance(instance, give()).receiver(extension).useMember(isUseMember)
 
         /**
          * 获得 [KFunction] 实例处理类数组
          *
          * - 返回全部查找条件匹配的多个 [KFunction] 实例结果
          *
-         * - 在 [memberInstances] 结果为空时使用此方法将无法获得对象
+         * - 在 [callableInstances] 结果为空时使用此方法将无法获得对象
          *
          * - 若你设置了 [remedys] 请使用 [waitAll] 回调结果方法
          * @param instance 所在实例
+         * @param extension 函数如果是拓展函数你还需要传入拓展函数的this对象
+         * @param isUseMember 是否优先将函数转换Java方式执行
          * @return [MutableList]<[Instance]>
          */
-        fun all(instance: Any? = null) =
-            mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(instance, it)) } }
+        fun all(instance: Any? = null,extension:Any? = null,isUseMember:Boolean = false) =
+            mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(instance, it).receiver(extension).useMember(isUseMember)) } }
 
         /**
          * 得到 [KFunction] 本身
@@ -562,6 +607,33 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
          */
         inner class Instance internal constructor(private val instance: Any?, private val function: KFunction<*>?) {
 
+            /**
+             * @see [useMember]
+             */
+            private var isUseMember = false
+
+            /**
+             * 是否将函数转换为Java方式执行
+             *
+             * 为true时实例执行将通过将 Kotlin函数 转换为 JavaMember 方式执行
+             *
+             * 如果目标属性无法用Java方式描述则此设置将会自动忽略
+             *
+             * - 开启时优先 Method > [KProperty.call]
+             *
+             * - 默认情况下只使用 [KProperty.call]
+             *
+             * @param use 是否优先将函数转换为Java方式进行执行
+             * @return [Instance] 可继续向下监听
+             */
+            fun useMember(use:Boolean = true): Instance {
+                this.isUseMember = use
+                return this
+            }
+
+            /**
+             * @see [receiver]
+             */
             private var extension:Any? = null
 
             /**
@@ -570,7 +642,7 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
              * 当此属性是拓展属性时，你可能需要额外的一个this属性进行设置
              *
              * @param extension 拓展属性的thisRef
-             * @return [KFunction] 实例处理类
+             * @return [Instance] 可继续向下监听
              */
             fun receiver(extension:Any?): Instance {
                 this.extension = extension
@@ -583,10 +655,18 @@ class KFunctionFinder constructor(override val classSet: KClass<*>? = null) : KC
              * @return [Any] or null
              */
             private fun baseCall(vararg args: Any?) = runCatching {
+                if (isUseMember) {
+                    val method = runCatching { function?.javaMethod }.getOrNull()
+                    if (method != null) {
+                        method.isAccessible = true
+                        return@runCatching method.invoke(instance, *args)
+                    }
+                }
                 if (function?.isExtension == true) {
                     if (instance != null) function.call(instance,extension, *args) else function.call(extension,*args)
                 }else
-                if (instance != null) function?.call(instance, *args) else function?.call(*args) }.getOrElse { if (it is IllegalArgumentException) errorMsg("An error occurred in the number of parameters. Check whether the instance exists or whether the number of parameters is correct.",it) else throw it }
+                if (instance != null) function?.call(instance, *args) else function?.call(*args)
+            }.getOrElse { if (it is IllegalArgumentException) errorMsg("An error occurred in the number of parameters. Check whether the instance exists or whether the number of parameters is correct.",it) else throw it }
 
             /**
              * 执行 [KFunction] - 不指定返回值类型

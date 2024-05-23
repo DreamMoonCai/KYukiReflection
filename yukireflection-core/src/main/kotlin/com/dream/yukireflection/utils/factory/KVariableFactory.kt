@@ -21,7 +21,7 @@
  */
 @file:Suppress("unused")
 
-package com.highcapable.yukireflection.utils.factory
+package com.dream.yukireflection.utils.factory
 
 /**
  * 获取数组内容依次列出的字符串表示

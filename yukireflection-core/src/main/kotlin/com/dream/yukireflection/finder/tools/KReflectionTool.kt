@@ -37,18 +37,15 @@ import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.factory.kotlin
 import com.dream.yukireflection.finder.base.KBaseFinder
-import com.highcapable.yukireflection.finder.tools.ReflectionTool
-import com.highcapable.yukireflection.log.YLog
-import com.highcapable.yukireflection.type.defined.UndefinedType
-import com.highcapable.yukireflection.type.java.NoClassDefFoundErrorClass
-import com.highcapable.yukireflection.type.java.NoSuchFieldErrorClass
-import com.highcapable.yukireflection.type.java.NoSuchMethodErrorClass
-import com.highcapable.yukireflection.utils.factory.conditions
-import com.highcapable.yukireflection.utils.factory.findLastIndex
-import com.highcapable.yukireflection.utils.factory.lastIndex
-import com.highcapable.yukireflection.utils.factory.let
-import com.highcapable.yukireflection.utils.factory.runOrFalse
-import com.highcapable.yukireflection.utils.factory.takeIf
+import com.dream.yukireflection.log.KYLog
+import com.dream.yukireflection.type.kotlin.NoClassDefFoundErrorKClass
+import com.dream.yukireflection.type.kotlin.NoSuchFieldErrorKClass
+import com.dream.yukireflection.type.kotlin.NoSuchMethodErrorKClass
+import com.dream.yukireflection.utils.factory.*
+import com.dream.yukireflection.utils.factory.conditions
+import com.dream.yukireflection.utils.factory.findLastIndex
+import com.dream.yukireflection.utils.factory.let
+import com.dream.yukireflection.utils.factory.takeIf
 import org.jetbrains.kotlin.builtins.jvm.JavaToKotlinClassMap
 import org.jetbrains.kotlin.name.FqNameUnsafe
 import kotlin.math.abs
@@ -59,7 +56,7 @@ import kotlin.reflect.jvm.*
 /**
  * 这是一个对 [KClass]、[KCallable] 查找的工具实现类
  */
-object KReflectionTool {
+internal object KReflectionTool {
 
     /** 当前工具类的标签 */
     private const val TAG = "${KYukiReflection.TAG}#KReflectionTool"
@@ -85,7 +82,7 @@ object KReflectionTool {
      * @param loader [KClass] 所在的 [ClassLoader]
      * @return [Boolean]
      */
-    fun hasClassByName(name: String, loader: ClassLoader?) = runCatching { findClassByName(name, loader); true }.getOrNull() ?: false
+    internal fun hasClassByName(name: String, loader: ClassLoader?) = runCatching { findClassByName(name, loader); true }.getOrNull() ?: false
 
     /**
      * 使用字符串类名获取 [KClass]
@@ -95,13 +92,28 @@ object KReflectionTool {
      * @return [KClass]
      * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
      */
-    fun findClassByName(name: String, loader: ClassLoader?, initialize: Boolean = false): KClass<*> {
+    internal fun findClassByName(name: String, loader: ClassLoader?, initialize: Boolean = false): KClass<*> {
         val jvmName = JavaToKotlinClassMap.mapKotlinToJava(FqNameUnsafe(name))?.asSingleFqName()?.asString() ?: name
         val uniqueCode = "[$name][$loader]"
 
+        /**
+         * 获取 [Class.forName] 的 [Class] 对象
+         * @param name [Class] 完整名称
+         * @param initialize 是否初始化 [Class] 的静态方法块
+         * @param loader [Class] 所在的 [ClassLoader] - 默认为 [currentClassLoader]
+         * @return [Class]
+         */
+        fun classForName(name: String, initialize: Boolean, loader: ClassLoader? = currentClassLoader) =
+            Class.forName(name, initialize, loader)
+
+        /**
+         * 使用默认方式和 [ClassLoader] 装载 [Class]
+         * @return [Class] or null
+         */
+        fun loadWithDefaultClassLoader() = if (initialize.not()) loader?.loadClass(name) else classForName(name, initialize, loader)
         return MemoryCache.classData[uniqueCode] ?: runCatching {
-            ReflectionTool.findClassByName(jvmName, loader, initialize).kotlin.also { MemoryCache.classData[uniqueCode] = it }
-        }.getOrNull() ?: throw createException(loader ?: currentClassLoader, name = KBaseFinder.TAG_CLASS, "name:[$jvmName]")
+            (loadWithDefaultClassLoader() ?: classForName(name, initialize)).kotlin.also { MemoryCache.classData[uniqueCode] = it }
+        }.getOrNull() ?: throw createException(loader ?: currentClassLoader, name = KBaseFinder.TAG_CLASS, "name:[$name]")
     }
 
     /**
@@ -165,7 +177,7 @@ object KReflectionTool {
                     fun KCallableRulesData.exists(vararg type: Any?): Boolean {
                         if (type.isEmpty()) return true
                         for (i in type.indices) if (type[i] == UndefinedKotlin) {
-                            YLog.warn(msg = "$objectName type[$i] mistake, it will be ignored in current conditions")
+                            KYLog.warn(msg = "$objectName type[$i] mistake, it will be ignored in current conditions")
                             return false
                         }
                         return true
@@ -212,6 +224,9 @@ object KReflectionTool {
                                     value.paramTypes?.takeIf { value.exists(*it) }?.also { and(paramTypesEq(it, function.valueParameters.toTypedArray())) }
                                     value.paramTypesConditions
                                         ?.also { function.also { t -> runCatching { and(it(t.paramTypes(), t.valueParameters)) } } }
+                                    value.paramNames?.takeIf { value.exists(*it) }?.also { and(paramNamesEq(it, function.valueParameters.map { it.name }.toTypedArray())) }
+                                    value.paramNamesConditions
+                                        ?.also { function.also { t -> runCatching { and(it(t.paramNames(), t.valueParameters.map { it.name })) } } }
                                     value.modifiers?.also { runCatching { and(it(function.cast())) } }
                                     value.nameConditions?.also { function.name.also { n -> runCatching { and(it(n.cast(), n)) } } }
                                 }.finally { numberOfFound++ }
@@ -236,6 +251,14 @@ object KReflectionTool {
                                     ) }
                                     value.paramTypesConditions
                                         ?.also { constructor.also { t -> runCatching { and(it(t.paramTypes(), t.valueParameters)) } } }
+                                    value.paramNames?.takeIf { value.exists(*it) }?.also { and(
+                                        paramNamesEq(
+                                            it,
+                                            constructor.valueParameters.map { it.name }.toTypedArray()
+                                        )
+                                    ) }
+                                    value.paramNamesConditions
+                                        ?.also { constructor.also { t -> runCatching { and(it(t.paramNames(), t.valueParameters.map { it.name })) } } }
                                     value.modifiers?.also { runCatching { and(it(constructor.cast())) } }
                                 }.finally { numberOfFound++ }
                             }.run { rule.matchCount(numberOfFound) { and(it && numberOfFound > 0) } }
@@ -327,13 +350,15 @@ object KReflectionTool {
         if (classSet == null) return@createResult mutableListOf()
         if (hasCondition.not()) return@createResult classSet.existFunctions?.toList()?.toAccessibleKCallables() ?: mutableListOf()
         paramTypes?.takeIf { it.isNotEmpty() }
-            ?.forEachIndexed { p, it -> if (it == UndefinedType) error("Function match paramType[$p] class is not found") }
+            ?.forEachIndexed { p, it -> if (it == UndefinedKotlin) error("Function match paramType[$p] class is not found") }
         mutableListOf<KFunction<*>>().also { functions ->
             classSet.existFunctions?.also { declares ->
                 var iReturnType = -1
                 var iReturnTypeCds = -1
                 var iParamTypes = -1
                 var iParamTypesCds = -1
+                var iParamNames = -1
+                var iParamNamesCds = -1
                 var iParamCount = -1
                 var iParamCountRange = -1
                 var iParamCountCds = -1
@@ -353,6 +378,9 @@ object KReflectionTool {
                 val iLParamTypes = paramTypes?.let(matchIndex) { e -> declares.findLastIndex { paramTypesEq(e, it.valueParameters.toTypedArray()) } } ?: -1
                 val iLParamTypesCds = paramTypesConditions
                     ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse { e(it.paramTypes(), it.valueParameters) } } } ?: -1
+                val iLParamNames = paramNames?.let(matchIndex) { e -> declares.findLastIndex { paramNamesEq(e, it.valueParameters.map { it.name }.toTypedArray()) } } ?: -1
+                val iLParamNamesCds = paramNamesConditions
+                    ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse { e(it.paramNames(), it.valueParameters.map { it.name }) } } } ?: -1
                 val iLName = name.takeIf(matchIndex) { it.isNotBlank() }?.let { e -> declares.findLastIndex { e == it.name } } ?: -1
                 val iLModify = modifiers?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse { e(it.cast()) } } } ?: -1
                 val iLNameCds = nameConditions
@@ -407,6 +435,18 @@ object KReflectionTool {
                                 hold && matchIndex.compare(iParamTypesCds, iLParamTypesCds)
                             })
                         }
+                        paramNames?.also {
+                            and(paramNamesEq(it, instance.valueParameters.map { it.name }.toTypedArray()).let { hold ->
+                                if (hold) iParamNames++
+                                hold && matchIndex.compare(iParamNames, iLParamNames)
+                            })
+                        }
+                        paramNamesConditions?.also {
+                            and(instance.let { t -> runOrFalse { it(t.paramNames(), t.valueParameters.map { it.name }) } }.let { hold ->
+                                if (hold) iParamNamesCds++
+                                hold && matchIndex.compare(iParamNamesCds, iLParamNamesCds)
+                            })
+                        }
                         modifiers?.also {
                             and(runOrFalse { it(instance.cast()) }.let { hold ->
                                 if (hold) iModify++
@@ -443,6 +483,8 @@ object KReflectionTool {
             classSet.existConstructors?.also { declares ->
                 var iParamTypes = -1
                 var iParamTypesCds = -1
+                var iParamNames = -1
+                var iParamNamesCds = -1
                 var iParamCount = -1
                 var iParamCountRange = -1
                 var iParamCountCds = -1
@@ -457,6 +499,9 @@ object KReflectionTool {
                 val iLParamTypes = paramTypes?.let(matchIndex) { e -> declares.findLastIndex { paramTypesEq(e, it.valueParameters.toTypedArray()) } } ?: -1
                 val iLParamTypesCds = paramTypesConditions
                     ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse { e(it.paramTypes(), it.valueParameters) } } } ?: -1
+                val iLParamNames = paramNames?.let(matchIndex) { e -> declares.findLastIndex { paramNamesEq(e, it.valueParameters.map { it.name }.toTypedArray()) } } ?: -1
+                val iLParamNamesCds = paramNamesConditions
+                    ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse { e(it.paramNames(), it.valueParameters.map { it.name }) } } } ?: -1
                 val iLModify = modifiers?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse { e(it.cast()) } } } ?: -1
                 declares.forEachIndexed { index, instance ->
                     conditions {
@@ -488,6 +533,18 @@ object KReflectionTool {
                             and(instance.let { t -> runOrFalse { it(t.paramTypes(), t.valueParameters) } }.let { hold ->
                                 if (hold) iParamTypesCds++
                                 hold && matchIndex.compare(iParamTypesCds, iLParamTypesCds)
+                            })
+                        }
+                        paramNames?.also {
+                            and(paramNamesEq(it, instance.valueParameters.map { it.name }.toTypedArray()).let { hold ->
+                                if (hold) iParamNames++
+                                hold && matchIndex.compare(iParamNames, iLParamNames)
+                            })
+                        }
+                        paramNamesConditions?.also {
+                            and(instance.let { t -> runOrFalse { it(t.paramNames(), t.valueParameters.map { it.name }) } }.let { hold ->
+                                if (hold) iParamNamesCds++
+                                hold && matchIndex.compare(iParamNamesCds, iLParamNamesCds)
                             })
                         }
                         modifiers?.also {
@@ -522,9 +579,9 @@ object KReflectionTool {
         }
         if (content.isEmpty()) return IllegalStateException("Exception content is null")
         val space = when (name) {
-            KBaseFinder.TAG_CLASS -> NoClassDefFoundErrorClass.kotlin.space()
-            KBaseFinder.TAG_PROPERTY -> NoSuchFieldErrorClass.kotlin.space()
-            KBaseFinder.TAG_FUNCTION, KBaseFinder.TAG_CONSTRUCTOR -> NoSuchMethodErrorClass.kotlin.space()
+            KBaseFinder.TAG_CLASS -> NoClassDefFoundErrorKClass.kotlin.space()
+            KBaseFinder.TAG_PROPERTY -> NoSuchFieldErrorKClass.kotlin.space()
+            KBaseFinder.TAG_FUNCTION, KBaseFinder.TAG_CONSTRUCTOR -> NoSuchMethodErrorKClass.kotlin.space()
             else -> error("Invalid Exception type")
         }
         var splicing = ""
@@ -556,7 +613,7 @@ object KReflectionTool {
                 }
             }
         }.onFailure {
-            YLog.warn(msg = "Failed to get the declared KCallables in [$this] because got an exception", e = it)
+            KYLog.warn(msg = "Failed to get the declared KCallables in [$this] because got an exception", e = it)
         }.getOrNull()
 
     /**
@@ -569,7 +626,7 @@ object KReflectionTool {
                 ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence().mapNotNull { it.kotlin }
             else ((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence()
         }.onFailure {
-            YLog.warn(msg = "Failed to get the declared Propertys in [$this] because got an exception", e = it)
+            KYLog.warn(msg = "Failed to get the declared Propertys in [$this] because got an exception", e = it)
         }.getOrNull()
 
     /**
@@ -580,7 +637,7 @@ object KReflectionTool {
         get() = runCatching { if (KYukiReflection.Configs.isUseJvmObtainCallables)
             ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence().mapNotNull { it.kotlin } else
                 ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).asSequence() }.onFailure {
-            YLog.warn(msg = "Failed to get the declared Functions in [$this] because got an exception", e = it)
+            KYLog.warn(msg = "Failed to get the declared Functions in [$this] because got an exception", e = it)
         }.getOrNull()
 
     /**
@@ -589,7 +646,7 @@ object KReflectionTool {
      */
     private val KClass<*>.existConstructors
         get() = runCatching { if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredConstructors.asSequence().mapNotNull { it.kotlin } else constructors.asSequence() }.onFailure {
-            YLog.warn(msg = "Failed to get the declared Constructors in [$this] because got an exception", e = it)
+            KYLog.warn(msg = "Failed to get the declared Constructors in [$this] because got an exception", e = it)
         }.getOrNull()
 
     /**
@@ -602,7 +659,7 @@ object KReflectionTool {
                 runCatching {
                     list.add(callable)
                     callable.isAccessible = true
-                }.onFailure { YLog.warn(msg = "Failed to access [$callable] because got an exception", e = it) }
+                }.onFailure { KYLog.warn(msg = "Failed to access [$callable] because got an exception", e = it) }
             }
         }
 
@@ -723,6 +780,27 @@ object KReflectionTool {
                 if (compare == null || original == null) return false
                 if (compare.all { it == VagueKotlin }) error("The number of VagueType must be at least less than the count of paramTypes")
                 for (i in compare.indices) return typeEq(compare[i],original[i])
+                true
+            }
+        }
+    }
+
+    private fun paramNamesEq(compare: Array<out String?>?, original: Array<out String?>?): Boolean {
+        return when {
+            (compare == null && original == null) || (compare?.isEmpty() == true && original?.isEmpty() == true) -> true
+            (compare == null && original != null) || (compare != null && original == null) || (compare?.size != original?.size) -> false
+            else -> {
+                if (compare == null || original == null) return false
+                for (i in compare.indices){
+                    if (compare[i] != original[i] &&
+                        compare[i] != VagueKotlin.name &&
+                        original[i] != VagueKotlin.name &&
+                        compare[i] != "" &&
+                        original[i] != "" &&
+                        compare[i] != "null" &&
+                        original[i] != "null"
+                        ) return false
+                }
                 true
             }
         }

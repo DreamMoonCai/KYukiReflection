@@ -25,7 +25,7 @@
 package com.dream.yukireflection.finder.classes.rules.result
 
 import com.dream.yukireflection.finder.callable.data.KCallableRulesData
-import com.highcapable.yukireflection.finder.type.factory.CountConditions
+import com.dream.yukireflection.type.factory.KCountConditions
 import kotlin.reflect.KCallable
 
 /**
@@ -77,7 +77,7 @@ class KCallableRulesResult internal constructor(private val rulesData: KCallable
      * @param conditions 条件方法体
      * @return [KCallableRulesResult] 可继续向下监听
      */
-    fun count(conditions: CountConditions): KCallableRulesResult {
+    fun count(conditions: KCountConditions): KCallableRulesResult {
         rulesData.matchCountConditions = conditions
         return this
     }

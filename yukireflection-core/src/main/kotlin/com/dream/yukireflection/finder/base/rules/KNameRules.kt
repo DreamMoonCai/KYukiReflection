@@ -23,26 +23,26 @@
  */
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
-package com.highcapable.yukireflection.finder.base.rules
+package com.dream.yukireflection.finder.base.rules
 
-import java.lang.reflect.Member
+import kotlin.reflect.*
 
 /**
- * 这是一个模糊 [Class]、[Member] 名称条件实现类
+ * 这是一个模糊 [KClass]、[KCallable] 名称条件实现类
  *
- * 可对 R8 混淆后的 [Class]、[Member] 进行更加详细的定位
+ * 可对 R8 混淆后的 [KClass]、[KCallable] 进行更加详细的定位
  * @param instance 当前实例对象
  */
-class NameRules private constructor(private val instance: String) {
+class KNameRules private constructor(private val instance: String) {
 
     internal companion object {
 
         /**
          * 创建实例
          * @param instance 实例对象
-         * @return [NameRules]
+         * @return [KNameRules]
          */
-        internal fun with(instance: String) = NameRules(instance)
+        internal fun with(instance: String) = KNameRules(instance)
     }
 
     /**

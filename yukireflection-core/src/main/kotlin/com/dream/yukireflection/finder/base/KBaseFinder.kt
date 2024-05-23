@@ -167,7 +167,7 @@ abstract class KBaseFinder {
      * @param loader 使用的 [ClassLoader]
      * @return [KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass] or null
      */
-    internal fun Any?.compat(tag: String, loader: ClassLoader?) = when (val thisRef = this.checkSupportedTypes()) {
+    internal fun Any?.compat(tag: String, loader: ClassLoader?) = when (val thisRef = this.checkSupportedTypes(tag)) {
         null -> null
         is KClass<*>,is KTypeProjection,is KType,is KGenericClass -> thisRef
         is String -> runCatching { thisRef.toKClass(loader) }.getOrNull() ?: UndefinedKotlin

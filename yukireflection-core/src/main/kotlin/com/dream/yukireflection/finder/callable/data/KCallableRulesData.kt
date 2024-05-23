@@ -25,7 +25,7 @@ package com.dream.yukireflection.finder.callable.data
 import kotlin.reflect.KCallable
 import com.dream.yukireflection.finder.base.data.KBaseRulesData
 import com.dream.yukireflection.finder.base.rules.KModifierRules
-import com.highcapable.yukireflection.finder.type.factory.CountConditions
+import com.dream.yukireflection.type.factory.KCountConditions
 import java.lang.reflect.Member
 
 /**
@@ -39,7 +39,7 @@ internal open class KCallableRulesData internal constructor(
     var isFindInSuper: Boolean = false,
     var matchCount: Int = -1,
     var matchCountRange: IntRange = IntRange.EMPTY,
-    var matchCountConditions: CountConditions? = null
+    var matchCountConditions: KCountConditions? = null
 ) : KBaseRulesData() {
 
     override val templates

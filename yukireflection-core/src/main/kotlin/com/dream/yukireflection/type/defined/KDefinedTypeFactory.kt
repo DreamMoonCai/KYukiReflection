@@ -24,26 +24,40 @@ package com.dream.yukireflection.type.defined
 
 import com.dream.yukireflection.bean.KGenericClass
 import com.dream.yukireflection.bean.KVariousClass
+import com.dream.yukireflection.factory.kclassOf
 import com.dream.yukireflection.factory.toKClass
+import com.dream.yukireflection.factory.toKClassOrNull
 import com.dream.yukireflection.factory.type
 import com.dream.yukireflection.finder.base.KBaseFinder
-import com.highcapable.yukireflection.type.defined.UndefinedClass
-import com.highcapable.yukireflection.type.defined.UndefinedType
-import com.highcapable.yukireflection.type.defined.VagueClass
-import com.highcapable.yukireflection.type.defined.VagueType
 import kotlin.reflect.*
+
+/**
+ * 未定义类型实例
+ *
+ * 请使用 [UndefinedKotlin] 来调用它
+ */
+internal class UndefinedClass private constructor()
+
+/**
+ * 模糊类型实例
+ *
+ * 请使用 [VagueKotlin] 来调用它
+ */
+class VagueClass private constructor()
 
 /**
  * 得到未定义类型
  * @return [KClass]<[UndefinedClass]>
  */
-internal val UndefinedKotlin get() = UndefinedType.kotlin
+@Suppress("UNCHECKED_CAST")
+internal val UndefinedKotlin get() = ("com.highcapable.yukireflection.type.defined.UndefinedType".toKClassOrNull() ?: kclassOf<UndefinedClass>()) as KClass<UndefinedClass>
 
 /**
  * 得到模糊类型
  * @return [KClass]<[VagueClass]>
  */
-val VagueKotlin get() = VagueType.kotlin
+@Suppress("UNCHECKED_CAST")
+val VagueKotlin get() = ("com.highcapable.yukireflection.type.defined.VagueType".toKClassOrNull() ?: kclassOf<VagueClass>()) as KClass<VagueClass>
 
 /**
  * 模糊根的泛型对象

@@ -23,7 +23,7 @@
 package com.dream.yukireflection.finder.callable.data
 
 import com.dream.yukireflection.finder.base.KBaseFinder
-import com.highcapable.yukireflection.finder.type.factory.NameConditions
+import com.dream.yukireflection.type.factory.KNameConditions
 import com.dream.yukireflection.type.factory.KTypeConditions
 import kotlin.reflect.KProperty
 
@@ -36,7 +36,7 @@ import kotlin.reflect.KProperty
  */
 internal class KPropertyRulesData internal constructor(
     var name: String = "",
-    var nameConditions: NameConditions? = null,
+    var nameConditions: KNameConditions? = null,
     var type: Any? = null,
     var typeConditions: KTypeConditions? = null
 ) : KCallableRulesData() {

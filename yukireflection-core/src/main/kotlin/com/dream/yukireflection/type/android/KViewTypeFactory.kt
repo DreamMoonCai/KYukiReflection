@@ -69,377 +69,377 @@ import android.widget.TextClock
 import android.widget.TextView
 import android.widget.VideoView
 import android.widget.ViewAnimator
-import com.highcapable.yukireflection.type.android.*
+import com.dream.yukireflection.factory.kclassOf
 import kotlin.reflect.KClass
 
 /**
  * 获得 [View] 类型
  * @return [KClass]<[View]>
  */
-val ViewKClass get() = ViewClass.kotlin
+val ViewKClass get() = kclassOf<View>()
 
 /**
  * 获得 [Surface] 类型
  * @return [KClass]<[Surface]>
  */
-val SurfaceKClass get() = SurfaceClass.kotlin
+val SurfaceKClass get() = kclassOf<Surface>()
 
 /**
  * 获得 [SurfaceView] 类型
  * @return [KClass]<[SurfaceView]>
  */
-val SurfaceViewKClass get() = SurfaceViewClass.kotlin
+val SurfaceViewKClass get() = kclassOf<SurfaceView>()
 
 /**
  * 获得 [TextureView] 类型
  * @return [KClass]<[TextureView]>
  */
-val TextureViewKClass get() = TextureViewClass.kotlin
+val TextureViewKClass get() = kclassOf<TextureView>()
 
 /**
  * 获得 [WebView] 类型
  * @return [KClass]<[WebView]>
  */
-val WebViewKClass get() = WebViewClass.kotlin
+val WebViewKClass get() = kclassOf<WebView>()
 
 /**
  * 获得 [WebViewClient] 类型
  * @return [KClass]<[WebViewClient]>
  */
-val WebViewClientKClass get() = WebViewClientClass.kotlin
+val WebViewClientKClass get() = kclassOf<WebViewClient>()
 
 /**
  * 获得 [ViewStructure] 类型
  * @return [KClass]<[ViewStructure]>
  */
-val ViewStructureKClass get() = ViewStructureClass.kotlin
+val ViewStructureKClass get() = kclassOf<ViewStructure>()
 
 /**
  * 获得 [ViewGroup] 类型
  * @return [KClass]<[ViewGroup]>
  */
-val ViewGroupKClass get() = ViewGroupClass.kotlin
+val ViewGroupKClass get() = kclassOf<ViewGroup>()
 
 /**
  * 获得 [ViewParent] 类型
  * @return [KClass]<[ViewParent]>
  */
-val ViewParentKClass get() = ViewParentClass.kotlin
+val ViewParentKClass get() = kclassOf<ViewParent>()
 
 /**
  * 获得 [AppWidgetHostView] 类型
  * @return [KClass]<[AppWidgetHostView]>
  */
-val AppWidgetHostViewKClass get() = AppWidgetHostViewClass.kotlin
+val AppWidgetHostViewKClass get() = kclassOf<AppWidgetHostView>()
 
 /**
  * 获得 [RemoteViews] 类型
  * @return [KClass]<[RemoteViews]>
  */
-val RemoteViewsKClass get() = RemoteViewsClass.kotlin
+val RemoteViewsKClass get() = kclassOf<RemoteViews>()
 
 /**
  * 获得 [RemoteView] 类型
  * @return [KClass]<[RemoteView]>
  */
-val RemoteViewKClass get() = RemoteViewClass.kotlin
+val RemoteViewKClass get() = kclassOf<RemoteView>()
 
 /**
  * 获得 [TextView] 类型
  * @return [KClass]<[TextView]>
  */
-val TextViewKClass get() = TextViewClass.kotlin
+val TextViewKClass get() = kclassOf<TextView>()
 
 /**
  * 获得 [ImageView] 类型
  * @return [KClass]<[ImageView]>
  */
-val ImageViewKClass get() = ImageViewClass.kotlin
+val ImageViewKClass get() = kclassOf<ImageView>()
 
 /**
  * 获得 [ImageButton] 类型
  * @return [KClass]<[ImageButton]>
  */
-val ImageButtonKClass get() = ImageButtonClass.kotlin
+val ImageButtonKClass get() = kclassOf<ImageButton>()
 
 /**
  * 获得 [EditText] 类型
  * @return [KClass]<[EditText]>
  */
-val EditTextKClass get() = EditTextClass.kotlin
+val EditTextKClass get() = kclassOf<EditText>()
 
 /**
  * 获得 [Button] 类型
  * @return [KClass]<[Button]>
  */
-val ButtonKClass get() = ButtonClass.kotlin
+val ButtonKClass get() = kclassOf<Button>()
 
 /**
  * 获得 [CheckBox] 类型
  * @return [KClass]<[CheckBox]>
  */
-val CheckBoxKClass get() = CheckBoxClass.kotlin
+val CheckBoxKClass get() = kclassOf<CheckBox>()
 
 /**
  * 获得 [CompoundButton] 类型
  * @return [KClass]<[CompoundButton]>
  */
-val CompoundButtonKClass get() = CompoundButtonClass.kotlin
+val CompoundButtonKClass get() = kclassOf<CompoundButton>()
 
 /**
  * 获得 [VideoView] 类型
  * @return [KClass]<[VideoView]>
  */
-val VideoViewKClass get() = VideoViewClass.kotlin
+val VideoViewKClass get() = kclassOf<VideoView>()
 
 /**
  * 获得 [ListView] 类型
  * @return [KClass]<[ListView]>
  */
-val ListViewKClass get() = ListViewClass.kotlin
+val ListViewKClass get() = kclassOf<ListView>()
 
 /**
  * 获得 [LayoutInflater] 类型
  * @return [KClass]<[LayoutInflater]>
  */
-val LayoutInflaterKClass get() = LayoutInflaterClass.kotlin
+val LayoutInflaterKClass get() = kclassOf<LayoutInflater>()
 
 /**
  * 获得 [LayoutInflater.Filter] 类型
  * @return [KClass]<[LayoutInflater.Filter]>
  */
-val LayoutInflater_FilterKClass get() = LayoutInflater_FilterClass.kotlin
+val LayoutInflater_FilterKClass get() = kclassOf<LayoutInflater.Filter>()
 
 /**
  * 获得 [LayoutInflater.Factory] 类型
  * @return [KClass]<[LayoutInflater.Factory]>
  */
-val LayoutInflater_FactoryKClass get() = LayoutInflater_FactoryClass.kotlin
+val LayoutInflater_FactoryKClass get() = kclassOf<LayoutInflater.Factory>()
 
 /**
  * 获得 [LayoutInflater.Factory2] 类型
  * @return [KClass]<[LayoutInflater.Factory2]>
  */
-val LayoutInflater_Factory2KClass get() = LayoutInflater_Factory2Class.kotlin
+val LayoutInflater_Factory2KClass get() = kclassOf<LayoutInflater.Factory2>()
 
 /**
  * 获得 [ListAdapter] 类型
  * @return [KClass]<[ListAdapter]>
  */
-val ListAdapterKClass get() = ListAdapterClass.kotlin
+val ListAdapterKClass get() = kclassOf<ListAdapter>()
 
 /**
  * 获得 [ArrayAdapter] 类型
  * @return [KClass]<[ArrayAdapter]>
  */
-val ArrayAdapterKClass get() = ArrayAdapterClass.kotlin
+val ArrayAdapterKClass get() = kclassOf<ArrayAdapter<*>>()
 
 /**
  * 获得 [BaseAdapter] 类型
  * @return [KClass]<[BaseAdapter]>
  */
-val BaseAdapterKClass get() = BaseAdapterClass.kotlin
+val BaseAdapterKClass get() = kclassOf<BaseAdapter>()
 
 /**
  * 获得 [RelativeLayout] 类型
  * @return [KClass]<[RelativeLayout]>
  */
-val RelativeLayoutKClass get() = RelativeLayoutClass.kotlin
+val RelativeLayoutKClass get() = kclassOf<RelativeLayout>()
 
 /**
  * 获得 [FrameLayout] 类型
  * @return [KClass]<[FrameLayout]>
  */
-val FrameLayoutKClass get() = FrameLayoutClass.kotlin
+val FrameLayoutKClass get() = kclassOf<FrameLayout>()
 
 /**
  * 获得 [LinearLayout] 类型
  * @return [KClass]<[LinearLayout]>
  */
-val LinearLayoutKClass get() = LinearLayoutClass.kotlin
+val LinearLayoutKClass get() = kclassOf<LinearLayout>()
 
 /**
  * 获得 [ViewGroup.LayoutParams] 类型
  * @return [KClass]<[ViewGroup.LayoutParams]>
  */
-val ViewGroup_LayoutParamsKClass get() = ViewGroup_LayoutParamsClass.kotlin
+val ViewGroup_LayoutParamsKClass get() = kclassOf<ViewGroup.LayoutParams>()
 
 /**
  * 获得 [RelativeLayout.LayoutParams] 类型
  * @return [KClass]<[RelativeLayout.LayoutParams]>
  */
-val RelativeLayout_LayoutParamsKClass get() = RelativeLayout_LayoutParamsClass.kotlin
+val RelativeLayout_LayoutParamsKClass get() = kclassOf<RelativeLayout.LayoutParams>()
 
 /**
  * 获得 [LinearLayout.LayoutParams] 类型
  * @return [KClass]<[LinearLayout.LayoutParams]>
  */
-val LinearLayout_LayoutParamsKClass get() = LinearLayout_LayoutParamsClass.kotlin
+val LinearLayout_LayoutParamsKClass get() = kclassOf<LinearLayout.LayoutParams>()
 
 /**
  * 获得 [FrameLayout.LayoutParams] 类型
  * @return [KClass]<[FrameLayout.LayoutParams]>
  */
-val FrameLayout_LayoutParamsKClass get() = FrameLayout_LayoutParamsClass.kotlin
+val FrameLayout_LayoutParamsKClass get() = kclassOf<FrameLayout.LayoutParams>()
 
 /**
  * 获得 [TextClock] 类型
  * @return [KClass]<[TextClock]>
  */
-val TextClockKClass get() = TextClockClass.kotlin
+val TextClockKClass get() = kclassOf<TextClock>()
 
 /**
  * 获得 [MotionEvent] 类型
  * @return [KClass]<[MotionEvent]>
  */
-val MotionEventKClass get() = MotionEventClass.kotlin
+val MotionEventKClass get() = kclassOf<MotionEvent>()
 
 /**
  * 获得 [View.OnClickListener] 类型
  * @return [KClass]<[View.OnClickListener]>
  */
-val View_OnClickListenerKClass get() = View_OnClickListenerClass.kotlin
+val View_OnClickListenerKClass get() = kclassOf<View.OnClickListener>()
 
 /**
  * 获得 [View.OnLongClickListener] 类型
  * @return [KClass]<[View.OnLongClickListener]>
  */
-val View_OnLongClickListenerKClass get() = View_OnLongClickListenerClass.kotlin
+val View_OnLongClickListenerKClass get() = kclassOf<View.OnLongClickListener>()
 
 /**
  * 获得 [View.OnTouchListener] 类型
  * @return [KClass]<[View.OnTouchListener]>
  */
-val View_OnTouchListenerKClass get() = View_OnTouchListenerClass.kotlin
+val View_OnTouchListenerKClass get() = kclassOf<View.OnTouchListener>()
 
 /**
  * 获得 [AutoCompleteTextView] 类型
  * @return [KClass]<[AutoCompleteTextView]>
  */
-val AutoCompleteTextViewKClass get() = AutoCompleteTextViewClass.kotlin
+val AutoCompleteTextViewKClass get() = kclassOf<AutoCompleteTextView>()
 
 /**
  * 获得 [ViewStub] 类型
  * @return [KClass]<[ViewStub]>
  */
-val ViewStubKClass get() = ViewStubClass.kotlin
+val ViewStubKClass get() = kclassOf<ViewStub>()
 
 /**
  * 获得 [ViewStub.OnInflateListener] 类型
  * @return [KClass]<[ViewStub.OnInflateListener]>
  */
-val ViewStub_OnInflateListenerKClass get() = ViewStub_OnInflateListenerClass.kotlin
+val ViewStub_OnInflateListenerKClass get() = kclassOf<ViewStub.OnInflateListener>()
 
 /**
  * 获得 [GestureDetector] 类型
  * @return [KClass]<[GestureDetector]>
  */
-val GestureDetectorKClass get() = GestureDetectorClass.kotlin
+val GestureDetectorKClass get() = kclassOf<GestureDetector>()
 
 /**
  * 获得 [GestureDetector.SimpleOnGestureListener] 类型
  * @return [KClass]<[GestureDetector.SimpleOnGestureListener]>
  */
-val GestureDetector_SimpleOnGestureListenerKClass get() = GestureDetector_SimpleOnGestureListenerClass.kotlin
+val GestureDetector_SimpleOnGestureListenerKClass get() = kclassOf<GestureDetector.SimpleOnGestureListener>()
 
 /**
  * 获得 [ProgressBar] 类型
  * @return [KClass]<[ProgressBar]>
  */
-val ProgressBarKClass get() = ProgressBarClass.kotlin
+val ProgressBarKClass get() = kclassOf<ProgressBar>()
 
 /**
  * 获得 [AttributeSet] 类型
  * @return [KClass]<[AttributeSet]>
  */
-val AttributeSetKClass get() = AttributeSetClass.kotlin
+val AttributeSetKClass get() = kclassOf<AttributeSet>()
 
 /**
  * 获得 [Animation] 类型
  * @return [KClass]<[Animation]>
  */
-val AnimationKClass get() = AnimationClass.kotlin
+val AnimationKClass get() = kclassOf<Animation>()
 
 /**
  * 获得 [Animation.AnimationListener] 类型
  * @return [KClass]<[Animation.AnimationListener]>
  */
-val Animation_AnimationListenerKClass get() = Animation_AnimationListenerClass.kotlin
+val Animation_AnimationListenerKClass get() = kclassOf<Animation.AnimationListener>()
 
 /**
  * 获得 [TranslateAnimation] 类型
  * @return [KClass]<[TranslateAnimation]>
  */
-val TranslateAnimationKClass get() = TranslateAnimationClass.kotlin
+val TranslateAnimationKClass get() = kclassOf<TranslateAnimation>()
 
 /**
  * 获得 [AlphaAnimation] 类型
  * @return [KClass]<[AlphaAnimation]>
  */
-val AlphaAnimationKClass get() = AlphaAnimationClass.kotlin
+val AlphaAnimationKClass get() = kclassOf<AlphaAnimation>()
 
 /**
  * 获得 [Animator] 类型
  * @return [KClass]<[Animator]>
  */
-val AnimatorKClass get() = AnimatorClass.kotlin
+val AnimatorKClass get() = kclassOf<Animator>()
 
 /**
  * 获得 [Animator.AnimatorListener] 类型
  * @return [KClass]<[Animator.AnimatorListener]>
  */
-val Animator_AnimatorListenerKClass get() = Animator_AnimatorListenerClass.kotlin
+val Animator_AnimatorListenerKClass get() = kclassOf<Animator.AnimatorListener>()
 
 /**
  * 获得 [ObjectAnimator] 类型
  * @return [KClass]<[ObjectAnimator]>
  */
-val ObjectAnimatorKClass get() = ObjectAnimatorClass.kotlin
+val ObjectAnimatorKClass get() = kclassOf<ObjectAnimator>()
 
 /**
  * 获得 [ValueAnimator] 类型
  * @return [KClass]<[ValueAnimator]>
  */
-val ValueAnimatorKClass get() = ValueAnimatorClass.kotlin
+val ValueAnimatorKClass get() = kclassOf<ValueAnimator>()
 
 /**
  * 获得 [ValueAnimator.AnimatorUpdateListener] 类型
  * @return [KClass]<[ValueAnimator.AnimatorUpdateListener]>
  */
-val ValueAnimator_AnimatorUpdateListenerKClass get() = ValueAnimator_AnimatorUpdateListenerClass.kotlin
+val ValueAnimator_AnimatorUpdateListenerKClass get() = kclassOf<ValueAnimator.AnimatorUpdateListener>()
 
 /**
  * 获得 [ViewAnimator] 类型
  * @return [KClass]<[ViewAnimator]>
  */
-val ViewAnimatorKClass get() = ViewAnimatorClass.kotlin
+val ViewAnimatorKClass get() = kclassOf<ViewAnimator>()
 
 /**
  * 获得 [AnimatorSet] 类型
  * @return [KClass]<[AnimatorSet]>
  */
-val AnimatorSetKClass get() = AnimatorSetClass.kotlin
+val AnimatorSetKClass get() = kclassOf<AnimatorSet>()
 
 /**
  * 获得 [AnimatorSet.Builder] 类型
  * @return [KClass]<[AnimatorSet.Builder]>
  */
-val AnimatorSet_BuilderKClass get() = AnimatorSet_BuilderClass.kotlin
+val AnimatorSet_BuilderKClass get() = kclassOf<AnimatorSet.Builder>()
 
 /**
  * 获得 [PropertyValuesHolder] 类型
  * @return [KClass]<[PropertyValuesHolder]>
  */
-val PropertyValuesHolderKClass get() = PropertyValuesHolderClass.kotlin
+val PropertyValuesHolderKClass get() = kclassOf<PropertyValuesHolder>()
 
 /**
  * 获得 [ViewPropertyAnimator] 类型
  * @return [KClass]<[ViewPropertyAnimator]>
  */
-val ViewPropertyAnimatorKClass get() = ViewPropertyAnimatorClass.kotlin
+val ViewPropertyAnimatorKClass get() = kclassOf<ViewPropertyAnimator>()
 
 /**
  * 获得 [View.MeasureSpec] 类型
  * @return [KClass]<[View.MeasureSpec]>
  */
-val View_MeasureSpecKClass get() = View_MeasureSpecClass.kotlin
+val View_MeasureSpecKClass get() = kclassOf<View.MeasureSpec>()

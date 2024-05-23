@@ -23,10 +23,11 @@
 package com.dream.yukireflection.finder.callable.data
 
 import com.dream.yukireflection.finder.base.KBaseFinder
-import com.highcapable.yukireflection.finder.type.factory.CountConditions
-import com.highcapable.yukireflection.finder.type.factory.NameConditions
-import com.dream.yukireflection.type.factory.KTypeConditions
+import com.dream.yukireflection.type.factory.*
+import com.dream.yukireflection.type.factory.KCountConditions
+import com.dream.yukireflection.type.factory.KNameConditions
 import com.dream.yukireflection.type.factory.KParameterConditions
+import com.dream.yukireflection.type.factory.KTypeConditions
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 
@@ -36,6 +37,8 @@ import kotlin.reflect.KFunction
  * @param nameConditions 名称规则
  * @param paramTypes 参数类型数组
  * @param paramTypesConditions 参数类型条件
+ * @param paramNames 参数名称数组
+ * @param paramNamesConditions 参数名称条件
  * @param paramCount 参数个数
  * @param paramCountRange 参数个数范围
  * @param paramCountConditions 参数个数条件
@@ -44,12 +47,14 @@ import kotlin.reflect.KFunction
  */
 internal class KFunctionRulesData internal constructor(
     var name: String = "",
-    var nameConditions: NameConditions? = null,
+    var nameConditions: KNameConditions? = null,
     var paramTypes: Array<out Any>? = null,
     var paramTypesConditions: KParameterConditions? = null,
+    var paramNames: Array<out String>? = null,
+    var paramNamesConditions: KNamesConditions? = null,
     var paramCount: Int = -1,
     var paramCountRange: IntRange = IntRange.EMPTY,
-    var paramCountConditions: CountConditions? = null,
+    var paramCountConditions: KCountConditions? = null,
     var returnType: Any? = null,
     var returnTypeConditions: KTypeConditions? = null
 ) : KCallableRulesData() {
@@ -61,6 +66,8 @@ internal class KFunctionRulesData internal constructor(
             paramCount.takeIf { it >= 0 }?.let { "paramCount:[$it]" } ?: "",
             paramCountRange.takeIf { it.isEmpty().not() }?.let { "paramCountRange:[$it]" } ?: "",
             paramCountConditions?.let { "paramCountConditions:[existed]" } ?: "",
+            paramNames?.typeOfString()?.let { "paramNames:[$it]" } ?: "",
+            paramNamesConditions?.let { "paramNamesConditions:[existed]" } ?: "",
             paramTypes?.typeOfString()?.let { "paramTypes:[$it]" } ?: "",
             paramTypesConditions?.let { "paramTypesConditions:[existed]" } ?: "",
             returnType?.let { "returnType:[$it]" } ?: "",
@@ -70,10 +77,10 @@ internal class KFunctionRulesData internal constructor(
     override val objectName get() = KBaseFinder.TAG_FUNCTION
 
     override val isInitialize
-        get() = super.isInitializeOfSuper || name.isNotBlank() || nameConditions != null || paramTypes != null || paramTypesConditions != null ||
+        get() = super.isInitializeOfSuper || name.isNotBlank() || nameConditions != null || paramTypes != null || paramTypesConditions != null || paramNames != null || paramNamesConditions != null ||
             paramCount >= 0 || paramCountRange.isEmpty().not() || paramCountConditions != null ||
             returnType != null || returnTypeConditions != null
 
-    override fun toString() = "[$name][$nameConditions][$paramTypes][$paramTypesConditions][$paramCount]" +
+    override fun toString() = "[$name][$nameConditions][$paramNames][$paramNamesConditions][$paramTypes][$paramTypesConditions][$paramCount]" +
         "[$paramCountRange][$returnType][$returnTypeConditions]" + super.toString()
 }

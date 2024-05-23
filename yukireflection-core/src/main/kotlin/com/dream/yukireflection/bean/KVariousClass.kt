@@ -25,7 +25,6 @@
 package com.dream.yukireflection.bean
 
 import com.dream.yukireflection.factory.toKClassOrNull
-import com.highcapable.yukireflection.factory.toClassOrNull
 import kotlin.reflect.KClass
 
 /**

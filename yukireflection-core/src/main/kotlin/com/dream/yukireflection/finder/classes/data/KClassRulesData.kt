@@ -29,12 +29,12 @@ import com.dream.yukireflection.factory.name
 import com.dream.yukireflection.factory.simpleNameOrJvm
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.finder.base.data.KBaseRulesData
+import com.dream.yukireflection.finder.base.rules.KModifierRules
 import com.dream.yukireflection.finder.callable.data.KCallableRulesData
 import com.dream.yukireflection.finder.callable.data.KConstructorRulesData
 import com.dream.yukireflection.finder.callable.data.KFunctionRulesData
 import com.dream.yukireflection.finder.callable.data.KPropertyRulesData
-import com.highcapable.yukireflection.finder.base.rules.ModifierRules
-import com.highcapable.yukireflection.finder.type.factory.NameConditions
+import com.dream.yukireflection.type.factory.KNameConditions
 import kotlin.reflect.KFunction
 import kotlin.reflect.KCallable
 import kotlin.reflect.KProperty
@@ -66,9 +66,9 @@ internal class KClassRulesData internal constructor(
     var fullName: NameRulesData? = null,
     var simpleName: NameRulesData? = null,
     var singleName: NameRulesData? = null,
-    var fullNameConditions: NameConditions? = null,
-    var simpleNameConditions: NameConditions? = null,
-    var singleNameConditions: NameConditions? = null,
+    var fullNameConditions: KNameConditions? = null,
+    var simpleNameConditions: KNameConditions? = null,
+    var singleNameConditions: KNameConditions? = null,
     var isAnonymousClass: Boolean? = null,
     var isNoExtendsClass: Boolean? = null,
     var isNoImplementsClass: Boolean? = null,
@@ -154,7 +154,7 @@ internal class KClassRulesData internal constructor(
             fullNameConditions?.let { "fullNameConditions:[existed]" } ?: "",
             simpleNameConditions?.let { "simpleNameConditions:[existed]" } ?: "",
             singleNameConditions?.let { "singleNameConditions:[existed]" } ?: "",
-            modifiers?.let { "modifiers:${ModifierRules.templates(uniqueValue)}" } ?: "",
+            modifiers?.let { "modifiers:${KModifierRules.templates(uniqueValue)}" } ?: "",
             isAnonymousClass?.let { "isAnonymousClass:[$it]" } ?: "",
             isNoExtendsClass?.let { "isNoExtendsClass:[$it]" } ?: "",
             isNoImplementsClass?.let { "isNoImplementsClass:[$it]" } ?: "",

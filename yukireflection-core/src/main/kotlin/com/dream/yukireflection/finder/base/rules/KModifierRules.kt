@@ -41,7 +41,7 @@ import kotlin.reflect.jvm.*
  */
 class KModifierRules private constructor(private val instance: Any) {
 
-    companion object {
+    internal companion object {
 
         /** 当前实例数组 */
         private val instances = mutableMapOf<Long, KModifierRules>()
@@ -59,7 +59,7 @@ class KModifierRules private constructor(private val instance: Any) {
          * @param value 唯一标识值 - 默认 0
          * @return [KModifierRules]
          */
-        fun with(instance: Any, value: Long = 0) = KModifierRules(instance).apply { instances[value] = this }
+        internal fun with(instance: Any, value: Long = 0) = KModifierRules(instance).apply { instances[value] = this }
     }
 
     /** 当前模板字符串数组 */

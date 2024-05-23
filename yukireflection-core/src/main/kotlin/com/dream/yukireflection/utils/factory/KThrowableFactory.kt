@@ -17,35 +17,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * This file is created by fankes on 2022/4/3.
- * This file is modified by fankes on 2023/1/21.
+ * This file is created by fankes on 2023/9/23.
  */
-package com.highcapable.yukireflection.type.defined
+@file:Suppress("unused")
 
-import com.highcapable.yukireflection.factory.classOf
+package com.dream.yukireflection.utils.factory
 
-/**
- * 未定义类型实例
- *
- * 请使用 [UndefinedType] 来调用它
- */
-internal class UndefinedClass private constructor()
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 
 /**
- * 模糊类型实例
- *
- * 请使用 [VagueType] 来调用它
+ * 写出异常堆栈到字符串
+ * @return [String]
  */
-class VagueClass private constructor()
-
-/**
- * 得到未定义类型
- * @return [Class]<[UndefinedClass]>
- */
-internal val UndefinedType get() = classOf<UndefinedClass>()
-
-/**
- * 得到模糊类型
- * @return [Class]<[VagueClass]>
- */
-val VagueType get() = classOf<VagueClass>()
+internal fun Throwable.dumpToString() = ByteArrayOutputStream().also { printStackTrace(PrintStream(it)) }.toString()
