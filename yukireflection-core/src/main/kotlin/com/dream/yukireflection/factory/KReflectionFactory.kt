@@ -20,16 +20,13 @@ import com.dream.yukireflection.type.factory.KFunctionConditions
 import com.dream.yukireflection.type.factory.KModifierConditions
 import com.dream.yukireflection.type.factory.KPropertyConditions
 import com.dream.yukireflection.type.kotlin.*
-import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
+import com.dream.yukireflection.utils.factory.ifTrue
 import java.lang.ref.WeakReference
-import java.lang.reflect.Constructor
-import java.lang.reflect.Field
-import java.lang.reflect.Method
+import java.lang.reflect.*
 import kotlin.jvm.internal.CallableReference
 import kotlin.jvm.internal.FunctionReference
 import kotlin.jvm.internal.PropertyReference
 import kotlin.jvm.internal.Reflection
-import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
@@ -119,7 +116,7 @@ inline val <T> Class<out T>.kotlinAs get() = this.kotlin as KClass<T & Any>
 /**
  * 将 [KType] 转换为 [KClass]
  *
- * -此行为将进行泛型擦除 如果KType是类似T:Number的类型此操作将返回Number 如果没有界限则为Any
+ * - 此行为将进行泛型擦除 如果KType是类似T:Number的类型此操作将返回Number 如果没有界限则为Any
  */
 inline val KType.kotlin get() = this.jvmErasure
 
@@ -230,13 +227,13 @@ inline val KProperty<*>?.toMutableOrNull get() = this as? KMutableProperty
  */
 inline fun KProperty<*>.set(thisRef: Any? = null, value: Any?, extension: Any? = null, isUseMember: Boolean = false) {
     if (isUseMember || toMutableOrNull == null) {
-        val field = runCatching { javaField }.getOrNull()
+        val field = javaFieldNoError
         if (field != null) {
             field.isAccessible = true
             field[thisRef] = value
             return
         }
-        val setter = runCatching { toMutableOrNull?.javaSetter }.getOrNull()
+        val setter = toMutableOrNull?.javaSetterNoError
         if (setter != null) {
             setter.isAccessible = true
             if (isExtension)
@@ -273,24 +270,6 @@ inline fun KProperty<*>.set(thisRef: Any? = null, value: Any?, extension: Any? =
 operator fun KProperty<*>.set(thisRef: Any? = null, value: Any?) = set(thisRef, value, null, false)
 
 /**
- * 获取属性 [KProperty] 的Kotlin返回类型
- *
- * 即使获取不成功也会通过签名获取
- *
- * @return KotlinClass对象实例 [KClass]
- */
-val <V> KProperty<V?>.kotlin: KClass<V & Any>
-    get() = try {
-        returnType.jvmErasure
-    } catch (e: Exception) {
-        javaField?.type?.kotlin ?: javaGetter?.returnType?.kotlin
-    } catch (e: Error) {
-        ref.signature.let {
-            it.substring(it.indexOf(")L") + ")L".length, it.lastIndex).replace("/", ".")
-        }.toKClass()
-    } as KClass<V & Any>
-
-/**
  * 此 属性 [KProperty] 是否为可变属性
  *
  * @return [Boolean]
@@ -308,8 +287,8 @@ inline val KProperty<*>.isVar: Boolean
  */
 val KCallable<*>.declaringClass
     get() = when (this) {
-        is KProperty -> javaField?.declaringClass ?: javaGetter?.declaringClass ?: (this as KMutableProperty<*>).javaSetter?.declaringClass
-        is KFunction -> javaMethod?.declaringClass ?: javaConstructor?.declaringClass
+        is KProperty -> javaFieldNoError?.declaringClass ?: javaGetterNoError?.declaringClass ?: (this as? KMutableProperty<*>?)?.javaSetterNoError?.declaringClass
+        is KFunction -> javaMethodNoError?.declaringClass ?: javaConstructorNoError?.declaringClass
         else -> null
     }?.kotlin
 
@@ -320,8 +299,8 @@ val KCallable<*>.declaringClass
  */
 val KCallable<*>.modifiers
     get() = when (this) {
-        is KProperty -> javaField?.modifiers ?: javaGetter?.modifiers ?: (this as KMutableProperty<*>).javaSetter?.modifiers
-        is KFunction -> javaMethod?.modifiers ?: javaConstructor?.modifiers
+        is KProperty -> javaFieldNoError?.modifiers ?: javaGetterNoError?.modifiers ?: (this as? KMutableProperty<*>?)?.javaSetterNoError?.modifiers
+        is KFunction -> javaMethodNoError?.modifiers ?: javaConstructorNoError?.modifiers
         else -> null
     }
 
@@ -330,32 +309,35 @@ val KCallable<*>.modifiers
  *
  * 即使获取不成功也会通过签名获取
  *
+ * - 注意此属性获得的类型会类型擦除，保留泛型信息请使用[KCallable.returnType]
+ *
  * @return JavaClass对象实例 [Class]
  */
-val <V> KCallable<V>.java: Class<V>
-    @JvmName("getKTypeAs") get() = try {
-        returnType.jvmErasure.java
-    } catch (e: Exception) {
-        when (this) {
-            is KProperty -> javaField?.type ?: javaGetter?.returnType
-            is KFunction -> javaMethod?.returnType ?: javaConstructor?.declaringClass
-            else -> throw NotImplementedError("不受支持的转换")
-        }
-    } catch (e: Error) {
-        ref.signature.let {
-            it.substring(it.indexOf(")L") + ")L".length, it.lastIndex).replace("/", ".")
-        }.toKClass().java
-    } as Class<V>
+val <V> KCallable<V>.returnJavaClass: Class<V> get() = returnClass.java as Class<V>
 
 /**
  * 获取属性/函数 [KCallable] 的Kotlin返回类型
  *
  * 即使获取不成功也会通过签名获取
  *
+ * - 注意此属性获得的类型会类型擦除，保留泛型信息请使用[KCallable.returnType]
+ *
  * @return KotlinClass对象实例 [KClass]
  */
-inline val <V> KCallable<V>.kotlin: KClass<V & Any>
-    get() = java.kotlinAs
+inline val <V> KCallable<V>.returnClass: KClass<V & Any>
+    @JvmName("getKTypeAs") get() = try {
+        returnType.jvmErasure
+    } catch (e: Exception) {
+        when (this) {
+            is KProperty -> javaFieldNoError?.type ?: javaGetterNoError?.returnType ?: (this as? KMutableProperty<*>?)?.javaSetterNoError?.returnType
+            is KFunction -> javaMethodNoError?.returnType ?: javaConstructorNoError?.declaringClass
+            else -> throw NotImplementedError("不受支持的转换")
+        }!!.kotlin
+    } catch (e: Error) {
+        ref.signature.let {
+            it.substring(it.indexOf(")L") + ")L".length, it.lastIndex).replace("/", ".")
+        }.toKClass()
+    } as KClass<V & Any>
 
 /**
  * 获取属性/函数 [KCallable] 的kotlin具体引用信息
@@ -374,29 +356,41 @@ inline val KCallable<*>.ref
     get() = this as CallableReference
 
 /**
+ * 将引用对象转换为实际对象，参阅[ref]
+ *
+ * 即通过对此引用相关信息在目标类中查找得到细致信息，只有细致信息的属性可以准确获取混淆信息
+ *
+ * - 未获取到细致信息时返回 null
+ */
+inline val <T,K:KCallable<T>> K.refImpl
+    get() = runCatching { ref.impl as K }.getOrNull()
+
+/**
  * 将引用对象转换为实际对象
  *
- * 即通过对此引用相关信息在目标类中查找得到细致信息
+ * 即通过对此引用相关信息在目标类中查找得到细致信息，只有细致信息的属性可以准确获取混淆信息
+ *
+ * - 未获取到细致信息时返回 null
  */
 val CallableReference.impl: KCallable<*>?
     get() {
         when (this) {
             is FunctionReference -> {
                 for (callable in (owner.kotlin.declaredFunctions + if (owner.kotlin.existTop) owner.declaredTopFunctions else arrayListOf())) {
-                    if (callable.name == this.name && callable.javaMethod == this.javaMethod) return callable
+                    if (callable.name == this.name && callable.javaMethodNoError == this.javaMethodNoError) return callable
                 }
                 for (callable in (owner.kotlin.declaredFunctions + if (owner.kotlin.existTop) owner.declaredTopFunctions else arrayListOf())) {
-                    if (callable.name != this.name && callable.javaMethod == this.javaMethod) return callable
+                    if (callable.name != this.name && callable.javaMethodNoError == this.javaMethodNoError) return callable
                 }
                 return null
             }
 
             is PropertyReference -> {
                 for (callable in (owner.kotlin.declaredPropertys + if (owner.kotlin.existTop) owner.declaredTopPropertys else arrayListOf())) {
-                    if (callable.name == this.name && callable.javaField == this.javaField) return callable
+                    if (callable.name == this.name && callable.javaFieldNoError == this.javaFieldNoError) return callable
                 }
                 for (callable in (owner.kotlin.declaredPropertys + if (owner.kotlin.existTop) owner.declaredTopPropertys else arrayListOf())) {
-                    if (callable.name != this.name && callable.javaField == this.javaField) return callable
+                    if (callable.name != this.name && callable.javaFieldNoError == this.javaFieldNoError) return callable
                 }
                 return null
             }
@@ -593,6 +587,24 @@ inline fun KClass<*>?.isCase(other: Any?) = this?.isInstance(other) ?: false
 inline val KClass<*>.classLoader get() = this.java.classLoader!!
 
 /**
+ * 通过 [KVariousClass] 获取 [KClass]
+ * @param loader [KClass] 所在的 [ClassLoader] - 默认空 - 不填使用默认 [ClassLoader]
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @return [KClass]
+ * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
+ */
+inline fun KVariousClass.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) = get(loader,initialize)
+
+/**
+ * 通过 [KVariousClass] 获取 [KClass]
+ * @param loader [KClass] 所在的 [ClassLoader] - 默认空 - 不填使用默认 [ClassLoader]
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @return [KClass]
+ * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
+ */
+inline fun KVariousClass.toKClassOrNull(loader: ClassLoader? = null, initialize: Boolean = false) = getOrNull(loader,initialize)
+
+/**
  * 通过字符串类名转换为 [loader] 中的实体类
  * @param loader [KClass] 所在的 [ClassLoader] - 默认空 - 不填使用默认 [ClassLoader]
  * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
@@ -636,6 +648,25 @@ inline fun String.toKClassOrNull(loader: ClassLoader? = null, initialize: Boolea
 inline fun <reified T> String.toKClassOrNull(loader: ClassLoader? = null, initialize: Boolean = false) =
     runCatching { toKClass<T>(loader, initialize) }.getOrNull()
 
+/**
+ * 通过此[KClass]的字符串类名转换为 [loader] 中的实体类
+ * @param loader [KClass] 所在的 [ClassLoader] - 默认空 - 不填使用默认 [ClassLoader]
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @return [KClass]
+ * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
+ */
+inline fun KClass<*>.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) =
+    name.toKClass(loader, initialize)
+
+/**
+ * 通过此[KClass]的字符串类名转换为 [loader] 中的实体类
+ *
+ * 找不到 [KClass] 会返回 null - 不会抛出异常
+ * @param loader [KClass] 所在的 [ClassLoader] - 默认空 - 不填使用默认 [ClassLoader]
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @return [KClass] or null
+ */
+inline fun KClass<*>.toKClassOrNull(loader: ClassLoader? = null, initialize: Boolean = false) = runCatching { toKClass(loader, initialize) }.getOrNull()
 
 /**
  * 通过 [T] 得到其 [KClass] 实例并转换为实体类
@@ -1332,10 +1363,10 @@ inline fun Collection<KCallable<*>>.findKFunction(method: Method): KFunction<*>?
     // This is needed because a function's JVM name might be different from its Kotlin name (because of `@JvmName`, inline class mangling,
     // internal visibility, etc).
     for (callable in this) {
-        if (callable is KFunction<*> && callable.name == method.name && callable.javaMethod == method) return callable
+        if (callable is KFunction<*> && callable.name == method.name && callable.javaMethodNoError == method) return callable
     }
     for (callable in this) {
-        if (callable is KFunction<*> && callable.name != method.name && callable.javaMethod == method) return callable
+        if (callable is KFunction<*> && callable.name != method.name && callable.javaMethodNoError == method) return callable
     }
     return null
 }
@@ -1350,10 +1381,10 @@ inline fun Collection<KCallable<*>>.findKFunction(method: Method): KFunction<*>?
  */
 inline fun Collection<KCallable<*>>.findKProperty(field: Field): KProperty<*>? {
     for (callable in this) {
-        if (callable is KProperty<*> && callable.name == field.name && callable.javaField == field) return callable
+        if (callable is KProperty<*> && callable.name == field.name && callable.javaFieldNoError == field) return callable
     }
     for (callable in this) {
-        if (callable is KProperty<*> && callable.name != field.name && callable.javaField == field) return callable
+        if (callable is KProperty<*> && callable.name != field.name && callable.javaFieldNoError == field) return callable
     }
     return null
 }

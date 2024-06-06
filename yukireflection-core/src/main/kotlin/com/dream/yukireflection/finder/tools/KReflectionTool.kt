@@ -35,7 +35,7 @@ import com.dream.yukireflection.finder.callable.data.KFunctionRulesData
 import com.dream.yukireflection.finder.callable.data.KPropertyRulesData
 import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
-import com.dream.yukireflection.factory.kotlin
+import com.dream.yukireflection.factory.returnClass
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.log.KYLog
 import com.dream.yukireflection.type.kotlin.NoClassDefFoundErrorKClass
@@ -46,12 +46,12 @@ import com.dream.yukireflection.utils.factory.conditions
 import com.dream.yukireflection.utils.factory.findLastIndex
 import com.dream.yukireflection.utils.factory.let
 import com.dream.yukireflection.utils.factory.takeIf
-import org.jetbrains.kotlin.builtins.jvm.JavaToKotlinClassMap
-import org.jetbrains.kotlin.name.FqNameUnsafe
 import kotlin.math.abs
 import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
+import kotlin.reflect.jvm.internal.impl.builtins.jvm.JavaToKotlinClassMap
+import kotlin.reflect.jvm.internal.impl.name.FqNameUnsafe
 
 /**
  * 这是一个对 [KClass]、[KCallable] 查找的工具实现类
@@ -93,27 +93,27 @@ internal object KReflectionTool {
      * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
      */
     internal fun findClassByName(name: String, loader: ClassLoader?, initialize: Boolean = false): KClass<*> {
-        val jvmName = JavaToKotlinClassMap.mapKotlinToJava(FqNameUnsafe(name))?.asSingleFqName()?.asString() ?: name
-        val uniqueCode = "[$name][$loader]"
+        val jvmName = JavaToKotlinClassMap.INSTANCE.mapKotlinToJava(FqNameUnsafe(name))?.asSingleFqName()?.asString() ?: name
+        val uniqueCode = "[$jvmName][$loader]"
 
         /**
          * 获取 [Class.forName] 的 [Class] 对象
-         * @param name [Class] 完整名称
+         * @param jvmName [Class] 完整名称
          * @param initialize 是否初始化 [Class] 的静态方法块
          * @param loader [Class] 所在的 [ClassLoader] - 默认为 [currentClassLoader]
          * @return [Class]
          */
-        fun classForName(name: String, initialize: Boolean, loader: ClassLoader? = currentClassLoader) =
-            Class.forName(name, initialize, loader)
+        fun classForName(jvmName: String, initialize: Boolean, loader: ClassLoader? = currentClassLoader) =
+            Class.forName(jvmName, initialize, loader)
 
         /**
          * 使用默认方式和 [ClassLoader] 装载 [Class]
          * @return [Class] or null
          */
-        fun loadWithDefaultClassLoader() = if (initialize.not()) loader?.loadClass(name) else classForName(name, initialize, loader)
+        fun loadWithDefaultClassLoader() = if (initialize.not()) loader?.loadClass(jvmName) else classForName(jvmName, initialize, loader)
         return MemoryCache.classData[uniqueCode] ?: runCatching {
-            (loadWithDefaultClassLoader() ?: classForName(name, initialize)).kotlin.also { MemoryCache.classData[uniqueCode] = it }
-        }.getOrNull() ?: throw createException(loader ?: currentClassLoader, name = KBaseFinder.TAG_CLASS, "name:[$name]")
+            (loadWithDefaultClassLoader() ?: classForName(jvmName, initialize)).kotlin.also { MemoryCache.classData[uniqueCode] = it }
+        }.getOrNull() ?: throw createException(loader ?: currentClassLoader, name = KBaseFinder.TAG_CLASS, "name:[$jvmName]")
     }
 
     /**
@@ -198,7 +198,7 @@ internal object KReflectionTool {
                             var numberOfFound = 0
                             if (rule.isInitialize) forEach { property ->
                                 rule.conditions {
-                                    value.type?.takeIf { value.exists(it) }?.also { and(it == property.kotlin) }
+                                    value.type?.takeIf { value.exists(it) }?.also { and(it == property.returnClass) }
                                     value.name.takeIf { it.isNotBlank() }?.also { and(it == property.name) }
                                     value.modifiers?.also { runCatching { and(it(property.cast())) } }
                                     value.nameConditions?.also { property.name.also { n -> runCatching { and(it(n.cast(), n)) } } }

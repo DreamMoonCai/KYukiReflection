@@ -84,6 +84,30 @@ internal inline fun runOrFalse(block: () -> Boolean) = runCatching { block() }.g
 internal inline fun <T> T.conditions(initiate: Conditions<T>.() -> Unit) = Conditions(value = this).apply(initiate).build()
 
 /**
+ * if True 快捷方法
+ *
+ * @param T 为True时执行的返回类型
+ * @param block 执行方法体
+ * @receiver 当前条件对象
+ * @return 为True时返回方法体的值 or null
+ */
+inline fun <T> Boolean.ifTrue(block: () -> T?):T?{
+    return if (this) block() else null
+}
+
+/**
+ * if False 快捷方法
+ *
+ * @param T 为False时执行的返回类型
+ * @param block 执行方法体
+ * @receiver 当前条件对象
+ * @return 为False时返回方法体的值 or null
+ */
+inline fun <T> Boolean.ifFalse(block: () -> T?):T?{
+    return if (!this) block() else null
+}
+
+/**
  * 构造条件判断类
  * @param value 当前条件对象
  */

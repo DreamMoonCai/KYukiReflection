@@ -25,7 +25,6 @@ kotlin {
 dependencies {
     compileOnly(autowire("libs/android-34.jar"))
     implementation(org.jetbrains.kotlin.kotlin.reflect)
-    implementation(org.jetbrains.kotlin.kotlin.compiler.embeddable)
 }
 
 mavenPublishing {

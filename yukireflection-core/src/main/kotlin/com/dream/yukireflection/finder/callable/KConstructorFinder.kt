@@ -24,13 +24,13 @@
 
 package com.dream.yukireflection.finder.callable
 
-import com.dream.yukireflection.factory.hasExtends
-import com.dream.yukireflection.factory.superclass
 import com.dream.yukireflection.finder.base.KCallableBaseFinder
 import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.bean.KVariousClass
+import com.dream.yukireflection.factory.*
+import com.dream.yukireflection.factory.name
 import com.dream.yukireflection.finder.callable.KFunctionFinder.Result
 import com.dream.yukireflection.finder.callable.KPropertyFinder.Result.Instance
 import com.dream.yukireflection.finder.callable.data.KConstructorRulesData
@@ -47,6 +47,7 @@ import kotlin.reflect.*
 import kotlin.reflect.KClassifier
 import kotlin.reflect.KFunction
 import kotlin.reflect.KTypeParameter
+import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.javaConstructor
 
 /**
@@ -64,6 +65,49 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
 
     /** 当前重查找结果回调 */
     private var remedyPlansCallback: (() -> Unit)? = null
+
+    /**
+     * 将此构造函数相关内容附加到此查找器
+     *
+     * 将影响[param]
+     *
+     * @param R 返回类型/构造目标类的类型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param isUseMember 是否将构造函数转换为JavaMethod再进行附加 - 即使为false当构造函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
+     */
+    fun <R> KFunction<R>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
+        fun KClass<*>.toClass() = if (loader == null) this else toKClass(loader)
+
+        fun attachMember(e:Throwable? = null){
+            val method = javaConstructorNoError ?: refImpl?.javaConstructorNoError ?: let {
+                errorMsg("Converting javaMethod failed !!!", e)
+                return
+            }
+            if (method.parameterTypes.isEmpty())
+                emptyParam()
+            else
+                param(*method.parameterTypes.map { it.kotlin.toClass() }.toTypedArray())
+        }
+        fun attachCallable(function: KFunction<*>){
+            if (function.valueParameters.isEmpty())
+                emptyParam()
+            else
+                param(*function.valueParameters.map {
+                    if (loader != null)
+                        it.kotlin.toClass()
+                    else it
+                }.toTypedArray())
+        }
+        if (isUseMember)
+            attachMember()
+        else runCatching {
+            attachCallable(this)
+        }.getOrNull() ?: runCatching {
+            attachCallable(this.refImpl!!)
+        }.getOrElse {
+            attachMember(it)
+        }
+    }
 
     /**
      * 设置 Constructor [KFunction] 参数个数
@@ -518,7 +562,7 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
             /**
              * 是否将构造函数转换为Java方式构造
              *
-             * 为true时实例执行将通过将 Kotlin函数 转换为 JavaMember 方式执行
+             * 为true时实例执行将通过将 Kotlin构造函数 转换为 JavaMember 方式执行
              *
              * 如果目标属性无法用Java方式描述则此设置将会自动忽略
              *
@@ -539,9 +583,9 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
              * @param args Constructor [KFunction] 参数
              * @return [Any] or null
              */
-            private fun baseCall(vararg args: Any?) = runCatching {
+            private fun baseCall(vararg args: Any?) = runCatching<Result,Any?> {
                 if (isUseMember){
-                    val constructor = runCatching { constructor?.javaConstructor }.getOrNull()
+                    val constructor = constructor?.javaConstructorNoError
                     if (constructor != null){
                         constructor.isAccessible = true
                         return@runCatching constructor.newInstance(*args)

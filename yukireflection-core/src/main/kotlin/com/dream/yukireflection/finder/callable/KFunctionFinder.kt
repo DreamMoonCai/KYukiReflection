@@ -24,8 +24,6 @@
 
 package com.dream.yukireflection.finder.callable
 
-import com.dream.yukireflection.factory.hasExtends
-import com.dream.yukireflection.factory.superclass
 import com.dream.yukireflection.finder.base.KCallableBaseFinder
 import com.dream.yukireflection.finder.callable.data.KFunctionRulesData
 import com.dream.yukireflection.finder.base.KBaseFinder
@@ -33,8 +31,6 @@ import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.bean.KVariousClass
-import com.dream.yukireflection.factory.isExtension
-import com.dream.yukireflection.finder.callable.KPropertyFinder.Result.Instance
 import com.dream.yukireflection.log.KYLog
 import com.dream.yukireflection.type.factory.*
 import com.dream.yukireflection.type.factory.KFunctionConditions
@@ -44,9 +40,9 @@ import com.dream.yukireflection.type.factory.KTypeConditions
 import com.dream.yukireflection.utils.factory.runBlocking
 import java.lang.IllegalArgumentException
 import com.dream.yukireflection.bean.KGenericClass
-import com.dream.yukireflection.finder.callable.KPropertyFinder.Result
+import com.dream.yukireflection.factory.*
 import kotlin.reflect.*
-import kotlin.reflect.jvm.javaMethod
+import kotlin.reflect.full.valueParameters
 
 /**
  * [KFunction] 查找类
@@ -63,6 +59,144 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
 
     /** 当前重查找结果回调 */
     private var remedyPlansCallback: (() -> Unit)? = null
+
+    /**
+     * 将此函数相关内容附加到此查找器
+     *
+     * 将影响[name]、[returnType]、[param]
+     *
+     * 重载引用使用示例 ↓
+     *
+     * ```kotlin
+     *
+     *  class Main{
+     *      fun sub(a:Int):Int{}
+     *
+     *      fun sub(c:Double):String{}
+     *  }
+     *
+     *  Main::sub.attach() // error:不知道附加哪个函数
+     *  Main::sub.attach<String>() // 将使用返回类型为String的函数
+     * ```
+     *
+     * @param R 返回类型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
+     */
+    fun <R> KFunction<R>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
+        fun KClass<*>.toClass() = if (loader == null) this else toKClass(loader)
+
+        fun attachMember(e:Throwable? = null){
+            val method = javaMethodNoError ?: refImpl?.javaMethodNoError ?: let {
+                errorMsg("Converting javaMethod failed !!!", e)
+                return
+            }
+            this@KFunctionFinder.name = method.name
+            this@KFunctionFinder.returnType = method.returnType.kotlin.toClass()
+            if (method.parameterTypes.isEmpty())
+                emptyParam()
+            else
+                param(*method.parameterTypes.map { it.kotlin.toClass() }.toTypedArray())
+        }
+        fun attachCallable(function: KFunction<*>){
+            this@KFunctionFinder.name = function.name
+            this@KFunctionFinder.returnType = runCatching {
+                if (loader != null)
+                    function.returnClass.toClass()
+                else
+                    function.returnType
+            }.getOrNull() ?: function.returnClass.toClass()
+            if (function.valueParameters.isEmpty())
+                emptyParam()
+            else
+                param(*function.valueParameters.map {
+                    if (loader != null)
+                        it.kotlin.toClass()
+                    else
+                        it
+                }.toTypedArray())
+        }
+        if (isUseMember)
+            attachMember()
+        else runCatching {
+            attachCallable(this)
+        }.getOrNull() ?: runCatching {
+            attachCallable(this.refImpl!!)
+        }.getOrElse {
+            attachMember(it)
+        }
+    }
+
+    /**
+     * 将此函数相关内容附加到此查找器
+     *
+     * 将影响[name]、[returnType]、[param]
+     *
+     * 重载引用使用示例 ↓
+     *
+     * ```java
+     *
+     *  class Main{
+     *      public static void sub(){}
+     *      public void sub(){}
+     *  }
+     *
+     *  Main::sub.attach() // error:不知道附加哪个函数
+     *  Main::sub.attachStatic() // 将使用静态sub
+     * ```
+     *
+     * @param R 返回类型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
+     */
+    fun <R> KFunction0<R>.attachStatic(loader: ClassLoader? = null,isUseMember:Boolean = false){
+        (this as KFunction<R>).attach(loader,isUseMember)
+    }
+
+    /**
+     * 将此函数相关内容附加到此查找器 - 指定参数的快捷方法 参阅:[attach]
+     *
+     * 将影响[name]、[returnType]、[param]
+     *
+     * 重载引用使用示例 ↓
+     *
+     * ```kotlin
+     *
+     *  class Main{
+     *      fun sub(a:Int):Int{}
+     *
+     *      fun sub(c:Double):Int{}
+     *  }
+     *
+     *  Main::sub.attach() // error:不知道附加哪个函数
+     *  Main::sub.attach<Double,Int>() // 将使用第一个参数为Double返回类型为Int的函数
+     * ```
+     *
+     * @param P1 第一个参数的类型
+     * @param R 返回类型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
+     */
+    fun <P1, R> KFunction2<*,P1, R>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
+        attach<R>(loader, isUseMember)
+    }
+
+    /**
+     * 将此函数相关内容附加到此查找器 - 指定参数的快捷方法 参阅:[attach]
+     *
+     * 将影响[name]、[returnType]、[param]
+     *
+     * 重载引用参考[KFunction2.attach]
+     *
+     * @param P1 第一个参数的类型
+     * @param P2 第二个参数的类型
+     * @param R 返回类型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
+     */
+    fun <P1,P2,R> KFunction3<*,P1,P2,R>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
+        attach<R>(loader, isUseMember)
+    }
 
     /**
      * 设置 [KFunction] 名称
@@ -656,7 +790,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
              */
             private fun baseCall(vararg args: Any?) = runCatching {
                 if (isUseMember) {
-                    val method = runCatching { function?.javaMethod }.getOrNull()
+                    val method = function?.javaMethodNoError
                     if (method != null) {
                         method.isAccessible = true
                         return@runCatching method.invoke(instance, *args)

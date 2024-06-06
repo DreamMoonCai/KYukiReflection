@@ -24,6 +24,7 @@ package com.dream.yukireflection.finder.base
 
 import com.dream.yukireflection.KYukiReflection
 import com.dream.yukireflection.factory.classLoader
+import com.dream.yukireflection.factory.javaConstructorNoError
 import com.dream.yukireflection.log.KYLog
 import com.dream.yukireflection.utils.factory.await
 import kotlin.reflect.*
@@ -70,7 +71,7 @@ abstract class KCallableBaseFinder internal constructor(private val tag: String,
      * @return [MutableList]<Constructor [KFunction]>
      */
     internal fun MutableList<KCallable<*>>.constructors() =
-        mutableListOf<KFunction<*>>().also { takeIf { e -> e.isNotEmpty() }?.forEach { e -> (e as? KFunction<*>?)?.takeIf { it.javaConstructor != null }?.also { c -> it.add(c) } } }
+        mutableListOf<KFunction<*>>().also { takeIf { e -> e.isNotEmpty() }?.forEach { e -> (e as? KFunction<*>?)?.takeIf { it.javaConstructorNoError != null }?.also { c -> it.add(c) } } }
 
     /**
      * 将目标类型转换为可识别的兼容类型

@@ -26,7 +26,6 @@ package com.dream.yukireflection
 import com.dream.yukireflection.factory.declaredPropertys
 import com.dream.yukireflection.log.KYLog
 import com.highcapable.yukireflection.generated.YukiReflectionProperties
-import org.jetbrains.kotlin.types.FlexibleTypeBoundsChecker
 import java.lang.reflect.Member
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredFunctions
