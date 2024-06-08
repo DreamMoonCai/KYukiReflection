@@ -26,6 +26,7 @@ package com.dream.yukireflection.bean
 
 import com.dream.yukireflection.build.KTypeBuild
 import com.dream.yukireflection.factory.generic
+import com.dream.yukireflection.factory.kotlin
 import com.dream.yukireflection.factory.variance
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.type.factory.KTypeBuildConditions

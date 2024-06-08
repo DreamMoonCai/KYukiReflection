@@ -186,25 +186,25 @@ val LooperKClass get() = kclassOf<Looper>()
  * 获得 [Fragment] 类型 - Support
  * @return [KClass]
  */
-val FragmentClass_AndroidSupport get() = "android.support.v4.app.Fragment".toKClass()
+val FragmentKClass_AndroidSupport get() = "android.support.v4.app.Fragment".toKClass()
 
 /**
  * 获得 [Fragment] 类型 - AndroidX
  * @return [KClass]
  */
-val FragmentClass_AndroidX get() = "androidx.fragment.app.Fragment".toKClass()
+val FragmentKClass_AndroidX get() = "androidx.fragment.app.Fragment".toKClass()
 
 /**
  * 获得 [FragmentActivity] 类型 - Support
  * @return [KClass]
  */
-val FragmentActivityClass_AndroidSupport get() = "android.support.v4.app.FragmentActivity".toKClass()
+val FragmentActivityKClass_AndroidSupport get() = "android.support.v4.app.FragmentActivity".toKClass()
 
 /**
  * 获得 [FragmentActivity] 类型 - AndroidX
  * @return [KClass]
  */
-val FragmentActivityClass_AndroidX get() = "androidx.fragment.app.FragmentActivity".toKClass()
+val FragmentActivityKClass_AndroidX get() = "androidx.fragment.app.FragmentActivity".toKClass()
 
 /**
  * 获得 [DocumentFile] 类型 - AndroidX

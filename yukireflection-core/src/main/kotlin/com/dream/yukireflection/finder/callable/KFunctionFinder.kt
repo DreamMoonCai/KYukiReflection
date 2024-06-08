@@ -65,6 +65,19 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      *
      * 将影响[name]、[returnType]、[param]
      *
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
+     */
+    @JvmName("attach")
+    fun KFunction<*>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
+        attach(this,loader,isUseMember)
+    }
+
+    /**
+     * 将此函数相关内容附加到此查找器
+     *
+     * 将影响[name]、[returnType]、[param]
+     *
      * 重载引用使用示例 ↓
      *
      * ```kotlin
@@ -75,19 +88,20 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      *      fun sub(c:Double):String{}
      *  }
      *
-     *  Main::sub.attach() // error:不知道附加哪个函数
-     *  Main::sub.attach<String>() // 将使用返回类型为String的函数
+     *  attach(Main::sub) // error:不知道附加哪个函数
+     *  attach<String>(Main::sub) // 将使用返回类型为String的函数
      * ```
      *
      * @param R 返回类型
      * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
-    fun <R> KFunction<R>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
+    @JvmName("attach_1")
+    fun <R> attach(function:KFunction<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
         fun KClass<*>.toClass() = if (loader == null) this else toKClass(loader)
 
         fun attachMember(e:Throwable? = null){
-            val method = javaMethodNoError ?: refImpl?.javaMethodNoError ?: let {
+            val method = function.javaMethodNoError ?: function.refImpl?.javaMethodNoError ?: let {
                 errorMsg("Converting javaMethod failed !!!", e)
                 return
             }
@@ -119,9 +133,9 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
         if (isUseMember)
             attachMember()
         else runCatching {
-            attachCallable(this)
+            attachCallable(function)
         }.getOrNull() ?: runCatching {
-            attachCallable(this.refImpl!!)
+            attachCallable(function.refImpl!!)
         }.getOrElse {
             attachMember(it)
         }
@@ -141,16 +155,17 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      *      public void sub(){}
      *  }
      *
-     *  Main::sub.attach() // error:不知道附加哪个函数
-     *  Main::sub.attachStatic() // 将使用静态sub
+     *  attach(Main::sub) // error:不知道附加哪个函数
+     *  attachStatic(Main::sub) // 将使用静态sub
      * ```
      *
      * @param R 返回类型
      * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
-    fun <R> KFunction0<R>.attachStatic(loader: ClassLoader? = null,isUseMember:Boolean = false){
-        (this as KFunction<R>).attach(loader,isUseMember)
+    @JvmName("attachStatic_0")
+    fun <R> attachStatic(function:KFunction0<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
+        attach(function,loader,isUseMember)
     }
 
     /**
@@ -168,8 +183,8 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      *      fun sub(c:Double):Int{}
      *  }
      *
-     *  Main::sub.attach() // error:不知道附加哪个函数
-     *  Main::sub.attach<Double,Int>() // 将使用第一个参数为Double返回类型为Int的函数
+     *  attach(Main::sub) // error:不知道附加哪个函数
+     *  attach<Double,Int>(Main::sub) // 将使用第一个参数为Double返回类型为Int的函数
      * ```
      *
      * @param P1 第一个参数的类型
@@ -177,8 +192,9 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
-    fun <P1, R> KFunction2<*,P1, R>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
-        attach<R>(loader, isUseMember)
+    @JvmName("attach_2")
+    fun <P1, R> attach(function:KFunction2<*,P1, R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
+        attach<R>(function,loader, isUseMember)
     }
 
     /**
@@ -186,7 +202,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      *
      * 将影响[name]、[returnType]、[param]
      *
-     * 重载引用参考[KFunction2.attach]
+     * 重载引用参考[attach]
      *
      * @param P1 第一个参数的类型
      * @param P2 第二个参数的类型
@@ -194,8 +210,9 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
-    fun <P1,P2,R> KFunction3<*,P1,P2,R>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
-        attach<R>(loader, isUseMember)
+    @JvmName("attach_3")
+    fun <P1,P2,R> attach(function:KFunction3<*,P1,P2,R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
+        attach<R>(function,loader, isUseMember)
     }
 
     /**

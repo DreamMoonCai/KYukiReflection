@@ -75,11 +75,25 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
      * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
      * @param isUseMember 是否将构造函数转换为JavaMethod再进行附加 - 即使为false当构造函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
+    @JvmName("attach_exp")
     fun <R> KFunction<R>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
+        attach(this,loader,isUseMember)
+    }
+
+    /**
+     * 将此构造函数相关内容附加到此查找器
+     *
+     * 将影响[param]
+     *
+     * @param R 返回类型/构造目标类的类型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param isUseMember 是否将构造函数转换为JavaMethod再进行附加 - 即使为false当构造函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
+     */
+    fun <R> attach(function: KFunction<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
         fun KClass<*>.toClass() = if (loader == null) this else toKClass(loader)
 
         fun attachMember(e:Throwable? = null){
-            val method = javaConstructorNoError ?: refImpl?.javaConstructorNoError ?: let {
+            val method = function.javaConstructorNoError ?: function.refImpl?.javaConstructorNoError ?: let {
                 errorMsg("Converting javaMethod failed !!!", e)
                 return
             }
@@ -101,9 +115,9 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
         if (isUseMember)
             attachMember()
         else runCatching {
-            attachCallable(this)
+            attachCallable(function)
         }.getOrNull() ?: runCatching {
-            attachCallable(this.refImpl!!)
+            attachCallable(function.refImpl!!)
         }.getOrElse {
             attachMember(it)
         }
