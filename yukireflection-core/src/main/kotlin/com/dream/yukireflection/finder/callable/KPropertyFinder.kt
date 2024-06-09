@@ -67,7 +67,7 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
      * 将影响[name]、[type]
      *
      * @param R 属性类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
      */
     @JvmName("attach_exp")
@@ -96,7 +96,7 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
      * ```
      *
      * @param R 属性类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
      */
     fun <R> attach(function: KProperty<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
@@ -140,7 +140,7 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
      * 将影响[name]、[type]
      *
      * @param R 属性类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
      */
     fun <R> attachStatic(function: KProperty0<R>,loader: ClassLoader? = null, isUseMember:Boolean = false){
@@ -154,7 +154,7 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
      *
      * @param ExpandThis 拓展类的类型
      * @param R 属性类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
      */
     fun <ExpandThis,R> attach(function: KProperty2<*,ExpandThis,R>,loader: ClassLoader? = null, isUseMember:Boolean = false){

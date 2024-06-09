@@ -65,7 +65,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      *
      * 将影响[name]、[returnType]、[param]
      *
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
     @JvmName("attach")
@@ -93,7 +93,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      * ```
      *
      * @param R 返回类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
     @JvmName("attach_1")
@@ -160,7 +160,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      * ```
      *
      * @param R 返回类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
     @JvmName("attachStatic_0")
@@ -189,7 +189,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      *
      * @param P1 第一个参数的类型
      * @param R 返回类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
     @JvmName("attach_2")
@@ -207,7 +207,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      * @param P1 第一个参数的类型
      * @param P2 第二个参数的类型
      * @param R 返回类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型转换为指定 [ClassLoader] 中的 [KClass] 这会擦除泛型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
      */
     @JvmName("attach_3")
