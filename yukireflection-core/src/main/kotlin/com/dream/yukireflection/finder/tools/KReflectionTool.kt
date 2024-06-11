@@ -146,7 +146,7 @@ internal object KReflectionTool {
                     modifiers?.also { runCatching { and(it(instance.cast())) } }
                     annotationClass.takeIf { it.isNotEmpty() }
                         ?.also { and(instance.annotations.isNotEmpty() && instance.annotations.any { e -> it.contains(e.annotationClass.qualifiedName) }) }
-                    extendsClass.takeIf { it.isNotEmpty() }?.also { and(instance.hasExtends && it.contains(instance.superclass?.name)) }
+                    extendsClass.takeIf { it.isNotEmpty() }?.also { and(instance.hasExtends && it.contains(instance.superclass.name)) }
                     implementsClass.takeIf { it.isNotEmpty() }
                         ?.also { and(instance.interfaces.isNotEmpty() && instance.interfaces.any { e -> it.contains(e.name) }) }
                     enclosingClass.takeIf { it.isNotEmpty() }
@@ -669,7 +669,7 @@ internal object KReflectionTool {
      *    如: compare:KVariance.INVARIANT -> original = KType(variance:KVariance.INVARIANT)  true
      *       compare:KClass<Int> -> original = KType(kotlin:KClass<Int>)  true
      *
-     * 类型支持 [KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KParameter] or [KParameter.Kind] or [KGenericClass]
+     * 类型支持 [Class]/[KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KParameter] or [KParameter.Kind] or [KGenericClass]
      *
      * @param compare 类型
      * @param original 类型
@@ -679,6 +679,12 @@ internal object KReflectionTool {
         if (compare == original || compare == VagueKotlin || original == VagueKotlin)return true
         if (compare == null || original == null) return false
         return when(compare){
+            is Class<*> -> when(original){
+                is KType -> compare.kotlin == original.classifier
+                is KParameter -> compare.kotlin == original.type.classifier
+                is KClassifier -> compare.kotlin == original
+                else -> false
+            }
             is KClassifier -> when(original){
                 is KType -> compare == original.classifier
                 is KParameter -> compare == original.type.classifier
@@ -688,6 +694,8 @@ internal object KReflectionTool {
                 is KVariance -> compare.variance == original
                 is KType -> compare.variance == original.arguments.first().variance && compare.type?.generic() == original.arguments.first().type?.generic()
                 is KParameter -> compare.variance == original.type.arguments.first().variance && compare.type?.generic() == original.type.arguments.first().type?.generic()
+                is Class<*> -> compare.type?.kotlin == original.kotlin
+                is KClassifier -> compare.type?.kotlin == original
                 else -> false
             }
             is KVariance -> when(original){

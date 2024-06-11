@@ -74,7 +74,7 @@ open class KBaseRules internal constructor(internal var instance: KClassFinder? 
     /**
      * 将目标类型转换为可识别的兼容类型
      * @param tag 当前查找类的标识
-     * @return [KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass] or null
+     * @return [Class]/[KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass] or null
      */
     internal fun Any?.compat(tag: String) = instance?.compatType(any = this, tag)
 }

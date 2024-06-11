@@ -98,7 +98,7 @@ class KCurrentClass internal constructor(private val classSet: KClass<*>, intern
      * 调用父类实例 只获取非接口的父类实例
      * @return [SuperClass]
      */
-    fun superClass() = SuperClass(classSet.superclass!!)
+    fun superClass() = SuperClass(classSet.superclass)
 
     /**
      * 调用当前实例中的变量

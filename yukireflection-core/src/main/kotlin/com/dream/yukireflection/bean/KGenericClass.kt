@@ -182,7 +182,7 @@ class KGenericClass internal constructor(val type: KType) :List<KTypeProjection>
      *
      * 泛型信息 --- 直接投影类 泛型方差(不变、协变、逆变) 直接泛型类型 泛型擦除类型
      *
-     * @param element [KTypeProjection] or [KType] or [KClassifier]/[KClass]/[KTypeParameter]
+     * @param element [KTypeProjection] or [KType] or [Class]/[KClassifier]/[KClass]/[KTypeParameter]
      * @return [Boolean]
      */
     @JvmName("contains_Any")
@@ -276,7 +276,7 @@ class KGenericClass internal constructor(val type: KType) :List<KTypeProjection>
      *
      * 受[isVariance]影响
      *
-     * @param other [KGenericClass] or [KType] or [KTypeProjection] or [KParameter] or [KProperty] or [KClassifier]/[KClass]/[KTypeParameter]
+     * @param other [KGenericClass] or [KType] or [KTypeProjection] or [KParameter] or [KProperty] or [Class]/[KClassifier]/[KClass]/[KTypeParameter]
      * @return [Boolean]
      */
     override fun equals(other: Any?): Boolean {
@@ -288,6 +288,7 @@ class KGenericClass internal constructor(val type: KType) :List<KTypeProjection>
             is KParameter -> other.type.generic()
             is KProperty<*> -> other.generic()
             is KGenericClass -> other
+            is Class<*> -> return other.kotlin == type.classifier
             is KClassifier -> return other == type.classifier
             else -> return false
         }

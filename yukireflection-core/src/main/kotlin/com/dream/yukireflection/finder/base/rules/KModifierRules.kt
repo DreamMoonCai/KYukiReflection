@@ -372,7 +372,7 @@ class KModifierRules private constructor(private val instance: Any) {
     val isExternal get() = (asKFunction?.isExternal ?: false).also { templates.add("<isExternal> ($it)") }
 
     /**
-     * [KCallable] 是否是 Kotlin 的 extension 属性
+     * [KCallable] 是否是 Kotlin 的 extensionRef 属性
      *
      * 如下所示 ↓
      *

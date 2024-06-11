@@ -180,7 +180,7 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
      * - 有参 Constructor [KFunction] 必须使用此方法设定参数或使用 [paramCount] 指定个数
      *
      * - 存在多个 [KBaseFinder.IndexTypeCondition] 时除了 [order] 只会生效最后一个
-     * @param paramType 参数类型数组 - 只能是 [KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[KVariousClass]
+     * @param paramType 参数类型数组 - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[KVariousClass]
      * @return [KBaseFinder.IndexTypeCondition]
      */
     fun param(vararg paramType: Any): IndexTypeCondition {

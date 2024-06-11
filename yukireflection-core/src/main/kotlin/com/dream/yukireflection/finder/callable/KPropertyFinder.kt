@@ -413,11 +413,11 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
          *
          * - 若你设置了 [remedys] 请使用 [wait] 回调结果方法
          * @param instance [KProperty] 所在的实例对象 - 如果是静态可不填 - 默认 null
-         * @param extension 属性如果是拓展属性你还需要传入拓展属性的this对象
+         * @param extensionRef 属性如果是拓展属性你还需要传入拓展属性的this对象
          * @param isUseMember 是否优先将属性转换Java方式进行get/set
          * @return [Instance]
          */
-        fun get(instance: Any? = null,extension:Any? = null,isUseMember:Boolean = false) = Instance(instance, give()).receiver(extension).useMember(isUseMember)
+        fun get(instance: Any? = null,extensionRef:Any? = null,isUseMember:Boolean = false) = Instance(instance, give()).receiver(extensionRef).useMember(isUseMember)
 
         /**
          * 获得 [KProperty] 实例处理类数组
@@ -430,12 +430,12 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
          *
          * - 若你设置了 [remedys] 请使用 [waitAll] 回调结果方法
          * @param instance [KProperty] 所在的实例对象 - 如果是静态可不填 - 默认 null
-         * @param extension 属性如果是拓展属性你还需要传入拓展属性的this对象
+         * @param extensionRef 属性如果是拓展属性你还需要传入拓展属性的this对象
          * @param isUseMember 是否优先将属性转换Java方式进行get/set
          * @return [MutableList]<[Instance]>
          */
-        fun all(instance: Any? = null,extension:Any? = null,isUseMember:Boolean = false) =
-            mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(instance, it).receiver(extension).useMember(isUseMember)) } }
+        fun all(instance: Any? = null,extensionRef:Any? = null,isUseMember:Boolean = false) =
+            mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(instance, it).receiver(extensionRef).useMember(isUseMember)) } }
 
         /**
          * 得到 [KProperty] 本身
@@ -565,18 +565,18 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
             /**
              * @see [receiver]
              */
-            private var extension:Any? = null
+            private var extensionRef:Any? = null
 
             /**
-             * 修改 [extension] Receiver
+             * 修改 [extensionRef] Receiver
              *
              * 当此属性是拓展属性时，你可能需要额外的一个this属性进行设置
              *
-             * @param extension 拓展属性的thisRef
+             * @param extensionRef 拓展属性的thisRef
              * @return [KProperty] 实例处理类
              */
-            fun receiver(extension:Any?):Instance{
-                this.extension = extension
+            fun receiver(extensionRef:Any?):Instance{
+                this.extensionRef = extensionRef
                 return this
             }
 
@@ -591,15 +591,15 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
                     if (getter != null){
                         getter.isAccessible = true
                         return if (property?.isExtension == true)
-                            getter.invoke(instance,extension)
+                            getter.invoke(instance,extensionRef)
                         else
                             getter.invoke(instance)
                     }
                 }
                 return when {
                     property?.isExtension == true -> {
-                        if (instance != null) property.call(instance,extension)
-                        else property.call(extension)
+                        if (instance != null) property.call(instance,extensionRef)
+                        else property.call(extensionRef)
                     }
                     instance != null -> property?.call(instance)
                     else -> property?.call()
@@ -733,7 +733,7 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
              * 设置当前 [KProperty] 实例
              * @param any 设置的实例内容
              */
-            fun set(any: Any?) = property?.set(instance,any,extension,isUseMember)
+            fun set(any: Any?) = property?.set(instance,any,extensionRef,isUseMember)
 
             /**
              * 设置当前 [KProperty] 实例为 true

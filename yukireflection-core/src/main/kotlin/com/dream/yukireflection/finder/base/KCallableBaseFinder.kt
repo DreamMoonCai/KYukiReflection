@@ -75,7 +75,7 @@ abstract class KCallableBaseFinder internal constructor(private val tag: String,
 
     /**
      * 将目标类型转换为可识别的兼容类型
-     * @return [KClassifier]/[KClass]/[KTypeParameter] or arror([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass] or null
+     * @return [Class]/[KClassifier]/[KClass]/[KTypeParameter] or arror([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass] or null
      */
     internal fun Any?.compat(tag: String = this@KCallableBaseFinder.tag) = compat(tag, classSet?.classLoader)
 

@@ -90,6 +90,22 @@ inline val Member.kotlinCallable get() = when (this) {
 }
 
 /**
+ * 获取 [Member] 的返回类型
+ *
+ * [Field] ---> [Field.type]
+ *
+ * [Method] ---> [Method.returnType]
+ *
+ * [Constructor] ---> [Member.getDeclaringClass]
+ */
+inline val Member.returnType: Class<out Any> get() = when (this) {
+    is Field -> type
+    is Method -> returnType
+    is Constructor<*> -> declaringClass
+    else -> error("Unsupported member type: $this")
+}
+
+/**
  * 通过 [Field] 分析签名构建 [KProperty]
  *
  * 签名分析或许不一定能正常转换 参阅或使用[Field.kotlinProperty]

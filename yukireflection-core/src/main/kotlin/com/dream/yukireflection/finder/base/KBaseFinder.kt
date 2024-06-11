@@ -114,22 +114,22 @@ abstract class KBaseFinder {
         /**
          * 检测当前类型是否被支持
          *
-         * @return [KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KGenericClass] or [KType] or [KParameter] or [KParameter.Kind] or [String] or [KVariousClass] or error
+         * @return [Class]/[KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KGenericClass] or [KType] or [KParameter] or [KParameter.Kind] or [String] or [KVariousClass] or error
          */
         internal fun Any?.checkSupportedTypes(tag: String? = null) = when(tag){
             TAG_CONSTRUCTOR,TAG_PARAMETER -> when(this){
                 null -> null
-                is KClassifier,is KType,is KParameter,is KParameter.Kind,is String,is KVariousClass,is KGenericClass -> this
+                is Class<*>,is KClassifier,is KType,is KParameter,is KParameter.Kind,is String,is KVariousClass,is KGenericClass -> this
                 else -> checkArrayGenerics(this)
             }
             null -> when(this){
                     null -> null
-                    is KClassifier,is KTypeProjection,is KVariance,is KType,is String,is KVariousClass,is KGenericClass -> this
+                is Class<*>,is KClassifier,is KTypeProjection,is KVariance,is KType,is String,is KVariousClass,is KGenericClass -> this
                     else -> checkArrayGenerics(this)
                 }
             else -> when(this) {
                 null -> null
-                is KClassifier,is KType,is String,is KVariousClass,is KGenericClass -> this
+                is Class<*>,is KClassifier,is KType,is String,is KVariousClass,is KGenericClass -> this
                 else -> checkArrayGenerics(this)
             }
         }
@@ -165,10 +165,11 @@ abstract class KBaseFinder {
      * 将目标类型转换为可识别的兼容类型
      * @param tag 当前查找类的标识
      * @param loader 使用的 [ClassLoader]
-     * @return [KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass] or null
+     * @return [Class]/[KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass] or null
      */
     internal fun Any?.compat(tag: String, loader: ClassLoader?) = when (val thisRef = this.checkSupportedTypes(tag)) {
         null -> null
+        is Class<*> -> thisRef.kotlin
         is KClass<*>,is KTypeProjection,is KType,is KGenericClass -> thisRef
         is String -> runCatching { thisRef.toKClass(loader) }.getOrNull() ?: UndefinedKotlin
         is KVariousClass -> runCatching { thisRef.get(loader) }.getOrNull() ?: UndefinedKotlin

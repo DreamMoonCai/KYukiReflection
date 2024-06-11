@@ -49,7 +49,7 @@ abstract class KClassBaseFinder internal constructor(internal open val classSet:
      * 将目标类型转换为可识别的兼容类型
      * @param any 当前需要转换的实例
      * @param tag 当前查找类的标识
-     * @return [KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass] or null
+     * @return [Class]/[KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass] or null
      */
     internal fun compatType(any: Any?, tag: String) = any?.compat(tag, classSet?.first()?.classLoader)
 

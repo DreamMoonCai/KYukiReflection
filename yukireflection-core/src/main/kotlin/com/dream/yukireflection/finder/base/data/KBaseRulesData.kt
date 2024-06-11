@@ -103,7 +103,7 @@ internal abstract class KBaseRulesData internal constructor(
     /**
      * 获取参数数组文本化内容
      *
-     * 仅支持 [KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass]
+     * 仅支持 [Class]/[KClassifier]/[KClass]/[KTypeParameter] or [KTypeProjection]/array([KTypeProjection]) or [KVariance]/array([KVariance]) or [KType] or [KGenericClass]
      *
      * @return [String]
      */
@@ -114,6 +114,7 @@ internal abstract class KBaseRulesData internal constructor(
             forEach {
                 if (isFirst) isFirst = false else sb.append(", ")
                 when(val type = it.checkSupportedTypes()!!){
+                    is Class<*> -> sb.append(type.takeIf { type.canonicalName != VagueKotlin.java.canonicalName }?.canonicalName ?: "*vague*")
                     is KClass<*> -> sb.append(type.takeIf { type.java.canonicalName != VagueKotlin.java.canonicalName }?.java?.canonicalName ?: "*vague*")
                     is KTypeParameter,is KType,is KTypeProjection,is KVariance -> sb.append(type.toString())
                     else -> sb.append(KBaseFinder.checkArrayGenerics(type))

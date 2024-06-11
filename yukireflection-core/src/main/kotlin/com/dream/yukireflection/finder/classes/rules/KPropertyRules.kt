@@ -53,7 +53,7 @@ class KPropertyRules internal constructor(private val rulesData: KPropertyRulesD
     /**
      * 设置 [KProperty] 类型
      *
-     * - 只能是 [KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[String]、[VariousClass]
+     * - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[String]、[VariousClass]
      *
      * - 可不填写类型
      * @return [Any] or null

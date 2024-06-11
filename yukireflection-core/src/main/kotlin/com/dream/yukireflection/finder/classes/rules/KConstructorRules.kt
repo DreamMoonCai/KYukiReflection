@@ -96,7 +96,7 @@ class KConstructorRules internal constructor(private val rulesData: KConstructor
      * - 无参 Constructor[KFunction] 请使用 [emptyParam] 设置查找条件
      *
      * - 有参 Constructor[KFunction] 必须使用此方法设定参数或使用 [paramCount] 指定个数
-     * @param paramType 参数类型数组 - 只能是 [KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[VariousClass]
+     * @param paramType 参数类型数组 - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[VariousClass]
      */
     fun param(vararg paramType: Any) {
         if (paramType.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")

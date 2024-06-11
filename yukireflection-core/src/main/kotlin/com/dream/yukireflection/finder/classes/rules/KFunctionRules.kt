@@ -70,7 +70,7 @@ class KFunctionRules internal constructor(private val rulesData: KFunctionRulesD
     /**
      * 设置 [KFunction] 返回值
      *
-     * - 只能是 [KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[String]、[KVariousClass]
+     * - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[String]、[KVariousClass]
      *
      * - 可不填写返回值
      * @return [Any] or null
@@ -118,7 +118,7 @@ class KFunctionRules internal constructor(private val rulesData: KFunctionRulesD
      * - 无参 [KFunction] 请使用 [emptyParam] 设置查找条件
      *
      * - 有参 [KFunction] 必须使用此方法设定参数或使用 [paramCount] 指定个数
-     * @param paramType 参数类型数组 - 只能是 [KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[KVariousClass]
+     * @param paramType 参数类型数组 - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[KVariousClass]
      */
     fun param(vararg paramType: Any) {
         if (paramType.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")

@@ -244,7 +244,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
     /**
      * 设置 [KFunction] 返回值
      *
-     * - 只能是 [KClassifier]/[KClass]/[KTypeParameter]、[KType]、[String]、[KVariousClass]、[KGenericClass]
+     * - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KType]、[String]、[KVariousClass]、[KGenericClass]
      *
      * - 可不填写返回值
      * @return [Any] or null
@@ -300,7 +300,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
      * - 有参 [KFunction] 必须使用此方法设定参数或使用 [paramCount] 指定个数
      *
      * - 存在多个 [KBaseFinder.IndexTypeCondition] 时除了 [order] 只会生效最后一个
-     * @param paramType 参数类型数组 - 只能是 [KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[KVariousClass]
+     * @param paramType 参数类型数组 - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[KVariousClass]
      * @return [KBaseFinder.IndexTypeCondition]
      */
     fun param(vararg paramType: Any): IndexTypeCondition {
@@ -635,11 +635,11 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
          *
          * - 若你设置了 [remedys] 请使用 [wait] 回调结果方法
          * @param instance 所在实例
-         * @param extension 函数如果是拓展函数你还需要传入拓展函数的this对象
+         * @param extensionRef 函数如果是拓展函数你还需要传入拓展函数的this对象
          * @param isUseMember 是否优先将函数转换Java方式执行
          * @return [Instance]
          */
-        fun get(instance: Any? = null,extension:Any? = null,isUseMember:Boolean = false) = Instance(instance, give()).receiver(extension).useMember(isUseMember)
+        fun get(instance: Any? = null,extensionRef:Any? = null,isUseMember:Boolean = false) = Instance(instance, give()).receiver(extensionRef).useMember(isUseMember)
 
         /**
          * 获得 [KFunction] 实例处理类数组
@@ -650,12 +650,12 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
          *
          * - 若你设置了 [remedys] 请使用 [waitAll] 回调结果方法
          * @param instance 所在实例
-         * @param extension 函数如果是拓展函数你还需要传入拓展函数的this对象
+         * @param extensionRef 函数如果是拓展函数你还需要传入拓展函数的this对象
          * @param isUseMember 是否优先将函数转换Java方式执行
          * @return [MutableList]<[Instance]>
          */
-        fun all(instance: Any? = null,extension:Any? = null,isUseMember:Boolean = false) =
-            mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(instance, it).receiver(extension).useMember(isUseMember)) } }
+        fun all(instance: Any? = null,extensionRef:Any? = null,isUseMember:Boolean = false) =
+            mutableListOf<Instance>().apply { giveAll().takeIf { it.isNotEmpty() }?.forEach { add(Instance(instance, it).receiver(extensionRef).useMember(isUseMember)) } }
 
         /**
          * 得到 [KFunction] 本身
@@ -785,18 +785,18 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
             /**
              * @see [receiver]
              */
-            private var extension:Any? = null
+            private var extensionRef:Any? = null
 
             /**
-             * 修改 [extension] Receiver
+             * 修改 [extensionRef] Receiver
              *
              * 当此属性是拓展属性时，你可能需要额外的一个this属性进行设置
              *
-             * @param extension 拓展属性的thisRef
+             * @param extensionRef 拓展属性的thisRef
              * @return [Instance] 可继续向下监听
              */
-            fun receiver(extension:Any?): Instance {
-                this.extension = extension
+            fun receiver(extensionRef:Any?): Instance {
+                this.extensionRef = extensionRef
                 return this
             }
 
@@ -814,7 +814,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
                     }
                 }
                 if (function?.isExtension == true) {
-                    if (instance != null) function.call(instance,extension, *args) else function.call(extension,*args)
+                    if (instance != null) function.call(instance,extensionRef, *args) else function.call(extensionRef,*args)
                 }else
                 if (instance != null) function?.call(instance, *args) else function?.call(*args)
             }.getOrElse { if (it is IllegalArgumentException) errorMsg("An error occurred in the number of parameters. Check whether the instance exists or whether the number of parameters is correct.",it) else throw it }
