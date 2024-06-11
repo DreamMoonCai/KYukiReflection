@@ -169,6 +169,33 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
     }
 
     /**
+     * 将此函数相关内容附加到此查找器
+     *
+     * 将影响[name]、[returnType]、[param]
+     *
+     * 重载引用使用示例 ↓
+     *
+     * ```java
+     *
+     *  class Main{
+     *      public void sub(a:Int):String{}
+     *      public void sub():String{}
+     *      public void sub(b:Int):Int{}
+     *  }
+     *
+     *  attach<String>(Main::sub) // error:尽管筛选了返回值但依然不知道附加哪个函数
+     *  attachEmptyParam(Main::sub) // 将使用没有参数sub
+     * ```
+     *
+     * @param R 返回类型
+     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
+     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
+     */
+    fun <R> attachEmptyParam(function:KFunction1<*,R>,loader: ClassLoader? = null,isUseMember:Boolean = false) {
+        attach(function, loader, isUseMember)
+    }
+
+    /**
      * 将此函数相关内容附加到此查找器 - 指定参数的快捷方法 参阅:[attach]
      *
      * 将影响[name]、[returnType]、[param]
