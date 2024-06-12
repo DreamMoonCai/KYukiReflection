@@ -1,4 +1,4 @@
-@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS")
 
 package com.dream.yukireflection.factory
 
@@ -8,29 +8,36 @@ import com.dream.yukireflection.bean.KGenericClass
 import com.dream.yukireflection.bean.KVariousClass
 import com.dream.yukireflection.build.KTypeBuild
 import com.dream.yukireflection.finder.base.rules.KModifierRules
-import com.dream.yukireflection.finder.classes.KClassFinder
 import com.dream.yukireflection.finder.callable.KConstructorFinder
 import com.dream.yukireflection.finder.callable.KFunctionFinder
 import com.dream.yukireflection.finder.callable.KPropertyFinder
+import com.dream.yukireflection.finder.classes.KClassFinder
 import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.type.factory.*
-import com.dream.yukireflection.type.factory.KClassConditions
-import com.dream.yukireflection.type.factory.KConstructorConditions
-import com.dream.yukireflection.type.factory.KFunctionConditions
-import com.dream.yukireflection.type.factory.KModifierConditions
-import com.dream.yukireflection.type.factory.KPropertyConditions
 import com.dream.yukireflection.type.kotlin.*
 import com.dream.yukireflection.utils.factory.ifTrue
+import java.io.ByteArrayInputStream
 import java.lang.ref.WeakReference
-import java.lang.reflect.*
+import java.lang.reflect.Constructor
+import java.lang.reflect.Field
+import java.lang.reflect.Method
 import kotlin.jvm.internal.CallableReference
 import kotlin.jvm.internal.FunctionReference
 import kotlin.jvm.internal.PropertyReference
 import kotlin.jvm.internal.Reflection
 import kotlin.reflect.*
-import kotlin.reflect.full.*
-import kotlin.reflect.jvm.*
+import kotlin.reflect.full.declaredFunctions
+import kotlin.reflect.full.declaredMembers
+import kotlin.reflect.full.starProjectedType
+import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.internal.impl.descriptors.CallableMemberDescriptor
+import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
+import kotlin.reflect.jvm.internal.impl.name.Name
+import kotlin.reflect.jvm.internal.impl.serialization.deserialization.DeserializationContext
+import kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope
+import kotlin.reflect.jvm.isAccessible
+import kotlin.reflect.jvm.jvmErasure
+import kotlin.reflect.jvm.jvmName
 
 /**
  * 懒装载 [KClass] 实例
@@ -585,6 +592,28 @@ inline fun KClass<*>?.isCase(other: Any?) = this?.isInstance(other) ?: false
  * @return [ClassLoader]
  */
 inline val KClass<*>.classLoader get() = this.java.classLoader!!
+
+/**
+ * 当前 [KFunction] 是否是 Getter 函数
+ *
+ * Getter 函数的类型可能是 [KProperty.Getter] 或函数名为 <get-xxx>
+ */
+inline val KFunction<*>.isGetter get() = when {
+    this is KProperty.Getter<*> -> true
+    this.name.startsWith("<get-") && this.name.endsWith(">") -> true
+    else -> false
+}
+
+/**
+ * 当前 [KFunction] 是否是 Setter 函数
+ *
+ * Setter 函数的类型可能是 [KMutableProperty.Setter] 或函数名为 <set-xxx>
+ */
+inline val KFunction<*>.isSetter get() = when {
+    this is KMutableProperty.Setter<*> -> true
+    this.name.startsWith("<set-") && this.name.endsWith(">") -> true
+    else -> false
+}
 
 /**
  * 通过 [KVariousClass] 获取 [KClass]

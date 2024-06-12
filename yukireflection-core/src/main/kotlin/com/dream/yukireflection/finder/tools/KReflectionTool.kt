@@ -37,6 +37,11 @@ import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.factory.returnClass
 import com.dream.yukireflection.finder.base.KBaseFinder
+import com.dream.yukireflection.finder.tools.KReflectionTool.existFunctions
+import com.dream.yukireflection.finder.tools.KReflectionTool.existGetterFunctions
+import com.dream.yukireflection.finder.tools.KReflectionTool.existSetterFunctions
+import com.dream.yukireflection.finder.tools.KReflectionTool.isGetter
+import com.dream.yukireflection.finder.tools.KReflectionTool.isSetter
 import com.dream.yukireflection.log.KYLog
 import com.dream.yukireflection.type.kotlin.NoClassDefFoundErrorKClass
 import com.dream.yukireflection.type.kotlin.NoSuchFieldErrorKClass
@@ -209,7 +214,11 @@ internal object KReflectionTool {
                         }
                     }
                     functionRules.takeIf { it.isNotEmpty() }?.forEach { rule ->
-                        instance.existFunctions?.apply {
+                        when {
+                            rule.name.isGetter -> instance.existGetterFunctions
+                            rule.name.isSetter -> instance.existSetterFunctions
+                            else -> instance.existFunctions
+                        }?.apply {
                             var numberOfFound = 0
                             if (rule.isInitialize) forEach { function ->
                                 rule.conditions {
@@ -352,7 +361,11 @@ internal object KReflectionTool {
         paramTypes?.takeIf { it.isNotEmpty() }
             ?.forEachIndexed { p, it -> if (it == UndefinedKotlin) error("Function match paramType[$p] class is not found") }
         mutableListOf<KFunction<*>>().also { functions ->
-            classSet.existFunctions?.also { declares ->
+            when {
+                rulesData.name.isGetter -> classSet.existGetterFunctions
+                rulesData.name.isSetter -> classSet.existSetterFunctions
+                else -> classSet.existFunctions
+            }?.also { declares ->
                 var iReturnType = -1
                 var iReturnTypeCds = -1
                 var iParamTypes = -1
@@ -630,6 +643,18 @@ internal object KReflectionTool {
         }.getOrNull()
 
     /**
+     * 判断当前 [String] 是否为 Getter 函数的函数名
+     * @return [Boolean]
+     */
+    private val String.isGetter get() = startsWith("<get-") && endsWith(">")
+
+    /**
+     * 判断当前 [String] 是否为 Setter 函数的函数名
+     * @return [Boolean]
+     */
+    private val String.isSetter get() = startsWith("<set-") && endsWith(">")
+
+    /**
      * 获取当前 [KClass] 中存在的 [KFunction] 数组
      * @return [Sequence]<[KFunction]> or null
      */
@@ -639,6 +664,20 @@ internal object KReflectionTool {
                 ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).asSequence() }.onFailure {
             KYLog.warn(msg = "Failed to get the declared Functions in [$this] because got an exception", e = it)
         }.getOrNull()
+
+    /**
+     * 获取当前 [KClass] 中存在的 Getter [KFunction] 数组
+     * @return [Sequence]<Getter [KFunction]> or null
+     */
+    private val KClass<*>.existGetterFunctions
+        get() = runCatching { existPropertys?.map { it.getter } }.getOrNull()
+
+    /**
+     * 获取当前 [KClass] 中存在的 Setter [KFunction] 数组
+     * @return [Sequence]<Getter [KFunction]> or null
+     */
+    private val KClass<*>.existSetterFunctions
+        get() = runCatching { existPropertys?.mapNotNull { it.toMutableOrNull?.setter } }.getOrNull()
 
     /**
      * 获取当前 [KClass] 中存在的 Constructor [KFunction] 数组

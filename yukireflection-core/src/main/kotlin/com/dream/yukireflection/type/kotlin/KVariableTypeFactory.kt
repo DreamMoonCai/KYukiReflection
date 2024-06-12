@@ -887,3 +887,15 @@ val KCallableImplKClass get() = "kotlin.reflect.jvm.internal.KCallableImpl".toKC
  * @return [KClass]<[kotlin.reflect.jvm.internal.KPackageImpl]>
  */
 val KPackageImplKClass get() = "kotlin.reflect.jvm.internal.KPackageImpl".toKClass()
+
+/**
+ * 获得 [kotlin.reflect.jvm.internal.KClassImpl] 类型
+ * @return [KClass]<[kotlin.reflect.jvm.internal.KClassImpl]>
+ */
+val KClassImplKClass get() = "kotlin.reflect.jvm.internal.KClassImpl".toKClass()
+
+/**
+ * 获得 [kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope.OptimizedImplementation] 类型
+ * @return [KClass]<[kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope.OptimizedImplementation]>
+ */
+val DeserializedMemberScope_OptimizedImplementationKClass get() = "kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope\$OptimizedImplementation".toKClass()
