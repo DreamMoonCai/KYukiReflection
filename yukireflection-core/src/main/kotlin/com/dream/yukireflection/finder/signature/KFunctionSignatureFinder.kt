@@ -4,7 +4,6 @@ package com.dream.yukireflection.finder.signature
 
 import com.dream.yukireflection.finder.callable.KFunctionFinder
 import com.dream.yukireflection.finder.signature.support.KFunctionSignatureSupport
-import com.dream.yukireflection.finder.signature.support.KPropertySignatureSupport
 import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.helper.KYukiHookHelper
 import com.dream.yukireflection.log.KYLog

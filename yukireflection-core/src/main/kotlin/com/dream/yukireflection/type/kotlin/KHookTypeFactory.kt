@@ -1,7 +1,6 @@
-@file:Suppress("unused", "KDocUnresolvedReference", "DEPRECATION", "FunctionName", "UNCHECKED_CAST")
+@file:Suppress("unused", "KDocUnresolvedReference", "FunctionName")
 package com.dream.yukireflection.type.kotlin
 
-import com.dream.yukireflection.factory.toKClass
 import com.dream.yukireflection.factory.toKClassOrNull
 import kotlin.reflect.KClass
 

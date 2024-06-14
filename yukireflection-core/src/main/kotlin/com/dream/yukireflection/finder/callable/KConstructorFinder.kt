@@ -24,15 +24,13 @@
 
 package com.dream.yukireflection.finder.callable
 
+import com.dream.yukireflection.bean.KGenericClass
 import com.dream.yukireflection.finder.base.KCallableBaseFinder
 import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.bean.KVariousClass
 import com.dream.yukireflection.factory.*
-import com.dream.yukireflection.factory.name
-import com.dream.yukireflection.finder.callable.KFunctionFinder.Result
-import com.dream.yukireflection.finder.callable.KPropertyFinder.Result.Instance
 import com.dream.yukireflection.finder.callable.data.KConstructorRulesData
 import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.helper.KYukiHookHelper

@@ -4,11 +4,7 @@ package com.dream.yukireflection.finder.signature
 
 import com.dream.yukireflection.bean.KCurrentClass
 import com.dream.yukireflection.factory.*
-import com.dream.yukireflection.finder.callable.KFunctionFinder
 import com.dream.yukireflection.finder.callable.KPropertyFinder
-import com.dream.yukireflection.finder.callable.KPropertyFinder.RemedyPlan
-import com.dream.yukireflection.finder.signature.KFunctionSignatureFinder.Result.Instance
-import com.dream.yukireflection.finder.signature.support.KFunctionSignatureSupport
 import com.dream.yukireflection.finder.signature.support.KPropertySignatureSupport
 import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.helper.KYukiHookHelper

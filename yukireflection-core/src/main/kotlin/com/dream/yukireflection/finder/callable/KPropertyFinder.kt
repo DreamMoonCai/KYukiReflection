@@ -34,7 +34,6 @@ import com.dream.yukireflection.type.factory.KTypeConditions
 import com.dream.yukireflection.type.factory.KPropertyConditions
 import com.dream.yukireflection.bean.KVariousClass
 import com.dream.yukireflection.factory.*
-import com.dream.yukireflection.finder.signature.KPropertySignatureFinder.Result.Instance
 import com.dream.yukireflection.helper.KYukiHookHelper
 import com.dream.yukireflection.log.KYLog
 import com.dream.yukireflection.type.factory.KNameConditions
@@ -44,9 +43,6 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 import kotlin.reflect.*
 import kotlin.reflect.full.instanceParameter
-import kotlin.reflect.full.valueParameters
-import kotlin.reflect.jvm.javaField
-import kotlin.reflect.jvm.javaGetter
 
 /**
  * [KProperty] 查找类

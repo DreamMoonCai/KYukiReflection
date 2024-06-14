@@ -664,11 +664,11 @@ internal object KReflectionTool {
                                     override val index: Int
                                         get() = index
                                     override val isOptional: Boolean
-                                        get() = TODO("Parameter type condition customization in Signature Conditions is not supported!!!")
+                                        get() = throw NotImplementedError("Parameter type condition customization in Signature Conditions is not supported!!!")
                                     override val isVararg: Boolean
                                         get() = valueParameter.hasVarargElementType()
                                     override val kind: KParameter.Kind
-                                        get() = TODO("Parameter type condition customization in Signature Conditions is not supported!!!")
+                                        get() = throw NotImplementedError("Parameter type condition customization in Signature Conditions is not supported!!!")
                                     override val name: String
                                         get() = nameResolver.getString(valueParameter.name)
                                     override val type: KType
@@ -744,11 +744,11 @@ internal object KReflectionTool {
                                             override val index: Int
                                                 get() = index
                                             override val isOptional: Boolean
-                                                get() = TODO("Parameter type condition customization in Signature Conditions is not supported!!!")
+                                                get() = throw NotImplementedError("Parameter type condition customization in Signature Conditions is not supported!!!")
                                             override val isVararg: Boolean
                                                 get() = valueParameter.hasVarargElementType()
                                             override val kind: KParameter.Kind
-                                                get() = TODO("Parameter type condition customization in Signature Conditions is not supported!!!")
+                                                get() = throw NotImplementedError("Parameter type condition customization in Signature Conditions is not supported!!!")
                                             override val name: String
                                                 get() = nameResolver.getString(valueParameter.name)
                                             override val type: KType

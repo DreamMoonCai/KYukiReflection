@@ -41,9 +41,7 @@ import com.dream.yukireflection.utils.factory.runBlocking
 import java.lang.IllegalArgumentException
 import com.dream.yukireflection.bean.KGenericClass
 import com.dream.yukireflection.factory.*
-import com.dream.yukireflection.finder.signature.KFunctionSignatureFinder.Result.Instance
 import com.dream.yukireflection.helper.KYukiHookHelper
-import java.lang.reflect.Method
 import kotlin.reflect.*
 import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.valueParameters

@@ -22,6 +22,7 @@
  */
 package com.dream.yukireflection.finder.base.data
 
+import com.dream.yukireflection.bean.KGenericClass
 import com.dream.yukireflection.finder.base.KBaseFinder
 import com.dream.yukireflection.finder.base.KBaseFinder.Companion.checkSupportedTypes
 import com.dream.yukireflection.finder.base.rules.KCountRules
