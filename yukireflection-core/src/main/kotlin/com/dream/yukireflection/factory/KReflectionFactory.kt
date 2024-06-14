@@ -19,9 +19,7 @@ import com.dream.yukireflection.type.factory.*
 import com.dream.yukireflection.type.kotlin.*
 import com.dream.yukireflection.utils.factory.ifTrue
 import java.lang.ref.WeakReference
-import java.lang.reflect.Constructor
-import java.lang.reflect.Field
-import java.lang.reflect.Method
+import java.lang.reflect.*
 import kotlin.jvm.internal.CallableReference
 import kotlin.jvm.internal.FunctionReference
 import kotlin.jvm.internal.PropertyReference
@@ -111,13 +109,6 @@ open class KLazyClass<T> internal constructor(
 }
 
 /**
- * 将 [Class] 强行转换为 [KClass]
- *
- * @return [KClass]
- */
-inline val <T> Class<out T>.kotlinAs get() = this.kotlin as KClass<T & Any>
-
-/**
  * 将 [KType] 转换为 [KClass]
  *
  * - 此行为将进行泛型擦除 如果KType是类似T:Number的类型此操作将返回Number 如果没有界限则为Any
@@ -148,15 +139,6 @@ inline val KClass<*>.isTop get() = jvmName.endsWith("Kt")
  * 如 此类是xx.kt文件 -> xxKt.class
  */
 inline val KClass<*>.existTop get() = isTop || "${name}Kt".toKClassOrNull() != null
-
-/**
- * 获取当前 [Class] 在Kotlin的顶级操作对象
- *
- * 如定义在根class外的内容 包括函数/字段等
- *
- * 顶层往往会在类名后增加Kt
- */
-inline val Class<*>.top: KDeclarationContainer get() = Reflection.getOrCreateKotlinPackage(if (this.name.endsWith("Kt")) this else "${name}Kt".toKClass().java)
 
 /**
  * 获取顶层文件或类的 [KClass]
@@ -410,17 +392,6 @@ val CallableReference.impl: KCallable<*>?
  */
 inline val CallableReference.declaringKotlin
     get() = this.owner.kotlin
-
-/**
- * 当前 [Class] 是否是kotlin类
- *
- * 为false不代表不能使用Kotlin反射，Kotlin反射优先依赖于Metadata注解，没有时依赖JavaClass中所有已知信息
- *
- * 即JavaClass中部分泛型信息Kotlin反射也能获取成功，这些已知信息将通过Kotlin反射自动转换为对应的Kotlin相关引用信息对象
- *
- * @return [Boolean]
- */
-inline val Class<*>.isKotlin: Boolean get() = annotations.any { it.annotationClass.jvmName == Metadata::class.jvmName }
 
 /**
  * 当前 [KClass] 的父类
@@ -1274,15 +1245,6 @@ inline fun <reified T> Array<out KType>.type() =
  */
 inline fun KFunction<*>.instance(thisRef: Any? = null, extensionRef: Any? = null, isUseMember: Boolean = false) =
     KFunctionFinder(declaringClass).Result().Instance(thisRef, this).receiver(extensionRef).useMember(isUseMember)
-
-/**
- * 将 [Constructor] 转换为 [KConstructorFinder.Result.Instance] 可执行类
- *
- * 这是 Constructor[KFunction] 的快捷方法
- *
- * @param isUseMember 是否优先将属性转换Java方式进行get/set
- */
-inline fun Constructor<*>.instanceKotlin(isUseMember: Boolean = false) = kotlin.constructorInstance(isUseMember)
 
 /**
  * 将 Constructor[KFunction] 转换为 [KConstructorFinder.Result.Instance] 可执行类

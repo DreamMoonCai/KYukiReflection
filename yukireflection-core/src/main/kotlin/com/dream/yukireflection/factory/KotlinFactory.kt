@@ -123,54 +123,6 @@ inline val Member.returnType: Class<out Any> get() = when (this) {
     else -> error("Unsupported member type: $this")
 }
 
-/**
- * 通过 [Field] 分析签名构建 [KProperty]
- *
- * 签名分析或许不一定能正常转换 参阅或使用[Field.kotlinProperty]
- */
-inline val Field.kotlin: KProperty<*> get() = when{
-    Modifier.isStatic(modifiers) -> Reflection.mutableProperty0(KReference.mutablePropertyStatic(this))
-    else -> Reflection.mutableProperty1(KReference.mutableProperty(this))
-}
-
-/**
- * 通过 [Method] 分析签名构建 [KFunction]
- *
- * 签名分析或许不一定能正常转换 参阅或使用[Method.kotlinFunction]
- */
-inline val Method.kotlin: KFunction<*> get() = Reflection.function(KReference.function(this))
-
-/**
- * 通过 [Constructor] 分析签名构建 [KFunction]
- *
- * 签名分析或许不一定能正常转换 参阅或使用[Constructor.kotlinFunction]
- */
-inline val Constructor<*>.kotlin: KFunction<*> get() = Reflection.function(KReference.function(this))
-
-/**
- * 获取此 [Field] 在 Kotlin 常用的简单签名
- *
- *     如: int abc = * --> "getAbc()I"
- *        val abc = listOf(1, 2, 3) --> "getAbc()Ljava/util/List;"
- */
-val Field.kotlinSimpleSignature get() = name.addHump(if (type.kotlin == Boolean::class) "is" else "get") + "()" + DexSignUtil.getTypeSign(type)
-
-/**
- * 获取此 [Method] 在 Kotlin 常用的简单签名
- *
- *     如: int abc(int a, int b) --> "abc(II)I"
- *        fun abc(a:List<*>) --> "abc(Ljava/util/List;)V"
- */
-val Method.kotlinSimpleSignature get() = name + DexSignUtil.getMethodSign(this)
-
-/**
- * 获取此 [Constructor] 在 Kotlin 常用的简单签名
- *
- *     如: class abc(int a, int b) --> "<init>(II)V"
- *        class abc(a:List<*>) --> "<init>(Ljava/util/List;)V"
- */
-val Constructor<*>.kotlinSimpleSignature get() = name + DexSignUtil.getConstructorSign(this)
-
 // Kotlin reflection -> Java reflection
 
 /**
