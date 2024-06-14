@@ -559,6 +559,15 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
             return this
         }
 
+        @Suppress("DuplicatedCode")
+        override fun toString(): String {
+            val all = giveAll()
+            if (all.isEmpty()) return "${classSet?.name ?: "<empty>"} not found in."
+            return "Here are the results of this search:" + all.joinToString(separator = "\n"){
+                "[${it}] in [${classSet?.name ?: "<empty>"}]"
+            }
+        }
+
         /**
          * Constructor [KFunction] 实例处理类
          *

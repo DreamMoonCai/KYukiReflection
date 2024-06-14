@@ -2,6 +2,7 @@
 
 package com.dream.yukireflection.finder.signature
 
+import com.dream.yukireflection.factory.name
 import com.dream.yukireflection.finder.callable.KFunctionFinder
 import com.dream.yukireflection.finder.signature.support.KFunctionSignatureSupport
 import com.dream.yukireflection.finder.tools.KReflectionTool
@@ -270,6 +271,15 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
         fun ignored(): Result {
             isIgnoreErrorLogs = true
             return this
+        }
+
+        @Suppress("DuplicatedCode")
+        override fun toString(): String {
+            val all = giveAll()
+            if (all.isEmpty()) return "${classSet?.name ?: "<empty>"} not found in."
+            return "Here are the results of this search:" + all.joinToString(separator = "\n"){
+                "[${it}] in [${classSet?.name ?: "<empty>"}]"
+            }
         }
 
         /**

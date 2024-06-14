@@ -282,6 +282,15 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
             return this
         }
 
+        @Suppress("DuplicatedCode")
+        override fun toString(): String {
+            val all = giveAll()
+            if (all.isEmpty()) return "${classSet?.name ?: "<empty>"} not found in."
+            return "Here are the results of this search:" + all.joinToString(separator = "\n"){
+                "[${it}] in [${classSet?.name ?: "<empty>"}]"
+            }
+        }
+
         /**
          * [Field]、get/set [Method] 实例处理类
          *
