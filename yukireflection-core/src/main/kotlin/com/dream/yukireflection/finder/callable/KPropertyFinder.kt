@@ -536,9 +536,9 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
         override fun toString(): String {
             val all = giveAll()
             if (all.isEmpty()) return "${classSet?.name ?: "<empty>"} not found in."
-            return "Here are the results of this search:" + all.joinToString(separator = "\n"){
+            return "Here are the results of this search:\n" + all.joinToString(separator = "\n"){
                 "[${it}] in [${classSet?.name ?: "<empty>"}]"
-            }
+            } + "\n"
         }
 
 

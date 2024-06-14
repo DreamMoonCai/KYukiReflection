@@ -117,10 +117,12 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
         /**
          * 验证签名是否正确存在
          */
-        val hasSignature by lazy { (declaringClass?.name?.let { !name.contains(it) } ?: false) }
+        val hasSignature by lazy { (declaringClass?.name?.let { it != DexSignUtil.getTypeName("L$name;") } ?: false) }
 
         override fun toString(): String {
-            return "FieldSignatureSupport(name='$name', typeDescriptor='$typeDescriptor')"
+            return if (!hasSignature)
+                "['Signature object is Invalid.']"
+            else "[name='$name', typeDescriptor='$typeDescriptor']"
         }
     }
 
@@ -239,8 +241,23 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
      */
     val hasSyntheticFunction by lazy { proto.hasSyntheticMethod() }
 
+    /**
+     * 验证签名是否正确存在
+     */
+    val hasSignature by lazy { !(getterOrNull?.hasSignature == false && setterOrNull?.hasSignature == false && fieldOrNull?.hasSignature == false && delegateFunctionOrNull?.hasSignature == false && syntheticFunctionOrNull?.hasSignature == false) }
+
     override fun toString(): String {
-        return "PropertySignatureSupport(getter=$getterOrNull, setter=$setterOrNull, field=$fieldOrNull, delegateFunction=$delegateFunctionOrNull, syntheticFunction=$syntheticFunctionOrNull)"
+        if (!hasSignature)
+           return "['Signature object is Invalid.']"
+
+        val signatureStr = mutableListOf<String>().also {
+            if (getterOrNull?.hasSignature == true) it += "getter=$getterOrNull"
+            if (setterOrNull?.hasSignature == true) it += "setter=$setterOrNull"
+            if (fieldOrNull?.hasSignature == true) it += "field=$fieldOrNull"
+            if (delegateFunctionOrNull?.hasSignature == true) it += "delegateFunction=$delegateFunctionOrNull"
+            if (syntheticFunctionOrNull?.hasSignature == true) it += "syntheticFunction=$syntheticFunctionOrNull"
+        }
+        return "[" + signatureStr.joinToString(", ") + "]"
     }
 
 }

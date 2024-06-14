@@ -157,9 +157,12 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
     /**
      * 验证签名是否正确存在
      */
-    val hasSignature by lazy { (declaringClass?.name?.let { !proto.name.contains(it) } ?: false) && proto.descriptor.startsWith("(") && proto.descriptor.contains(";)") }
+    val hasSignature by lazy { (declaringClass?.name?.let { it != DexSignUtil.getTypeName("L$name;") } ?: false) && descriptor.startsWith("(") }
 
     override fun toString(): String {
-        return "FunctionSignatureSupport(name='$name', desc='$descriptor')"
+        return if (!hasSignature)
+            "['Signature object is Invalid.']"
+        else
+            "[name='$name', desc='$descriptor']"
     }
 }
