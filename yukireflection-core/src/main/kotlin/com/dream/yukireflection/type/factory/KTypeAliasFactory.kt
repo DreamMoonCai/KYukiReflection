@@ -31,6 +31,8 @@ import com.dream.yukireflection.finder.callable.KPropertyFinder
 import com.dream.yukireflection.finder.base.rules.KCountRules
 import com.dream.yukireflection.finder.base.rules.KNameRules
 import com.dream.yukireflection.finder.base.rules.KObjectRules
+import com.dream.yukireflection.finder.signature.KFunctionSignatureFinder
+import com.dream.yukireflection.finder.signature.KPropertySignatureFinder
 import kotlin.reflect.KParameter
 import kotlin.reflect.KType
 
@@ -48,6 +50,12 @@ internal typealias KPropertyConditions = KPropertyFinder.() -> Unit
 
 /** 定义 [KFunctionFinder] 方法体类型 */
 internal typealias KFunctionConditions = KFunctionFinder.() -> Unit
+
+/** 定义 [KFunctionSignatureFinder] 方法体类型 */
+internal typealias KFunctionSignatureConditions = KFunctionSignatureFinder.() -> Unit
+
+/** 定义 [KPropertySignatureFinder] 方法体类型 */
+internal typealias KPropertySignatureFinderConditions = KPropertySignatureFinder.() -> Unit
 
 /** 定义 [KConstructorFinder] 方法体类型 */
 internal typealias KConstructorConditions = KConstructorFinder.() -> Unit

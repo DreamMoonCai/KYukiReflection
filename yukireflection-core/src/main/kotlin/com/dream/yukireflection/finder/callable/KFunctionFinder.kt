@@ -41,7 +41,11 @@ import com.dream.yukireflection.utils.factory.runBlocking
 import java.lang.IllegalArgumentException
 import com.dream.yukireflection.bean.KGenericClass
 import com.dream.yukireflection.factory.*
+import com.dream.yukireflection.finder.signature.KFunctionSignatureFinder.Result.Instance
+import com.dream.yukireflection.helper.KYukiHookHelper
+import java.lang.reflect.Method
 import kotlin.reflect.*
+import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.valueParameters
 
 /**
@@ -50,15 +54,15 @@ import kotlin.reflect.full.valueParameters
  * 可通过指定类型查找指定 [KFunction] 或一组 [KFunction]
  * @param classSet 当前需要查找的 [KClass] 实例
  */
-class KFunctionFinder internal constructor(override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_FUNCTION, classSet) {
+open class KFunctionFinder internal constructor(final override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_FUNCTION, classSet) {
 
     override var rulesData = KFunctionRulesData()
 
     /** 当前使用的 [classSet] */
-    private var usedClassSet = classSet
+    internal var usedClassSet = classSet
 
     /** 当前重查找结果回调 */
-    private var remedyPlansCallback: (() -> Unit)? = null
+    internal var remedyPlansCallback: (() -> Unit)? = null
 
     /**
      * 将此函数相关内容附加到此查找器
@@ -558,7 +562,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
         }
     }
 
-    override fun build() = runCatching {
+    override fun build():BaseResult = runCatching {
         internalBuild()
         Result()
     }.getOrElse {
@@ -566,7 +570,7 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
         Result(isNoSuch = true, it)
     }
 
-    override fun failure(throwable: Throwable?) = Result(isNoSuch = true, throwable)
+    override fun failure(throwable: Throwable?):BaseResult = Result(isNoSuch = true, throwable)
 
     /**
      * [KFunction] 重查找实现类
@@ -713,11 +717,13 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
          *
          * - 若你没有设置 [remedys] 此方法将不会被回调
          * @param instance 所在实例
+         * @param extensionRef 函数如果是拓展函数你还需要传入拓展函数的this对象
+         * @param isUseMember 是否优先将函数转换Java方式执行
          * @param initiate 回调 [Instance]
          */
-        fun wait(instance: Any? = null, initiate: Instance.() -> Unit) {
-            if (callableInstances.isNotEmpty()) initiate(get(instance))
-            else remedyPlansCallback = { initiate(get(instance)) }
+        fun wait(instance: Any? = null,extensionRef:Any? = null,isUseMember:Boolean = false, initiate: Instance.() -> Unit) {
+            if (callableInstances.isNotEmpty()) initiate(get(instance,extensionRef,isUseMember))
+            else remedyPlansCallback = { initiate(get(instance,extensionRef,isUseMember)) }
         }
 
         /**
@@ -729,11 +735,13 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
          *
          * - 若你没有设置 [remedys] 此方法将不会被回调
          * @param instance 所在实例
+         * @param extensionRef 函数如果是拓展函数你还需要传入拓展函数的this对象
+         * @param isUseMember 是否优先将函数转换Java方式执行
          * @param initiate 回调 [MutableList]<[Instance]>
          */
-        fun waitAll(instance: Any? = null, initiate: MutableList<Instance>.() -> Unit) {
-            if (callableInstances.isNotEmpty()) initiate(all(instance))
-            else remedyPlansCallback = { initiate(all(instance)) }
+        fun waitAll(instance: Any? = null,extensionRef:Any? = null,isUseMember:Boolean = false, initiate: MutableList<Instance>.() -> Unit) {
+            if (callableInstances.isNotEmpty()) initiate(all(instance,extensionRef,isUseMember))
+            else remedyPlansCallback = { initiate(all(instance,extensionRef,isUseMember)) }
         }
 
         /**
@@ -783,7 +791,13 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
          * @param instance 当前 [KFunction] 所在类的实例对象
          * @param function 当前 [KFunction] 实例对象
          */
-        inner class Instance internal constructor(private val instance: Any?, private val function: KFunction<*>?) {
+        inner class Instance internal constructor(private var instance: Any?, private val function: KFunction<*>?) {
+
+            init {
+                if (instance == null){
+                    instance = runCatching { function?.instanceParameter?.kotlin?.objectInstance }.getOrNull()
+                }
+            }
 
             /**
              * @see [useMember]
@@ -827,23 +841,41 @@ class KFunctionFinder internal constructor(override val classSet: KClass<*>? = n
                 return this
             }
 
+            /** 标识需要调用当前 [KFunction] 未经 Hook 的原始方法 */
+            private var isCallOriginal = false
+
+            /**
+             * 标识需要调用当前 [KFunction] 未经 Hook 的原始 [KFunction]
+             *
+             * 若当前 [KFunction] 并未 Hook 则会使用原始的 [KFunction.call] 方法调用
+             *
+             * - 此方法在 Hook Api 存在时将固定 [isUseMember] 为 true 无视 [extensionRef] 参数
+             * - 你只能在 (Xposed) 宿主环境中使用此功能
+             * - 此方法仅在 Hook Api 下有效
+             * @return [Instance] 可继续向下监听
+             */
+            fun original(): Instance {
+                isCallOriginal = true
+                return this
+            }
+
             /**
              * 执行 [KFunction]
              * @param args 方法参数
              * @return [Any] or null
              */
             private fun baseCall(vararg args: Any?) = runCatching {
+                if (isCallOriginal && KYukiHookHelper.isMemberHooked(function?.javaMethodNoError.also { it?.isAccessible = true }))
+                    return@runCatching KYukiHookHelper.invokeOriginalMember(function?.javaMethodNoError.also { it?.isAccessible = true }, instance, args)
                 if (isUseMember) {
-                    val method = function?.javaMethodNoError
+                    val method = function?.javaMethodNoError.also { it?.isAccessible = true }
                     if (method != null) {
-                        method.isAccessible = true
                         return@runCatching method.invoke(instance, *args)
                     }
                 }
                 if (function?.isExtension == true) {
                     if (instance != null) function.call(instance,extensionRef, *args) else function.call(extensionRef,*args)
-                }else
-                if (instance != null) function?.call(instance, *args) else function?.call(*args)
+                }else if (instance != null) function?.call(instance, *args) else function?.call(*args)
             }.getOrElse { if (it is IllegalArgumentException) errorMsg("An error occurred in the number of parameters. Check whether the instance exists or whether the number of parameters is correct.",it) else throw it }
 
             /**

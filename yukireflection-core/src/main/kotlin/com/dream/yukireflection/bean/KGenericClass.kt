@@ -30,6 +30,7 @@ import com.dream.yukireflection.factory.kotlin
 import com.dream.yukireflection.factory.variance
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.type.factory.KTypeBuildConditions
+import com.dream.yukireflection.type.kotlin.UnitKClass
 import com.dream.yukireflection.utils.factory.ifFalse
 import kotlin.reflect.*
 
@@ -288,6 +289,7 @@ class KGenericClass internal constructor(val type: KType) :List<KTypeProjection>
             is KParameter -> other.type.generic()
             is KProperty<*> -> other.generic()
             is KGenericClass -> other
+            Void.TYPE,Void::class,Void::class.java -> return UnitKClass == type.classifier
             is Class<*> -> return other.kotlin == type.classifier
             is KClassifier -> return other == type.classifier
             else -> return false

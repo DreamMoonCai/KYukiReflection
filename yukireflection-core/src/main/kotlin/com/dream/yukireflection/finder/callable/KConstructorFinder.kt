@@ -35,6 +35,7 @@ import com.dream.yukireflection.finder.callable.KFunctionFinder.Result
 import com.dream.yukireflection.finder.callable.KPropertyFinder.Result.Instance
 import com.dream.yukireflection.finder.callable.data.KConstructorRulesData
 import com.dream.yukireflection.finder.tools.KReflectionTool
+import com.dream.yukireflection.helper.KYukiHookHelper
 import com.dream.yukireflection.log.KYLog
 import com.dream.yukireflection.type.factory.*
 import com.dream.yukireflection.type.factory.KConstructorConditions
@@ -498,11 +499,12 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
          * - 若你设置了 [remedys] 必须使用此方法才能获得结果
          *
          * - 若你没有设置 [remedys] 此方法将不会被回调
+         * @param isUseMember 是否优先将构造函数转换Java方式进行构造
          * @param initiate 回调 [Instance]
          */
-        fun wait(initiate: Instance.() -> Unit) {
-            if (callableInstances.isNotEmpty()) initiate(get())
-            else remedyPlansCallback = { initiate(get()) }
+        fun wait(isUseMember:Boolean = false,initiate: Instance.() -> Unit) {
+            if (callableInstances.isNotEmpty()) initiate(get(isUseMember))
+            else remedyPlansCallback = { initiate(get(isUseMember)) }
         }
 
         /**
@@ -513,11 +515,12 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
          * - 若你设置了 [remedys] 必须使用此方法才能获得结果
          *
          * - 若你没有设置 [remedys] 此方法将不会被回调
+         * @param isUseMember 是否优先将构造函数转换Java方式进行构造
          * @param initiate 回调 [MutableList]<[Instance]>
          */
-        fun waitAll(initiate: MutableList<Instance>.() -> Unit) {
-            if (callableInstances.isNotEmpty()) initiate(all())
-            else remedyPlansCallback = { initiate(all()) }
+        fun waitAll(isUseMember:Boolean = false,initiate: MutableList<Instance>.() -> Unit) {
+            if (callableInstances.isNotEmpty()) initiate(all(isUseMember))
+            else remedyPlansCallback = { initiate(all(isUseMember)) }
         }
 
         /**
@@ -592,16 +595,35 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
                 return this
             }
 
+            /** 标识需要调用当前 Constructor [KFunction] 未经 Hook 的原始方法 */
+            private var isCallOriginal = false
+
+            /**
+             * 标识需要调用当前 Constructor [KFunction] 未经 Hook 的原始 Constructor [KFunction]
+             *
+             * 若当前 Constructor [KFunction] 并未 Hook 则会使用原始的 Constructor [KFunction.call] 方法调用
+             *
+             * - 此方法在 Hook Api 存在时将固定 [isUseMember] 为 true
+             * - 你只能在 (Xposed) 宿主环境中使用此功能
+             * - 此方法仅在 Hook Api 下有效
+             * @return [Instance] 可继续向下监听
+             */
+            fun original(): Instance {
+                isCallOriginal = true
+                return this
+            }
+
             /**
              * 执行 Constructor [KFunction] 创建目标实例
              * @param args Constructor [KFunction] 参数
              * @return [Any] or null
              */
             private fun baseCall(vararg args: Any?) = runCatching<Result,Any?> {
+                if (isCallOriginal && KYukiHookHelper.isMemberHooked(constructor?.javaConstructorNoError.also { it?.isAccessible = true }))
+                    return@runCatching KYukiHookHelper.invokeOriginalMember(constructor?.javaConstructorNoError.also { it?.isAccessible = true }, null, args)
                 if (isUseMember){
-                    val constructor = constructor?.javaConstructorNoError
+                    val constructor = constructor?.javaConstructorNoError.also { it?.isAccessible = true }
                     if (constructor != null){
-                        constructor.isAccessible = true
                         return@runCatching constructor.newInstance(*args)
                     }
                 }

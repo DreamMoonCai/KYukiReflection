@@ -12,6 +12,8 @@ import com.dream.yukireflection.finder.callable.KConstructorFinder
 import com.dream.yukireflection.finder.callable.KFunctionFinder
 import com.dream.yukireflection.finder.callable.KPropertyFinder
 import com.dream.yukireflection.finder.classes.KClassFinder
+import com.dream.yukireflection.finder.signature.KFunctionSignatureFinder
+import com.dream.yukireflection.finder.signature.KPropertySignatureFinder
 import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.type.factory.*
 import com.dream.yukireflection.type.kotlin.*
@@ -943,14 +945,46 @@ inline fun KClass<*>.hasModifiers(conditions: KModifierConditions) = conditions(
  * @param initiate 查找方法体
  * @return [KPropertyFinder.Result]
  */
-inline fun KClass<*>.property(initiate: KPropertyConditions = {}) = KPropertyFinder(classSet = this).apply(initiate).build()
+inline fun KClass<*>.property(initiate: KPropertyConditions = {}) = KPropertyFinder(classSet = this).apply(initiate).build() as KPropertyFinder.Result
+
+/**
+ * 查找并得到方法签名
+ *
+ * 获取此 [KClass] 指定 [initiate] 条件的签名
+ *
+ * 此方法以通过 [Metadata] 中定义的属性名获取Java层真正的签名
+ *
+ * [KPropertySignatureFinderConditions] 中对属性类型进行筛选如果目标类型也有问题可能依然会出错，建议使用属性名筛选
+ *
+ * - 此方法不涉及转 Kotlin 的反射属性可以避免一些异常 [Metadata] 数据报错
+ * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
+ * @param initiate 查找方法体
+ * @return [KFunctionFinder.Result]
+ */
+inline fun KClass<*>.propertySignature(loader: ClassLoader? = null,initiate: KPropertySignatureFinderConditions = {}) = KPropertySignatureFinder(classSet = this,loader).apply(initiate).build()
 
 /**
  * 查找并得到方法
  * @param initiate 查找方法体
  * @return [KFunctionFinder.Result]
  */
-inline fun KClass<*>.function(initiate: KFunctionConditions = {}) = KFunctionFinder(classSet = this).apply(initiate).build()
+inline fun KClass<*>.function(initiate: KFunctionConditions = {}) = KFunctionFinder(classSet = this).apply(initiate).build() as KFunctionFinder.Result
+
+/**
+ * 查找并得到方法签名
+ *
+ * 获取此 [KClass] 指定 [initiate] 条件的签名
+ *
+ * 此方法以通过 [Metadata] 中定义的函数名获取Java层真正的签名
+ *
+ * [KFunctionSignatureConditions] 中对返回类型和参数类型进行筛选如果目标类型也有问题可能依然会出错，建议使用参数名筛选
+ *
+ * - 此方法不涉及转 Kotlin 的反射函数可以避免一些异常 [Metadata] 数据报错
+ * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
+ * @param initiate 查找方法体
+ * @return [KFunctionFinder.Result]
+ */
+inline fun KClass<*>.functionSignature(loader: ClassLoader? = null,initiate: KFunctionSignatureConditions = {}) = KFunctionSignatureFinder(classSet = this,loader).apply(initiate).build()
 
 /**
  * 查找并得到构造方法

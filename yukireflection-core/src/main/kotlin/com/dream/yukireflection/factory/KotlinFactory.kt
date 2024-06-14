@@ -1,7 +1,17 @@
-@file:Suppress("UnusedImport","MISSING_DEPENDENCY_SUPERCLASS", "NOTHING_TO_INLINE")
+@file:Suppress("UnusedImport", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS", "NOTHING_TO_INLINE")
 
 package com.dream.yukireflection.factory
 
+import com.dream.yukireflection.finder.base.rules.KModifierRules
+import com.dream.yukireflection.finder.base.rules.KNameRules
+import com.dream.yukireflection.finder.base.rules.KObjectRules
+import com.dream.yukireflection.finder.callable.KFunctionFinder
+import com.dream.yukireflection.finder.callable.KPropertyFinder
+import com.dream.yukireflection.finder.signature.support.KPropertySignatureSupport
+import com.dream.yukireflection.finder.tools.KReflectionTool
+import com.dream.yukireflection.type.factory.KFunctionConditions
+import com.dream.yukireflection.type.factory.KFunctionSignatureConditions
+import com.dream.yukireflection.type.factory.KPropertyConditions
 import com.dream.yukireflection.type.kotlin.DeserializedMemberScope_OptimizedImplementationKClass
 import com.dream.yukireflection.type.kotlin.KClassImplKClass
 import com.dream.yukireflection.utils.DexSignUtil
@@ -11,7 +21,6 @@ import kotlin.reflect.*
 import kotlin.jvm.internal.Reflection
 import kotlin.reflect.jvm.*
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
-import kotlin.reflect.jvm.internal.impl.metadata.deserialization.NameResolver
 import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
 import kotlin.reflect.jvm.internal.impl.name.Name
 import kotlin.reflect.jvm.internal.impl.serialization.deserialization.DeserializationContext
@@ -292,157 +301,38 @@ class OptimizedImplementationSupport(private val scope: DeserializedMemberScope,
 }
 
 /**
- * 获取此 [KClass] 指定属性名的签名
- *
- * 此方法以通过 [Metadata] 中定义的属性名获取Java层真正的签名
- *
- * - 此方法不涉及转 Kotlin 的反射属性可以避免一些异常 [Metadata] 数据报错
- * @param name 是在 [Metadata] 中定义的Kotlin层属性名
- * @param index 如果有多条签名选择第几个(往往只有一个) 默认为0
- * @return [PropertySignatureSupport] or null
- */
-inline fun KClass<*>?.propertySignature(name: String, index: Int = 0):PropertySignatureSupport?{
-    if (this == null) return null
-
-    val nameResolver = memberScope?.deserializationContext?.nameResolver ?: return null
-    val proto = (memberScope?.impl ?: return null).propertyProtos[if (!Name.isValidIdentifier(name)) Name.special(name) else Name.identifier(name)]?.get(index)?.getExtension(JvmProtoBuf.propertySignature) ?: return null
-    return PropertySignatureSupport(nameResolver,proto)
-}
-
-/**
  * 与 [KClass.propertySignature] 一致的快捷方法
- * 获取指定 [declaringClass] 属性名为 [KProperty.name] 的真实签名
+ *
+ * 获取指定 [declaringClass] 指定 [initiate] 条件的签名
  *
  * 此方法以通过 [Metadata] 中定义的属性名获取Java层真正的签名
+ *
+ * [KPropertyConditions] 中对属性类型进行筛选如果目标类型也有问题可能依然会出错，建议使用属性名筛选
  *
  * - 此方法不涉及转 Kotlin 的反射属性可以避免一些异常 [Metadata] 数据报错
  * @param declaringClass 属性所在类
- * @param index 如果有多条签名选择第几个(往往只有一个) 默认为0
- * @return [PropertySignatureSupport] or null
+ * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
+ * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
+ * @param initiate 条件方法体
+ * @return [KPropertySignatureSupport] or null - 找不到返回null
  */
-inline fun KProperty<*>.signatureMetadata(declaringClass: KClass<*>? = this.declaringClass,index: Int = 0):PropertySignatureSupport? = declaringClass.propertySignature(name, index)
+inline fun KProperty<*>.signature(declaringClass: KClass<*>? = this.declaringClass,loader: ClassLoader? = declaringClass?.classLoader,isUseMember: Boolean = false, noinline initiate: KPropertyConditions = { this@signature.attach(loader,isUseMember) }) = declaringClass?.propertySignature(loader,initiate) ?: error("There Are No Attribution Classes")
 
 /**
- * 属性签名处理支持组件
+ * 与 [KClass.functionSignature] 一致的快捷方法
  *
- * @property nameResolver 名称解析器
- * @property proto 属性签名
+ * 获取指定 [declaringClass] 指定 [initiate] 条件的签名
+ *
+ * 此方法以通过 [Metadata] 中定义的函数名获取Java层真正的签名
+ *
+ * [KFunctionConditions] 中对返回类型和参数类型进行筛选如果目标类型也有问题可能依然会出错，建议使用参数名筛选
+ *
+ * - 此方法不涉及转 Kotlin 的反射函数可以避免一些异常 [Metadata] 数据报错
+ * @param declaringClass 属性所在类
+ * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
+ * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
+ * @param initiate 条件方法体
+ * @return [KFunctionFinder.Result] or null - 找不到返回null
  */
-class PropertySignatureSupport(private val nameResolver:NameResolver, private val proto:JvmProtoBuf.JvmPropertySignature){
+inline fun KFunction<*>.signature(declaringClass: KClass<*>? = this.declaringClass,loader: ClassLoader? = declaringClass?.classLoader,isUseMember: Boolean = false, noinline initiate: KFunctionSignatureConditions = { this@signature.attach(loader,isUseMember) }) = declaringClass?.functionSignature(loader,initiate) ?: error("There Are No Attribution Classes")
 
-    /**
-     * 字段签名处理支持组件
-     *
-     * @property proto 字段签名
-     */
-    inner class FieldSignatureSupport(private val proto:JvmProtoBuf.JvmFieldSignature){
-        /**
-         * 字段名
-         */
-        val name by lazy { nameResolver.getString(proto.name) }
-
-        /**
-         * 字段类型 如:Ljava/lang/String;
-         */
-        val desc by lazy { nameResolver.getString(proto.desc) }
-
-        /**
-         * 字段名是否存在
-         */
-        val hasName by lazy { proto.hasName() }
-
-        /**
-         * 字段类型是否存在
-         */
-        val hasDesc by lazy { proto.hasDesc() }
-
-        override fun toString(): String {
-            return "FieldSignatureSupport(name='$name', desc='$desc')"
-        }
-    }
-
-    /**
-     * 方法签名处理支持组件
-     *
-     * @property proto 方法签名
-     */
-    inner class FunctionSignatureSupport(private val proto:JvmProtoBuf.JvmMethodSignature){
-        /**
-         * 方法名
-         */
-        val name by lazy { nameResolver.getString(proto.name) }
-
-        /**
-         * 方法签名 如:(Ljava/lang/String;)V
-         */
-        val desc by lazy { nameResolver.getString(proto.desc) }
-
-        /**
-         * 方法名是否存在
-         */
-        val hasName by lazy { proto.hasName() }
-
-        /**
-         * 方法签名是否存在
-         */
-        val hasDesc by lazy { proto.hasDesc() }
-
-        override fun toString(): String {
-            return "FunctionSignatureSupport(name='$name', desc='$desc')"
-        }
-    }
-    /**
-     * 获取Getter函数签名处理支持组件
-     */
-    val getter by lazy { proto.getter?.let { FunctionSignatureSupport(it) } }
-
-    /**
-     * 获取Setter函数签名处理支持组件
-     */
-    val setter by lazy { proto.setter?.let { FunctionSignatureSupport(it) } }
-
-    /**
-     * 获取字段签名处理支持组件
-     */
-    val field by lazy { proto.field?.let { FieldSignatureSupport(it) } }
-
-    /**
-     * 获取委托函数签名处理支持组件
-     */
-    val delegateFunction by lazy { proto.delegateMethod?.let { FunctionSignatureSupport(it) } }
-
-    /**
-     * 获取合成函数签名处理支持组件
-     */
-    val syntheticFunction by lazy { proto.syntheticMethod?.let { FunctionSignatureSupport(it) } }
-
-    /**
-     * 是否存在Getter函数签名
-     */
-    val hasGetter by lazy { proto.hasGetter() }
-
-    /**
-     * 是否存在Setter函数签名
-     */
-    val hasSetter by lazy { proto.hasSetter() }
-
-    /**
-     * 是否存在字段签名
-     */
-    val hasField by lazy { proto.hasField() }
-
-    /**
-     * 是否存在委托函数签名
-     */
-    val hasDelegateFunction by lazy { proto.hasDelegateMethod() }
-
-    /**
-     * 是否存在合成函数签名
-     */
-    val hasSyntheticFunction by lazy { proto.hasSyntheticMethod() }
-
-    override fun toString(): String {
-        return "PropertySignatureSupport(getter=$getter, setter=$setter, field=$field, delegateFunction=$delegateFunction, syntheticFunction=$syntheticFunction)"
-    }
-
-}

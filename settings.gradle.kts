@@ -22,6 +22,7 @@ sweetProperty {
     project(":samples:demo-jvm") { sourcesCode { isEnable = false } }
     project(":yukireflection-core") { sourcesCode { className = rootProject.name } }
 }
+
 rootProject.name = "YukiReflection"
 include(":samples:demo-android", ":samples:demo-jvm")
 include(":yukireflection-core")

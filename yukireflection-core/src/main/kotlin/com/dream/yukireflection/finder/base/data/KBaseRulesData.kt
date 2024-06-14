@@ -77,7 +77,7 @@ internal abstract class KBaseRulesData internal constructor(
     internal fun KCallable<*>.cast() = KModifierRules.with(instance = this, uniqueValue)
 
     /**
-     * [KProperty.kType] 转换为 [KObjectRules]
+     * [KProperty.returnType] 转换为 [KObjectRules]
      * @return [KObjectRules]
      */
     internal fun KProperty<*>.type() = KObjectRules.with(returnType)
@@ -117,6 +117,7 @@ internal abstract class KBaseRulesData internal constructor(
                     is Class<*> -> sb.append(type.takeIf { type.canonicalName != VagueKotlin.java.canonicalName }?.canonicalName ?: "*vague*")
                     is KClass<*> -> sb.append(type.takeIf { type.java.canonicalName != VagueKotlin.java.canonicalName }?.java?.canonicalName ?: "*vague*")
                     is KTypeParameter,is KType,is KTypeProjection,is KVariance -> sb.append(type.toString())
+                    is String -> sb.append(type)
                     else -> sb.append(KBaseFinder.checkArrayGenerics(type))
                 }
             }

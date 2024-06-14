@@ -20,7 +20,7 @@
  * This file is created by fankes on 2022/3/27.
  * This file is modified by fankes on 2023/1/21.
  */
-@file:Suppress("KotlinConstantConditions", "KDocUnresolvedReference")
+@file:Suppress("KotlinConstantConditions", "KDocUnresolvedReference","MISSING_DEPENDENCY_SUPERCLASS")
 
 package com.dream.yukireflection.finder.tools
 
@@ -37,15 +37,13 @@ import com.dream.yukireflection.type.defined.UndefinedKotlin
 import com.dream.yukireflection.type.defined.VagueKotlin
 import com.dream.yukireflection.factory.returnClass
 import com.dream.yukireflection.finder.base.KBaseFinder
-import com.dream.yukireflection.finder.tools.KReflectionTool.existFunctions
-import com.dream.yukireflection.finder.tools.KReflectionTool.existGetterFunctions
-import com.dream.yukireflection.finder.tools.KReflectionTool.existSetterFunctions
-import com.dream.yukireflection.finder.tools.KReflectionTool.isGetter
-import com.dream.yukireflection.finder.tools.KReflectionTool.isSetter
+import com.dream.yukireflection.finder.base.rules.KModifierRules
+import com.dream.yukireflection.finder.base.rules.KObjectRules
+import com.dream.yukireflection.finder.signature.support.KFunctionSignatureSupport
+import com.dream.yukireflection.finder.signature.support.KPropertySignatureSupport
 import com.dream.yukireflection.log.KYLog
-import com.dream.yukireflection.type.kotlin.NoClassDefFoundErrorKClass
-import com.dream.yukireflection.type.kotlin.NoSuchFieldErrorKClass
-import com.dream.yukireflection.type.kotlin.NoSuchMethodErrorKClass
+import com.dream.yukireflection.type.kotlin.*
+import com.dream.yukireflection.utils.DexSignUtil
 import com.dream.yukireflection.utils.factory.*
 import com.dream.yukireflection.utils.factory.conditions
 import com.dream.yukireflection.utils.factory.findLastIndex
@@ -56,6 +54,8 @@ import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
 import kotlin.reflect.jvm.internal.impl.builtins.jvm.JavaToKotlinClassMap
+import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
+import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
 import kotlin.reflect.jvm.internal.impl.name.FqNameUnsafe
 
 /**
@@ -117,6 +117,26 @@ internal object KReflectionTool {
          */
         fun loadWithDefaultClassLoader() = if (initialize.not()) loader?.loadClass(jvmName) else classForName(jvmName, initialize, loader)
         return MemoryCache.classData[uniqueCode] ?: runCatching {
+            if (jvmName.endsWith("[]")) {
+                val clazz = findClassByName(jvmName.substring(0, jvmName.length - 2),loader,initialize)
+                return ArrayClass(clazz).also { MemoryCache.classData[uniqueCode] = it }
+            }
+            if (jvmName.startsWith("[")){
+                return findClassByName(DexSignUtil.getTypeName(jvmName),loader,initialize)
+            }
+            val baseType = when (jvmName) {
+                "boolean" -> Int::class.javaPrimitiveType
+                "byte" -> Byte::class.javaPrimitiveType
+                "char" -> Char::class.javaPrimitiveType
+                "short" -> Short::class.javaPrimitiveType
+                "int" -> Int::class.javaPrimitiveType
+                "long" -> Long::class.javaPrimitiveType
+                "float" -> Float::class.javaPrimitiveType
+                "double" -> Double::class.javaPrimitiveType
+                "void" -> UnitKClass.java
+                else -> null
+            }
+            if (baseType != null) return baseType.kotlin.also { MemoryCache.classData[uniqueCode] = it }
             (loadWithDefaultClassLoader() ?: classForName(jvmName, initialize)).kotlin.also { MemoryCache.classData[uniqueCode] = it }
         }.getOrNull() ?: throw createException(loader ?: currentClassLoader, name = KBaseFinder.TAG_CLASS, "name:[$jvmName]")
     }
@@ -347,6 +367,102 @@ internal object KReflectionTool {
     }
 
     /**
+     * 查找任意 [KPropertySignatureSupport] 或一组 [KPropertySignatureSupport]
+     * @param classSet [KPropertySignatureSupport] 所在类
+     * @param rulesData 规则查找数据
+     * @param loader [ClassLoader] 方法参数 [KPropertySignatureSupport.member] 所在的 [ClassLoader]
+     * @return [MutableList]<[KPropertySignatureSupport]>
+     * @throws IllegalStateException 如果未设置任何条件或 [KPropertyRulesData.type] 目标类不存在
+     * @throws NoSuchFieldError 如果找不到 [KPropertySignatureSupport]
+     */
+    internal fun findPropertySignatures(classSet: KClass<*>?, rulesData: KPropertyRulesData,loader: ClassLoader? = null) = rulesData.createResult { hasCondition ->
+        if (type == UndefinedKotlin) error("Property match type class is not found")
+        if (classSet == null) return@createResult mutableListOf()
+        val nameResolver = classSet.memberScope?.deserializationContext?.nameResolver ?: return@createResult mutableListOf()
+        val protos = (classSet.memberScope?.impl ?: return@createResult mutableListOf()).propertyProtos
+        val protoBufs by lazy { mutableListOf<ProtoBuf.Property>().also { buf -> protos.values.forEach { buf += it } }.asSequence() }
+        if (hasCondition.not()) {
+            return@createResult protoBufs.map { KPropertySignatureSupport(classSet, loader, nameResolver, it.getExtension(JvmProtoBuf.propertySignature)) }.toMutableList()
+        }
+        mutableListOf<KPropertySignatureSupport>().also { property ->
+            val supportMap: MutableMap<ProtoBuf.Property, KPropertySignatureSupport> = mutableMapOf()
+            fun ProtoBuf.Property.support(): KPropertySignatureSupport = supportMap.getOrPut(this) { KPropertySignatureSupport(classSet,loader, nameResolver, this.getExtension(JvmProtoBuf.propertySignature)) }
+            fun ProtoBuf.Property.name():String {
+                protos.forEach { (t, u) ->
+                    if (u.contains(this)){
+                        return t.asString()
+                    }
+                }
+                return nameResolver.getString(name)
+            }
+            fun ProtoBuf.Property.type() = support().fieldOrNull?.getTypeOrNull(loader) ?: support().getterOrNull?.getReturnTypeOrNull(loader) ?: support().setterOrNull?.getParamTypesOrNull(loader)?.first()
+            fun ProtoBuf.Property.members() = arrayListOf(support().fieldOrNull?.getMemberOrNull(classSet),support().getterOrNull?.getMemberOrNull(classSet),support().setterOrNull?.getMemberOrNull(classSet)).filterNotNull()
+            protoBufs.also { declares ->
+                var iType = -1
+                var iName = -1
+                var iModify = -1
+                var iNameCds = -1
+                var iTypeCds = -1
+                val iLType = type?.let(matchIndex) { e -> declares.findLastIndex { typeEq(e,it.type()) } } ?: -1
+                val iLName = name.takeIf(matchIndex) { it.isNotBlank() }?.let { e -> declares.findLastIndex { e == it.name() } } ?: -1
+                val iLModify = modifiers?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse {
+                    val members = it.members()
+                    if (members.isEmpty()) return@runOrFalse true
+                    members.any { e(KModifierRules.with(it)) }
+                } } } ?: -1
+                val iLNameCds = nameConditions
+                    ?.let(matchIndex) { e -> declares.findLastIndex { it.name().let { n -> runOrFalse { e(n.cast(), n) } } } } ?: -1
+                val iLTypeCds = typeConditions?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse {
+                    val type = it.type() ?: return@runOrFalse true
+                    e(KObjectRules.with(type), type.type)
+                } } } ?: -1
+                declares.forEachIndexed { index, instance ->
+                    conditions {
+                        type?.also {
+                            and((typeEq(it,instance.type())).let { hold ->
+                                if (hold) iType++
+                                hold && matchIndex.compare(iType, iLType)
+                            })
+                        }
+                        name.takeIf { it.isNotBlank() }?.also {
+                            and((it == instance.name()).let { hold ->
+                                if (hold) iName++
+                                hold && matchIndex.compare(iName, iLName)
+                            })
+                        }
+                        modifiers?.also {
+                            and(runOrFalse {
+                                val members = instance.members()
+                                if (members.isEmpty()) return@runOrFalse true
+                                members.any { it(KModifierRules.with(instance)) }
+                            }.let { hold ->
+                                if (hold) iModify++
+                                hold && matchIndex.compare(iModify, iLModify)
+                            })
+                        }
+                        nameConditions?.also {
+                            and(instance.name().let { n -> runOrFalse { it(n.cast(), n) } }.let { hold ->
+                                if (hold) iNameCds++
+                                hold && matchIndex.compare(iNameCds, iLNameCds)
+                            })
+                        }
+                        typeConditions?.also {
+                            and(instance.let { t -> runOrFalse {
+                                val type = t.type() ?: return@runOrFalse true
+                                it(KObjectRules.with(type), type.type)
+                            } }.let { hold ->
+                                if (hold) iTypeCds++
+                                hold && matchIndex.compare(iTypeCds, iLTypeCds)
+                            })
+                        }
+                        orderIndex.compare(index, declares.lastIndex()) { and(it) }
+                    }.finally { property.add(instance.support()) }
+                }
+            }
+        }.takeIf { it.isNotEmpty() } ?: findSuperOrThrow(classSet)
+    }
+
+    /**
      * 查找任意 [Function] 或一组 [Function]
      * @param classSet [Function] 所在类
      * @param rulesData 规则查找数据
@@ -478,6 +594,205 @@ internal object KReflectionTool {
             }
         }.takeIf { it.isNotEmpty() }?.toAccessibleKCallables() ?: findSuperOrThrow(classSet)
     }
+
+    /**
+     * 查找任意 [KFunctionSignatureSupport] 或一组 [KFunctionSignatureSupport]
+     * @param classSet [KFunctionSignatureSupport] 所在类
+     * @param rulesData 规则查找数据
+     * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramTypes] 所在的 [ClassLoader]
+     * @return [MutableList]<[KFunctionSignatureSupport]>
+     * @throws IllegalStateException 如果未设置任何条件或 [KFunctionRulesData.paramTypes] 以及 [KFunctionRulesData.returnType] 目标类不存在
+     * @throws NoSuchMethodError 如果找不到 [KFunctionSignatureSupport]
+     */
+    internal fun findFunctionSignatures(classSet: KClass<*>?,rulesData: KFunctionRulesData,loader: ClassLoader? = null) = rulesData.createResult { hasCondition ->
+            if (returnType == UndefinedKotlin) error("Function match returnType class is not found")
+            if (classSet == null) return@createResult mutableListOf()
+            paramTypes?.takeIf { it.isNotEmpty() }
+                ?.forEachIndexed { p, it -> if (it == UndefinedKotlin) error("Function match paramType[$p] class is not found") }
+            val nameResolver = classSet.memberScope?.deserializationContext?.nameResolver ?: return@createResult mutableListOf()
+            val protos = (classSet.memberScope?.impl ?: return@createResult mutableListOf()).functionProtos
+            val protoBufs by lazy { mutableListOf<ProtoBuf.Function>().also { buf -> protos.values.forEach { buf += it } }.asSequence() }
+            if (hasCondition.not()) {
+                return@createResult protoBufs.map { KFunctionSignatureSupport(classSet, loader, nameResolver, it) }.toMutableList()
+            }
+            mutableListOf<KFunctionSignatureSupport>().also { functions ->
+                val supportMap: MutableMap<ProtoBuf.Function, KFunctionSignatureSupport> = mutableMapOf()
+                fun ProtoBuf.Function.support(): KFunctionSignatureSupport = supportMap.getOrPut(this) { KFunctionSignatureSupport(classSet,loader, nameResolver, this) }
+                fun ProtoBuf.Function.name():String {
+                    protos.forEach { (t, u) ->
+                        if (u.contains(this)){
+                            return t.asString()
+                        }
+                    }
+                    return nameResolver.getString(name)
+                }
+                protoBufs.also { declares ->
+                    var iReturnType = -1
+                    var iReturnTypeCds = -1
+                    var iParamTypes = -1
+                    var iParamTypesCds = -1
+                    var iParamNames = -1
+                    var iParamNamesCds = -1
+                    var iParamCount = -1
+                    var iParamCountRange = -1
+                    var iParamCountCds = -1
+                    var iName = -1
+                    var iModify = -1
+                    var iNameCds = -1
+                    val iLReturnType = returnType?.let(matchIndex) { e -> declares.findLastIndex { typeEq(e,it.support().getReturnTypeOrNull(loader)) } } ?: -1
+                    val iLReturnTypeCds = returnTypeConditions
+                        ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse {
+                            val returnType = it.support().getReturnTypeOrNull(loader) ?: return@runOrFalse true
+                            e(KObjectRules.with(returnType), returnType.type)
+                        } } } ?: -1
+                    val iLParamCount = paramCount.takeIf(matchIndex) { it >= 0 }
+                        ?.let { e -> declares.findLastIndex { e == it.valueParameterCount } } ?: -1
+                    val iLParamCountRange = paramCountRange.takeIf(matchIndex) { it.isEmpty().not() }
+                        ?.let { e -> declares.findLastIndex { it.valueParameterCount in e } } ?: -1
+                    val iLParamCountCds = paramCountConditions?.let(matchIndex) { e ->
+                        declares.findLastIndex { it.valueParameterCount.let { s -> runOrFalse { e(s.cast(), s) } } }
+                    } ?: -1
+                    val iLParamTypes = paramTypes?.let(matchIndex) { e -> declares.findLastIndex { paramTypesEq(e, it.support().getParamTypesOrNull(loader)?.toTypedArray()) } } ?: -1
+                    val iLParamTypesCds = paramTypesConditions
+                        ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse {
+                            val paramTypes = it.support().getParamTypesOrNull(loader) ?: return@runOrFalse true
+                            e(KObjectRules.with(paramTypes), it.valueParameterList.mapIndexed { index, valueParameter ->
+                                val param = paramTypes[index]
+                                object : KParameter {
+                                    override val annotations: List<Annotation>
+                                        get() = param.annotations
+                                    override val index: Int
+                                        get() = index
+                                    override val isOptional: Boolean
+                                        get() = TODO("Parameter type condition customization in Signature Conditions is not supported!!!")
+                                    override val isVararg: Boolean
+                                        get() = valueParameter.hasVarargElementType()
+                                    override val kind: KParameter.Kind
+                                        get() = TODO("Parameter type condition customization in Signature Conditions is not supported!!!")
+                                    override val name: String
+                                        get() = nameResolver.getString(valueParameter.name)
+                                    override val type: KType
+                                        get() = param.type
+                                }
+                            })
+                        } } } ?: -1
+                    val iLParamNames = paramNames?.let(matchIndex) { e -> declares.findLastIndex { paramNamesEq(e, it.valueParameterList.map { nameResolver.getString(it.name) }.toTypedArray()) } } ?: -1
+                    val iLParamNamesCds = paramNamesConditions
+                        ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse { e(KObjectRules.with(it), it.valueParameterList.map { nameResolver.getString(it.name) }) } } } ?: -1
+                    val iLName = name.takeIf(matchIndex) { it.isNotBlank() }?.let { e -> declares.findLastIndex { e == it.name() } } ?: -1
+                    val iLModify = modifiers?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse {
+                        val member = it.support().getMemberOrNull(classSet,loader) ?: return@runOrFalse true
+                        e(KModifierRules.with(member))
+                    } } } ?: -1
+                    val iLNameCds = nameConditions
+                        ?.let(matchIndex) { e -> declares.findLastIndex { it.name().let { n -> runOrFalse { e(n.cast(), n) } } } } ?: -1
+                    declares.forEachIndexed { index, instance ->
+                        conditions {
+                            name.takeIf { it.isNotBlank() }?.also {
+                                and((it == instance.name()).let { hold ->
+                                    if (hold) iName++
+                                    hold && matchIndex.compare(iName, iLName)
+                                })
+                            }
+                            returnType?.also {
+                                and((typeEq(it,instance.support().getReturnTypeOrNull(loader))).let { hold ->
+                                    if (hold) iReturnType++
+                                    hold && matchIndex.compare(iReturnType, iLReturnType)
+                                })
+                            }
+                            returnTypeConditions?.also {
+                                and(instance.let { r -> runOrFalse {
+                                    val returnType = r.support().getReturnTypeOrNull(loader) ?: return@runOrFalse true
+                                    it(KObjectRules.with(returnType), returnType.type)
+                                } }.let { hold ->
+                                    if (hold) iReturnTypeCds++
+                                    hold && matchIndex.compare(iReturnTypeCds, iLReturnTypeCds)
+                                })
+                            }
+                            paramCount.takeIf { it >= 0 }?.also {
+                                and((instance.valueParameterCount == it).let { hold ->
+                                    if (hold) iParamCount++
+                                    hold && matchIndex.compare(iParamCount, iLParamCount)
+                                })
+                            }
+                            paramCountRange.takeIf { it.isEmpty().not() }?.also {
+                                and((instance.valueParameterCount in it).let { hold ->
+                                    if (hold) iParamCountRange++
+                                    hold && matchIndex.compare(iParamCountRange, iLParamCountRange)
+                                })
+                            }
+                            paramCountConditions?.also {
+                                and(instance.valueParameterCount.let { s -> runOrFalse { it(s.cast(), s) } }.let { hold ->
+                                    if (hold) iParamCountCds++
+                                    hold && matchIndex.compare(iParamCountCds, iLParamCountCds)
+                                })
+                            }
+                            paramTypes?.also {
+                                and(paramTypesEq(it, instance.support().getParamTypesOrNull(loader)?.toTypedArray()).let { hold ->
+                                    if (hold) iParamTypes++
+                                    hold && matchIndex.compare(iParamTypes, iLParamTypes)
+                                })
+                            }
+                            paramTypesConditions?.also {
+                                and(instance.let { t -> runOrFalse {
+                                    val paramTypes = t.support().getParamTypesOrNull(loader) ?: return@runOrFalse true
+                                    it(KObjectRules.with(paramTypes), t.valueParameterList.mapIndexed { index, valueParameter ->
+                                        val param = paramTypes[index]
+                                        object : KParameter {
+                                            override val annotations: List<Annotation>
+                                                get() = param.annotations
+                                            override val index: Int
+                                                get() = index
+                                            override val isOptional: Boolean
+                                                get() = TODO("Parameter type condition customization in Signature Conditions is not supported!!!")
+                                            override val isVararg: Boolean
+                                                get() = valueParameter.hasVarargElementType()
+                                            override val kind: KParameter.Kind
+                                                get() = TODO("Parameter type condition customization in Signature Conditions is not supported!!!")
+                                            override val name: String
+                                                get() = nameResolver.getString(valueParameter.name)
+                                            override val type: KType
+                                                get() = param.type
+                                        }
+                                    })
+                                } }.let { hold ->
+                                    if (hold) iParamTypesCds++
+                                    hold && matchIndex.compare(iParamTypesCds, iLParamTypesCds)
+                                })
+                            }
+                            paramNames?.also {
+                                and(paramNamesEq(it, instance.valueParameterList.map { nameResolver.getString(it.name) }.toTypedArray()).let { hold ->
+                                    if (hold) iParamNames++
+                                    hold && matchIndex.compare(iParamNames, iLParamNames)
+                                })
+                            }
+                            paramNamesConditions?.also {
+                                and(instance.let { t -> runOrFalse { it(KObjectRules.with(t), t.valueParameterList.map { nameResolver.getString(t.name) }) } }.let { hold ->
+                                    if (hold) iParamNamesCds++
+                                    hold && matchIndex.compare(iParamNamesCds, iLParamNamesCds)
+                                })
+                            }
+                            modifiers?.also {
+                                and(runOrFalse {
+                                    val member = instance.support().getMemberOrNull(classSet,loader) ?: return@runOrFalse true
+                                    it(KModifierRules.with(member))
+                                }.let { hold ->
+                                    if (hold) iModify++
+                                    hold && matchIndex.compare(iModify, iLModify)
+                                })
+                            }
+                            nameConditions?.also {
+                                and(instance.name().let { n -> runOrFalse { it(n.cast(), n) } }.let { hold ->
+                                    if (hold) iNameCds++
+                                    hold && matchIndex.compare(iNameCds, iLNameCds)
+                                })
+                            }
+                            orderIndex.compare(index, declares.lastIndex()) { and(it) }
+                        }.finally { functions.add(instance.support()) }
+                    }
+                }
+            }.takeIf { it.isNotEmpty() } ?: findSuperOrThrow(classSet)
+        }
 
     /**
      * 查找任意 Constructor [KFunction] 或一组 Constructor [KFunction]
@@ -715,7 +1030,19 @@ internal object KReflectionTool {
      * @return [Boolean] 是否相等
      */
     private fun typeEq(compare: Any?, original: Any?): Boolean {
-        if (compare == original || compare == VagueKotlin || original == VagueKotlin)return true
+        when (compare){
+            original,VagueKotlin, VagueKotlin.java -> return true
+        }
+        when (original){
+            VagueKotlin, VagueKotlin.java -> return true
+        }
+        when (compare){
+            Void.TYPE,Void::class,Void::class.java, UnitKClass, UnitKClass.java -> {
+                when (original) {
+                    Void.TYPE,Void::class,Void::class.java, UnitKClass, UnitKClass.java -> return true
+                }
+            }
+        }
         if (compare == null || original == null) return false
         return when(compare){
             is Class<*> -> when(original){
@@ -832,6 +1159,13 @@ internal object KReflectionTool {
         }
     }
 
+    /**
+     * 对比两者参数名是否一致 包含忽略对象如 [VagueKotlin]
+     *
+     * @param compare 用于比较的数组
+     * @param original 方法、构造方法原始数组
+     * @return [Boolean] 是否相等
+     */
     private fun paramNamesEq(compare: Array<out String?>?, original: Array<out String?>?): Boolean {
         return when {
             (compare == null && original == null) || (compare?.isEmpty() == true && original?.isEmpty() == true) -> true

@@ -34,6 +34,8 @@ import com.dream.yukireflection.type.factory.KTypeConditions
 import com.dream.yukireflection.type.factory.KPropertyConditions
 import com.dream.yukireflection.bean.KVariousClass
 import com.dream.yukireflection.factory.*
+import com.dream.yukireflection.finder.signature.KPropertySignatureFinder.Result.Instance
+import com.dream.yukireflection.helper.KYukiHookHelper
 import com.dream.yukireflection.log.KYLog
 import com.dream.yukireflection.type.factory.KNameConditions
 import com.dream.yukireflection.utils.factory.runBlocking
@@ -41,6 +43,7 @@ import java.lang.IllegalArgumentException
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import kotlin.reflect.*
+import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
@@ -51,15 +54,15 @@ import kotlin.reflect.jvm.javaGetter
  * 可通过指定类型查找指定 [KProperty] 或一组 [KProperty]
  * @param classSet 当前需要查找的 [KClass] 实例
  */
-class KPropertyFinder internal constructor(override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_PROPERTY, classSet) {
+open class KPropertyFinder internal constructor(final override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_PROPERTY, classSet) {
 
     override var rulesData = KPropertyRulesData()
 
     /** 当前使用的 [classSet] */
-    private var usedClassSet = classSet
+    internal var usedClassSet = classSet
 
     /** 当前重查找结果回调 */
-    private var remedyPlansCallback: (() -> Unit)? = null
+    internal var remedyPlansCallback: (() -> Unit)? = null
 
     /**
      * 将此属性相关内容附加到此查找器
@@ -306,7 +309,7 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
         }
     }
 
-    override fun build() = runCatching {
+    override fun build():BaseResult = runCatching {
         internalBuild()
         Result()
     }.getOrElse {
@@ -314,7 +317,7 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
         Result(isNoSuch = true, it)
     }
 
-    override fun failure(throwable: Throwable?) = Result(isNoSuch = true, throwable)
+    override fun failure(throwable: Throwable?):BaseResult = Result(isNoSuch = true, throwable)
 
     /**
      * [KProperty] 重查找实现类
@@ -466,11 +469,13 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
          *
          * - 若你没有设置 [remedys] 此方法将不会被回调
          * @param instance 所在实例
+         * @param extensionRef 属性如果是拓展属性你还需要传入拓展属性的this对象
+         * @param isUseMember 是否优先将属性转换Java方式进行get/set
          * @param initiate 回调 [Instance]
          */
-        fun wait(instance: Any? = null, initiate: Instance.() -> Unit) {
-            if (callableInstances.isNotEmpty()) initiate(get(instance))
-            else remedyPlansCallback = { initiate(get(instance)) }
+        fun wait(instance: Any? = null,extensionRef:Any? = null,isUseMember:Boolean = false, initiate: Instance.() -> Unit) {
+            if (callableInstances.isNotEmpty()) initiate(get(instance,extensionRef,isUseMember))
+            else remedyPlansCallback = { initiate(get(instance,extensionRef,isUseMember)) }
         }
 
         /**
@@ -482,11 +487,13 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
          *
          * - 若你没有设置 [remedys] 此方法将不会被回调
          * @param instance 所在实例
+         * @param extensionRef 属性如果是拓展属性你还需要传入拓展属性的this对象
+         * @param isUseMember 是否优先将属性转换Java方式进行get/set
          * @param initiate 回调 [MutableList]<[Instance]>
          */
-        fun waitAll(instance: Any? = null, initiate: MutableList<Instance>.() -> Unit) {
-            if (callableInstances.isNotEmpty()) initiate(all(instance))
-            else remedyPlansCallback = { initiate(all(instance)) }
+        fun waitAll(instance: Any? = null,extensionRef:Any? = null,isUseMember:Boolean = false, initiate: MutableList<Instance>.() -> Unit) {
+            if (callableInstances.isNotEmpty()) initiate(all(instance,extensionRef,isUseMember))
+            else remedyPlansCallback = { initiate(all(instance,extensionRef,isUseMember)) }
         }
 
         /**
@@ -536,7 +543,13 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
          * @param instance 当前 [KProperty] 所在类的实例对象
          * @param property 当前 [KProperty] 实例对象
          */
-        inner class Instance internal constructor(private val instance: Any?, private val property: KProperty<*>?) {
+        inner class Instance internal constructor(private var instance: Any?, private val property: KProperty<*>?) {
+
+            init {
+                if (instance == null){
+                    instance = runCatching { property?.instanceParameter?.kotlin?.objectInstance }.getOrNull()
+                }
+            }
 
             /**
              * @see [useMember]
@@ -580,7 +593,27 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
                 return this
             }
 
+            /** 标识需要调用当前 get/set [KProperty] 未经 Hook 的原始方法 */
+            private var isCallOriginal = false
+
+            /**
+             * 标识需要调用当前 get/set [KProperty] 未经 Hook 的原始 get/set [KProperty]
+             *
+             * 若当前 get/set [KProperty] 并未 Hook 则会使用原始的 [KProperty]、get/set [KProperty] 方法调用
+             *
+             * - 此方法在 Hook Api 存在时将固定 [isUseMember] 为 true 无视 [extensionRef] 参数
+             * - 你只能在 (Xposed) 宿主环境中使用此功能
+             * - 此方法仅在 Hook Api 下有效
+             * @return [Instance] 可继续向下监听
+             */
+            fun original(): Instance {
+                isCallOriginal = true
+                return this
+            }
+
             private fun baseCall(): Any? {
+                if (isCallOriginal && KYukiHookHelper.isMemberHooked(property?.javaGetterNoError.also { it?.isAccessible = true }))
+                    return KYukiHookHelper.invokeOriginalMember(property?.javaGetterNoError.also { it?.isAccessible = true }, instance, arrayOf())
                 if (isUseMember){
                     val field = property?.javaFieldNoError
                     if (field != null){
@@ -733,7 +766,9 @@ class KPropertyFinder internal constructor(override val classSet: KClass<*>? = n
              * 设置当前 [KProperty] 实例
              * @param any 设置的实例内容
              */
-            fun set(any: Any?) = property?.set(instance,any,extensionRef,isUseMember)
+            fun set(any: Any?) = if (isCallOriginal && property is KMutableProperty && KYukiHookHelper.isMemberHooked(property.javaSetterNoError))
+                KYukiHookHelper.invokeOriginalMember(property.javaSetterNoError, instance, arrayOf(any))
+            else property?.set(instance,any,extensionRef,isUseMember)
 
             /**
              * 设置当前 [KProperty] 实例为 true

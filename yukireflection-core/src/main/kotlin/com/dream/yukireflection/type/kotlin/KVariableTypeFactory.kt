@@ -212,7 +212,7 @@ val NumberKClass get() = kclassOf<Number>()
  * 获得 [Unit] 类型
  *
  * 它等价于 Java 中的 [java.lang.Void]
- * @return [KClass]<[Void]>
+ * @return [KClass]<[Unit]>
  */
 val UnitKClass get() = kclassOf<Unit>()
 

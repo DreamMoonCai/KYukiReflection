@@ -309,7 +309,7 @@ class KModifierRules private constructor(private val instance: Any) {
      * ^^^
      * @return [Boolean]
      */
-    val isAnonymous get() = (declaringClass?.kotlin?.isAnonymous ?: false).also { templates.add("<isAnonymous> ($it)") }
+    val isAnonymous get() = (declaringClass?.isAnonymousClass ?: false).also { templates.add("<isAnonymous> ($it)") }
 
     /**
      * [KProperty] 是否是 Kotlin 的 const 属性
@@ -450,6 +450,8 @@ class KModifierRules private constructor(private val instance: Any) {
     val isOpen get() = when (instance) {
         is KCallable<*> -> instance.isOpen
         is KClass<*> -> instance.isOpen
+        is Class<*> -> instance.kotlin.isOpen
+        is Member -> instance.kotlin.isOpen
         else -> false
     }.also { templates.add("<isOpen> ($it)") }
 
@@ -461,6 +463,8 @@ class KModifierRules private constructor(private val instance: Any) {
         get() = when (instance) {
             is KCallable<*> -> instance.modifiers ?: 0
             is KClass<*> -> instance.java.modifiers
+            is Class<*> -> instance.modifiers
+            is Member -> instance.modifiers
             else -> 0
         }
 
@@ -471,6 +475,8 @@ class KModifierRules private constructor(private val instance: Any) {
         get() = when(instance){
             is KCallable<*> -> instance.declaringClass?.java
             is KClass<*> -> instance.java
+            is Class<*> -> instance
+            is Member -> instance.declaringClass
             else -> null
         }
 
