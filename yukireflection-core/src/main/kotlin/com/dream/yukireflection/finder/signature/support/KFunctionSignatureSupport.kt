@@ -104,7 +104,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * @param loader [ClassLoader] 参数类型 [paramTypes] 所在的 [ClassLoader]
      * @return [List]<[KClass]>
      */
-    fun getParamTypes(loader: ClassLoader? = null):List<KClass<*>> = DexSignUtil.getParamTypeNames(paramTypesDescriptors).map { it.toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: error("FunctionSignatureSupport:paramDescriptors is null") }
+    fun getParamTypes(loader: ClassLoader? = null):List<KClass<*>> = DexSignUtil.getParamTypeNames(paramTypesDescriptors).map { it.toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: error("Descriptor: $it, cannot be converted to [KClass].") }
 
     /**
      * 方法参数类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果
@@ -122,7 +122,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * @param loader [ClassLoader] 返回类型 [returnType] 所在的 [ClassLoader]
      * @return [KClass]
      */
-    fun getReturnType(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(returnTypeDescriptor).toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: error("FunctionSignatureSupport:returnTypeDescriptor is null")
+    fun getReturnType(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(returnTypeDescriptor).toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: error("Descriptor: $returnTypeDescriptor, cannot be converted to [KClass].")
 
     /**
      * 方法返回类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果
@@ -141,7 +141,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * @param loader [ClassLoader] 方法参数 [paramTypes] 所在的 [ClassLoader]
      * @return [Method]
      */
-    fun getMember(declaringClass: KClass<*>? = null, loader: ClassLoader? = null): Method = (declaringClass ?: this.declaringClass)?.java?.getDeclaredMethod(name,*getParamTypes(loader ?: this@KFunctionSignatureSupport.loader).map { it.java }.toTypedArray())?.also { it.isAccessible = true } ?: error("MethodSignatureSupport:member is null")
+    fun getMember(declaringClass: KClass<*>? = null, loader: ClassLoader? = null): Method = (declaringClass ?: this.declaringClass)?.java?.getDeclaredMethod(name,*getParamTypes(loader ?: this@KFunctionSignatureSupport.loader).map { it.java }.toTypedArray())?.also { it.isAccessible = true } ?: error("If you can't get the member, please check $declaringClass or $paramTypesDescriptors.")
 
     /**
      * 方法成员 [Method] 使用指定 [declaringClass] 描述结果

@@ -63,7 +63,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
     /**
      * 将此属性相关内容附加到此查找器
      *
-     * 将影响[name]、[type]
+     * 将影响[name]、[findType]
      *
      * @param R 属性类型
      * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
@@ -77,7 +77,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
     /**
      * 将此属性相关内容附加到此查找器
      *
-     * 将影响[name]、[type]
+     * 将影响[name]、[findType]
      *
      * 多个属性引用使用示例 ↓
      *
@@ -136,7 +136,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
     /**
      * 将此属性相关内容附加到此查找器
      *
-     * 将影响[name]、[type]
+     * 将影响[name]、[findType]
      *
      * @param R 属性类型
      * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
@@ -149,7 +149,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
     /**
      * 将此属性相关内容附加到此查找器
      *
-     * 将影响[name]、[type]
+     * 将影响[name]、[findType]
      *
      * @param ExpandThis 拓展类的类型
      * @param R 属性类型

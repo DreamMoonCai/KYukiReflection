@@ -344,7 +344,7 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
         runBlocking {
             setInstance(result)
         }.result { ms ->
-            callableInstances.takeIf { it.isNotEmpty() }?.forEach { debugMsg(msg = "Find Constructor [$it] takes ${ms}ms") }
+            callableInstances.takeIf { it.isNotEmpty() }?.forEach { debugMsg(msg = "Find Constructor KFunction [$it] takes ${ms}ms") }
         }
     }
 

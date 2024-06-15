@@ -67,17 +67,17 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
         /**
          * 字段类型 [KClass] 使用指定 [loader] 描述结果
          *
-         * @param loader [ClassLoader] 字段类型 [type] 所在的 [ClassLoader]
+         * @param loader [ClassLoader] 字段类型 [findType] 所在的 [ClassLoader]
          * @return [KClass]
          */
-        fun getType(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(typeDescriptor).toKClassOrNull(loader ?: this@KPropertySignatureSupport.loader) ?: error("FieldSignatureSupport:typeDescriptor is null")
+        fun getType(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(typeDescriptor).toKClassOrNull(loader ?: this@KPropertySignatureSupport.loader) ?: error("Descriptor: $typeDescriptor, cannot be converted to [KClass].")
 
         /**
          * 字段类型 [KClass] 使用指定 [loader] 描述结果
          *
          * - 获取时不会触发异常
          *
-         * @param loader [ClassLoader] 字段类型 [type] 所在的 [ClassLoader]
+         * @param loader [ClassLoader] 字段类型 [findType] 所在的 [ClassLoader]
          * @return [KClass] or null
          */
         fun getTypeOrNull(loader: ClassLoader? = null): KClass<*>? = runCatching { getType(loader) }.getOrNull()
@@ -90,7 +90,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
          * @param declaringClass [KClass] 字段所在的 [KClass]
          * @return [Field]
          */
-        fun getMember(declaringClass: KClass<*>? = null): Field = (declaringClass ?: this@KPropertySignatureSupport.declaringClass)?.java?.getDeclaredField(name)?.also { it.isAccessible = true } ?: error("FieldSignatureSupport:member is null")
+        fun getMember(declaringClass: KClass<*>? = null): Field = (declaringClass ?: this@KPropertySignatureSupport.declaringClass)?.java?.getDeclaredField(name)?.also { it.isAccessible = true } ?: error("Descriptors cannot be converted to members, please check $declaringClass or $name.")
 
         /**
          * 字段成员 [Field] 使用指定 [declaringClass] 描述结果
@@ -129,7 +129,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取Getter函数签名处理支持组件
      */
-    val getter by lazy { proto.getter?.let { KFunctionSignatureSupport(declaringClass,loader,nameResolver,it) } ?: error("PropertySignatureSupport:getter is null") }
+    val getter by lazy { proto.getter?.let { KFunctionSignatureSupport(declaringClass,loader,nameResolver,it) } ?: error("There doesn't seem to be a getter method for this property.") }
 
     /**
      * 获取Getter函数签名处理支持组件
@@ -139,7 +139,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取Setter函数签名处理支持组件
      */
-    val setter by lazy { proto.setter?.let { KFunctionSignatureSupport(declaringClass,loader,nameResolver,it) } ?: error("PropertySignatureSupport:setter is null") }
+    val setter by lazy { proto.setter?.let { KFunctionSignatureSupport(declaringClass,loader,nameResolver,it) } ?: error("There doesn't seem to be a setter method for this property.") }
 
     /**
      * 获取Setter函数签名处理支持组件
@@ -149,7 +149,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取字段签名处理支持组件
      */
-    val field by lazy { proto.field?.let { FieldSignatureSupport(it) } ?: error("PropertySignatureSupport:field is null") }
+    val field by lazy { proto.field?.let { FieldSignatureSupport(it) } ?: error("This property doesn't seem to have a field.") }
 
     /**
      * 获取字段签名处理支持组件
@@ -159,7 +159,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取委托函数签名处理支持组件
      */
-    val delegateFunction by lazy { proto.delegateMethod?.let { KFunctionSignatureSupport(declaringClass,loader,nameResolver,it) } ?: error("PropertySignatureSupport:delegateFunction is null") }
+    val delegateFunction by lazy { proto.delegateMethod?.let { KFunctionSignatureSupport(declaringClass,loader,nameResolver,it) } ?: error("This property doesn't seem to have a delegate function.") }
 
     /**
      * 获取委托函数签名处理支持组件
@@ -169,7 +169,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取合成函数签名处理支持组件
      */
-    val syntheticFunction by lazy { proto.syntheticMethod?.let { KFunctionSignatureSupport(declaringClass,loader,nameResolver,it) } ?: error("PropertySignatureSupport:syntheticFunction is null") }
+    val syntheticFunction by lazy { proto.syntheticMethod?.let { KFunctionSignatureSupport(declaringClass,loader,nameResolver,it) } ?: error("This property doesn't seem to have a synthetic function.") }
 
     /**
      * 获取合成函数签名处理支持组件
@@ -201,7 +201,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
      * @param loader [ClassLoader] - 属性类型所使用的 [ClassLoader]
      * @return [Member]
      */
-    fun getMember(declaringClass: KClass<*>? = null,loader: ClassLoader? = null):Member = fieldOrNull?.getMemberOrNull(declaringClass) ?: getterOrNull?.getMemberOrNull(declaringClass,loader) ?: setterOrNull?.getMemberOrNull(declaringClass,loader) ?: error("PropertySignatureSupport:member is null")
+    fun getMember(declaringClass: KClass<*>? = null,loader: ClassLoader? = null):Member = fieldOrNull?.getMemberOrNull(declaringClass) ?: getterOrNull?.getMemberOrNull(declaringClass,loader) ?: setterOrNull?.getMemberOrNull(declaringClass,loader) ?: error("This property cannot be converted to a member, please check $hasSignature.")
 
     /**
      * 获取此属性可获取的成员 [Member]

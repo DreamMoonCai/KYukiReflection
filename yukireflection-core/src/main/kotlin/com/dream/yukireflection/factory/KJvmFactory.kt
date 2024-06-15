@@ -4,12 +4,14 @@
 package com.dream.yukireflection.factory
 
 import com.dream.yukireflection.finder.callable.KConstructorFinder
+import com.dream.yukireflection.finder.signature.KFunctionSignatureFinder
+import com.dream.yukireflection.finder.signature.KPropertySignatureFinder
 import com.dream.yukireflection.utils.DexSignUtil
 import java.lang.reflect.*
 import kotlin.jvm.internal.Reflection
 import kotlin.reflect.*
 import kotlin.reflect.full.createType
-import kotlin.reflect.jvm.jvmName
+import kotlin.reflect.jvm.*
 
 
 /**
@@ -47,6 +49,20 @@ inline val Class<*>.isKotlin: Boolean get() = annotations.any { it.annotationCla
  * @param isUseMember 是否优先将属性转换Java方式进行get/set
  */
 inline fun Constructor<*>.instanceKotlin(isUseMember: Boolean = false) = kotlin.constructorInstance(isUseMember)
+
+/**
+ * 将 [Method] 转换为 [KFunctionSignatureFinder.Result.Instance] 可执行类
+ *
+ * @param thisRef 执行所使用this对象
+ */
+inline fun Method.instance(thisRef: Any? = null) = KFunctionSignatureFinder().Result().Instance(thisRef,this)
+
+/**
+ * 将 [Field] 转换为 [KPropertySignatureFinder.Result.Instance] 可执行类
+ *
+ * @param thisRef 执行所使用this对象
+ */
+inline fun Field.instance(thisRef: Any? = null) = KPropertySignatureFinder().Result().Instance(thisRef,this)
 
 /**
  * 通过 [Field] 分析签名构建 [KProperty]
@@ -101,14 +117,22 @@ val Constructor<*>.kotlinSimpleSignature get() = name + DexSignUtil.getConstruct
  *
  * @return [KClass]、[KTypeParameter]
  */
-val Type.classifier:KClassifier? get() = when (this) {
+val Type.classifier:KClassifier get() = when (this) {
     is Class<*> -> this.kotlin
     is ParameterizedType -> this.rawType.classifier
     is GenericArrayType -> this.genericComponentType.classifier
     is WildcardType -> this.upperBounds.first().classifier
     is TypeVariable<*> -> this.kotlin
-    else -> null
+    else -> error("Unsupported types can't get their Kotlin representation type.")
 }
+
+/**
+ * 获取 Java [Type] 的 Kotlin 类描述符
+ *
+ * - 此属性不会报错
+ * @return [KClass]、[KTypeParameter] or null
+ */
+val Type.classifierOrNull get() = runCatching { classifier }.getOrNull()
 
 /**
  * 获取 Java [Type] 的 Kotlin [KType]
@@ -121,11 +145,11 @@ val Type.classifier:KClassifier? get() = when (this) {
  *
  * 大多数情况下能够转换成功
  */
-val Type.kotlinType:KType? get() {
+val Type.kotlinType:KType get() {
     return when (this) {
-        is Class<*> -> this.classifier?.type
+        is Class<*> -> this.classifier.type
         is ParameterizedType -> {
-            val rawType = this.classifier ?: return null
+            val rawType = this.classifier
             val arguments = this.actualTypeArguments.mapNotNull {
                 if (it is WildcardType) {
                     val upperBounds = it.upperBounds.first()
@@ -153,9 +177,17 @@ val Type.kotlinType:KType? get() {
         } else KTypeProjection(KVariance.INVARIANT,this.genericComponentType.kotlinType)))
         is WildcardType -> this.upperBounds.first().kotlinType
         is TypeVariable<*> -> this.kotlin.type
-        else -> null
+        else -> error("An unsupported type that cannot be converted to a Kotlin representable type.")
     }
 }
+
+/**
+ * 获取 Java [Type] 的 Kotlin [KType]
+ *
+ * - 此属性不会报错
+ * @return [KType] or null
+ */
+val Type.kotlinTypeOrNull get() = runCatching { kotlinType }.getOrNull()
 
 /**
  * 将Java [TypeVariable] 转换为 [KTypeParameter]
@@ -172,5 +204,24 @@ val TypeVariable<*>.kotlin:KTypeParameter get() {
             get() = KVariance.INVARIANT
         override fun equals(other: Any?): Boolean =
             other is KTypeParameter && name == other.name && upperBounds == other.upperBounds
+
+        override fun hashCode(): Int {
+            return super.hashCode() + 31
+        }
     }
 }
+
+/**
+ * 仅支持设置 [Field.isAccessible]、[Method.isAccessible]、[Constructor.isAccessible]
+ */
+var Member.isAccessible:Boolean
+    @Deprecated(message = "Property can only be written.", level = DeprecationLevel.ERROR)
+    get() = throw NotImplementedError()
+    set(value) {
+        when (this) {
+            is Field -> this.isAccessible = value
+            is Method -> this.isAccessible = value
+            is Constructor<*> -> this.isAccessible = value
+            else -> error("Unsupported Member type: $this")
+        }
+    }

@@ -268,7 +268,7 @@ class OptimizedImplementationSupport(private val scope: DeserializedMemberScope,
  * @param initiate 条件方法体
  * @return [KPropertySignatureSupport] or null - 找不到返回null
  */
-inline fun KProperty<*>.signature(declaringClass: KClass<*>? = this.declaringClass,loader: ClassLoader? = declaringClass?.classLoader,isUseMember: Boolean = false, noinline initiate: KPropertyConditions = { this@signature.attach(loader,isUseMember) }) = declaringClass?.propertySignature(loader,initiate) ?: error("There Are No Attribution Classes")
+inline fun KProperty<*>.signature(declaringClass: KClass<*>? = this.declaringClass,loader: ClassLoader? = declaringClass?.classLoader,isUseMember: Boolean = false, noinline initiate: KPropertyConditions = { this@signature.attach(loader,isUseMember) }) = declaringClass?.propertySignature(loader,initiate) ?: error("This property does not get the declaring class or the declaring class you specified is empty.")
 
 /**
  * 与 [KClass.functionSignature] 一致的快捷方法
@@ -286,5 +286,5 @@ inline fun KProperty<*>.signature(declaringClass: KClass<*>? = this.declaringCla
  * @param initiate 条件方法体
  * @return [KFunctionFinder.Result] or null - 找不到返回null
  */
-inline fun KFunction<*>.signature(declaringClass: KClass<*>? = this.declaringClass,loader: ClassLoader? = declaringClass?.classLoader,isUseMember: Boolean = false, noinline initiate: KFunctionSignatureConditions = { this@signature.attach(loader,isUseMember) }) = declaringClass?.functionSignature(loader,initiate) ?: error("There Are No Attribution Classes")
+inline fun KFunction<*>.signature(declaringClass: KClass<*>? = this.declaringClass,loader: ClassLoader? = declaringClass?.classLoader,isUseMember: Boolean = false, noinline initiate: KFunctionSignatureConditions = { this@signature.attach(loader,isUseMember) }) = declaringClass?.functionSignature(loader,initiate) ?: error("This function does not get the declaring class or the declaring class you specified is empty.")
 

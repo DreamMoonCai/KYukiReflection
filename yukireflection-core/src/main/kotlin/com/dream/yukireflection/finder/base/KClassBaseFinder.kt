@@ -72,5 +72,5 @@ abstract class KClassBaseFinder internal constructor(internal open val classSet:
         KYLog.error(msg = "NoClassDefFound happend in [$classSet]", e = e)
     }
 
-    override fun failure(throwable: Throwable?) = error("DexClassFinder does not contain this usage")
+    override fun failure(throwable: Throwable?) = error("KClassFinder does not contain this usage")
 }
