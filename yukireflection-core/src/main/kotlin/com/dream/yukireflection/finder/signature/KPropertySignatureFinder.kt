@@ -9,7 +9,7 @@ import com.dream.yukireflection.finder.signature.support.KPropertySignatureSuppo
 import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.helper.KYukiHookHelper
 import com.dream.yukireflection.log.KYLog
-import com.dream.yukireflection.type.factory.KPropertySignatureFinderConditions
+import com.dream.yukireflection.type.factory.KPropertySignatureConditions
 import com.dream.yukireflection.utils.factory.runBlocking
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
@@ -84,7 +84,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
          * @param initiate 方法体
          * @return [Result] 结果
          */
-        inline fun function(initiate: KPropertySignatureFinderConditions) = Result().apply { remedyPlans.add(KPropertySignatureFinder(classSet).apply(initiate) to this) }
+        inline fun function(initiate: KPropertySignatureConditions) = Result().apply { remedyPlans.add(KPropertySignatureFinder(classSet).apply(initiate) to this) }
 
         /** 开始重查找 */
         internal fun build() {

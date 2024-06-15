@@ -55,7 +55,7 @@ internal typealias KFunctionConditions = KFunctionFinder.() -> Unit
 internal typealias KFunctionSignatureConditions = KFunctionSignatureFinder.() -> Unit
 
 /** 定义 [KPropertySignatureFinder] 方法体类型 */
-internal typealias KPropertySignatureFinderConditions = KPropertySignatureFinder.() -> Unit
+internal typealias KPropertySignatureConditions = KPropertySignatureFinder.() -> Unit
 
 /** 定义 [KConstructorFinder] 方法体类型 */
 internal typealias KConstructorConditions = KConstructorFinder.() -> Unit

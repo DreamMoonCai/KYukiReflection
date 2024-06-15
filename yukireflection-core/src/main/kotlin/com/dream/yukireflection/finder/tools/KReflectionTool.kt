@@ -395,7 +395,7 @@ internal object KReflectionTool {
                 }
                 return nameResolver.getString(name)
             }
-            fun ProtoBuf.Property.type() = support().fieldOrNull?.getTypeOrNull(loader) ?: support().getterOrNull?.getReturnTypeOrNull(loader) ?: support().setterOrNull?.getParamTypesOrNull(loader)?.first()
+            fun ProtoBuf.Property.type() = support().getReturnTypeOrNull(classSet,loader)
             fun ProtoBuf.Property.members() = arrayListOf(support().fieldOrNull?.getMemberOrNull(classSet),support().getterOrNull?.getMemberOrNull(classSet),support().setterOrNull?.getMemberOrNull(classSet)).filterNotNull()
             protoBufs.also { declares ->
                 var iType = -1
@@ -414,7 +414,7 @@ internal object KReflectionTool {
                     ?.let(matchIndex) { e -> declares.findLastIndex { it.name().let { n -> runOrFalse { e(n.cast(), n) } } } } ?: -1
                 val iLTypeCds = typeConditions?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse {
                     val type = it.type() ?: return@runOrFalse true
-                    e(KObjectRules.with(type), type.type)
+                    e(KObjectRules.with(type), type)
                 } } } ?: -1
                 declares.forEachIndexed { index, instance ->
                     conditions {
@@ -449,7 +449,7 @@ internal object KReflectionTool {
                         typeConditions?.also {
                             and(instance.let { t -> runOrFalse {
                                 val type = t.type() ?: return@runOrFalse true
-                                it(KObjectRules.with(type), type.type)
+                                it(KObjectRules.with(type), type)
                             } }.let { hold ->
                                 if (hold) iTypeCds++
                                 hold && matchIndex.compare(iTypeCds, iLTypeCds)
@@ -471,7 +471,7 @@ internal object KReflectionTool {
      * @throws NoSuchMethodError 如果找不到 [Function]
      */
     internal fun findFunctions(classSet: KClass<*>?, rulesData: KFunctionRulesData) = rulesData.createResult { hasCondition ->
-        if (returnType == UndefinedKotlin) error("Function match returnType class is not found")
+        if (returnType == UndefinedKotlin) error("Function match type class is not found")
         if (classSet == null) return@createResult mutableListOf()
         if (hasCondition.not()) return@createResult classSet.existFunctions?.toList()?.toAccessibleKCallables() ?: mutableListOf()
         paramTypes?.takeIf { it.isNotEmpty() }
@@ -599,13 +599,13 @@ internal object KReflectionTool {
      * 查找任意 [KFunctionSignatureSupport] 或一组 [KFunctionSignatureSupport]
      * @param classSet [KFunctionSignatureSupport] 所在类
      * @param rulesData 规则查找数据
-     * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramTypes] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramClasss] 所在的 [ClassLoader]
      * @return [MutableList]<[KFunctionSignatureSupport]>
      * @throws IllegalStateException 如果未设置任何条件或 [KFunctionRulesData.paramTypes] 以及 [KFunctionRulesData.returnType] 目标类不存在
      * @throws NoSuchMethodError 如果找不到 [KFunctionSignatureSupport]
      */
     internal fun findFunctionSignatures(classSet: KClass<*>?,rulesData: KFunctionRulesData,loader: ClassLoader? = null) = rulesData.createResult { hasCondition ->
-            if (returnType == UndefinedKotlin) error("Function match returnType class is not found")
+            if (returnType == UndefinedKotlin) error("Function match type class is not found")
             if (classSet == null) return@createResult mutableListOf()
             paramTypes?.takeIf { it.isNotEmpty() }
                 ?.forEachIndexed { p, it -> if (it == UndefinedKotlin) error("Function match paramType[$p] class is not found") }
@@ -639,11 +639,11 @@ internal object KReflectionTool {
                     var iName = -1
                     var iModify = -1
                     var iNameCds = -1
-                    val iLReturnType = returnType?.let(matchIndex) { e -> declares.findLastIndex { typeEq(e,it.support().getReturnTypeOrNull(loader)) } } ?: -1
+                    val iLReturnType = returnType?.let(matchIndex) { e -> declares.findLastIndex { typeEq(e,it.support().getReturnTypeOrNull(classSet,loader)) } } ?: -1
                     val iLReturnTypeCds = returnTypeConditions
                         ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse {
-                            val returnType = it.support().getReturnTypeOrNull(loader) ?: return@runOrFalse true
-                            e(KObjectRules.with(returnType), returnType.type)
+                            val returnType = it.support().getReturnTypeOrNull(classSet,loader) ?: return@runOrFalse true
+                            e(KObjectRules.with(returnType), returnType)
                         } } } ?: -1
                     val iLParamCount = paramCount.takeIf(matchIndex) { it >= 0 }
                         ?.let { e -> declares.findLastIndex { e == it.valueParameterCount } } ?: -1
@@ -652,10 +652,10 @@ internal object KReflectionTool {
                     val iLParamCountCds = paramCountConditions?.let(matchIndex) { e ->
                         declares.findLastIndex { it.valueParameterCount.let { s -> runOrFalse { e(s.cast(), s) } } }
                     } ?: -1
-                    val iLParamTypes = paramTypes?.let(matchIndex) { e -> declares.findLastIndex { paramTypesEq(e, it.support().getParamTypesOrNull(loader)?.toTypedArray()) } } ?: -1
+                    val iLParamTypes = paramTypes?.let(matchIndex) { e -> declares.findLastIndex { paramTypesEq(e, it.support().getParamTypesOrNull(classSet,loader)?.toTypedArray()) } } ?: -1
                     val iLParamTypesCds = paramTypesConditions
                         ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse {
-                            val paramTypes = it.support().getParamTypesOrNull(loader) ?: return@runOrFalse true
+                            val paramTypes = it.support().getParamTypesOrNull(classSet,loader) ?: return@runOrFalse true
                             e(KObjectRules.with(paramTypes), it.valueParameterList.mapIndexed { index, valueParameter ->
                                 val param = paramTypes[index]
                                 object : KParameter {
@@ -672,7 +672,7 @@ internal object KReflectionTool {
                                     override val name: String
                                         get() = nameResolver.getString(valueParameter.name)
                                     override val type: KType
-                                        get() = param.type
+                                        get() = param
                                 }
                             })
                         } } } ?: -1
@@ -695,15 +695,15 @@ internal object KReflectionTool {
                                 })
                             }
                             returnType?.also {
-                                and((typeEq(it,instance.support().getReturnTypeOrNull(loader))).let { hold ->
+                                and((typeEq(it,instance.support().getReturnTypeOrNull(classSet,loader))).let { hold ->
                                     if (hold) iReturnType++
                                     hold && matchIndex.compare(iReturnType, iLReturnType)
                                 })
                             }
                             returnTypeConditions?.also {
                                 and(instance.let { r -> runOrFalse {
-                                    val returnType = r.support().getReturnTypeOrNull(loader) ?: return@runOrFalse true
-                                    it(KObjectRules.with(returnType), returnType.type)
+                                    val returnType = r.support().getReturnTypeOrNull(classSet,loader) ?: return@runOrFalse true
+                                    it(KObjectRules.with(returnType), returnType)
                                 } }.let { hold ->
                                     if (hold) iReturnTypeCds++
                                     hold && matchIndex.compare(iReturnTypeCds, iLReturnTypeCds)
@@ -728,14 +728,14 @@ internal object KReflectionTool {
                                 })
                             }
                             paramTypes?.also {
-                                and(paramTypesEq(it, instance.support().getParamTypesOrNull(loader)?.toTypedArray()).let { hold ->
+                                and(paramTypesEq(it, instance.support().getParamTypesOrNull(classSet,loader)?.toTypedArray()).let { hold ->
                                     if (hold) iParamTypes++
                                     hold && matchIndex.compare(iParamTypes, iLParamTypes)
                                 })
                             }
                             paramTypesConditions?.also {
                                 and(instance.let { t -> runOrFalse {
-                                    val paramTypes = t.support().getParamTypesOrNull(loader) ?: return@runOrFalse true
+                                    val paramTypes = t.support().getParamTypesOrNull(classSet,loader) ?: return@runOrFalse true
                                     it(KObjectRules.with(paramTypes), t.valueParameterList.mapIndexed { index, valueParameter ->
                                         val param = paramTypes[index]
                                         object : KParameter {
@@ -752,7 +752,7 @@ internal object KReflectionTool {
                                             override val name: String
                                                 get() = nameResolver.getString(valueParameter.name)
                                             override val type: KType
-                                                get() = param.type
+                                                get() = param
                                         }
                                     })
                                 } }.let { hold ->
@@ -1104,8 +1104,11 @@ internal object KReflectionTool {
                             when(t){
                                 is KTypeProjection -> {
                                     if (!eq) return false
-                                    eq = if (t.type?.classifier == VagueKotlin && t.variance == original.arguments[index].variance) true
-                                    else (t.variance == original.arguments[index].variance) && (t.type?.generic() == original.arguments[index].type?.generic())
+                                    eq = t.type?.classifier == VagueKotlin && t.variance == original.arguments[index].variance
+                                    if (!eq) {
+                                        eq =
+                                            (t.variance == original.arguments[index].variance) && (t.type?.generic() == original.arguments[index].type?.generic())
+                                    }
                                 }
                                 is KVariance -> {
                                     if (!eq) return false
@@ -1120,8 +1123,8 @@ internal object KReflectionTool {
                             when(t){
                                 is KTypeProjection -> {
                                     if (!eq) return false
-                                    eq = if (t.type?.classifier == VagueKotlin && t.variance == original.type.arguments[index].variance) true
-                                    else (t.variance == original.type.arguments[index].variance) && (t.type?.generic() == original.type.arguments[index].type?.generic())
+                                    eq = t.type?.classifier == VagueKotlin && t.variance == original.type.arguments[index].variance
+                                    if (!eq) eq = (t.variance == original.type.arguments[index].variance) && (t.type?.generic() == original.type.arguments[index].type?.generic())
                                 }
                                 is KVariance -> {
                                     if (!eq) return false

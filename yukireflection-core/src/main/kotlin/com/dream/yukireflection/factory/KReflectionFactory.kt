@@ -14,6 +14,8 @@ import com.dream.yukireflection.finder.callable.KPropertyFinder
 import com.dream.yukireflection.finder.classes.KClassFinder
 import com.dream.yukireflection.finder.signature.KFunctionSignatureFinder
 import com.dream.yukireflection.finder.signature.KPropertySignatureFinder
+import com.dream.yukireflection.finder.signature.support.KFunctionSignatureSupport
+import com.dream.yukireflection.finder.signature.support.KPropertySignatureSupport
 import com.dream.yukireflection.finder.tools.KReflectionTool
 import com.dream.yukireflection.type.factory.*
 import com.dream.yukireflection.type.kotlin.*
@@ -29,6 +31,8 @@ import kotlin.reflect.full.declaredMembers
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.internal.impl.descriptors.CallableMemberDescriptor
+import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
+import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.jvmName
@@ -315,8 +319,8 @@ inline val <V> KCallable<V>.returnClass: KClass<V & Any>
         when (this) {
             is KProperty -> javaFieldNoError?.type ?: javaGetterNoError?.returnType ?: (this as? KMutableProperty<*>?)?.javaSetterNoError?.returnType
             is KFunction -> javaMethodNoError?.returnType ?: javaConstructorNoError?.declaringClass
-            else -> throw NotImplementedError("Unsupported conversions.")
-        }!!.kotlin
+            else -> null
+        }?.kotlin ?: error("Unsupported conversions.")
     } catch (e: Error) {
         ref.signature.let {
             it.substring(it.indexOf(")L") + ")L".length, it.lastIndex).replace("/", ".")
@@ -735,7 +739,7 @@ inline fun <K:KCallable<V>,V> K.toKCallableOrNull(clazz: KClass<*>? = null,loade
  * @return [KProperty] 新获取到的可调用实例
  */
 inline fun <K:KProperty<V>,V> K.toKProperty(clazz: KClass<*>? = null,loader: ClassLoader? = null,isUseMember: Boolean = false): K {
-    val declaringClass = (clazz ?: declaringClass)!!.toKClass(loader)
+    val declaringClass = (clazz ?: declaringClass)?.toKClass(loader) ?: throw NoClassDefFoundError("$clazz not found in $loader")
     return declaringClass.property {
         this@toKProperty.attach(loader,isUseMember)
     }.give() as K
@@ -769,7 +773,7 @@ inline fun <K:KProperty<V>,V> K.toKPropertyOrNull(clazz: KClass<*>? = null,loade
  * @return [KFunction] 新获取到的可调用实例
  */
 inline fun <K:KFunction<V>,V> K.toKFunction(clazz: KClass<*>? = null,loader: ClassLoader? = null,isUseMember: Boolean = false): K {
-    val declaringClass = (clazz ?: declaringClass)!!.toKClass(loader)
+    val declaringClass = (clazz ?: declaringClass)?.toKClass(loader) ?: throw NoClassDefFoundError("$clazz not found in $loader")
     return declaringClass.function {
         this@toKFunction.attach(loader,isUseMember)
     }.give() as K
@@ -877,11 +881,27 @@ inline fun String.hasKClass(loader: ClassLoader? = null) = KReflectionTool.hasCl
 inline fun KClass<*>.hasProperty(initiate: KPropertyConditions) = property(initiate).ignored().isNoSuch.not()
 
 /**
+ * 查找变量签名是否存在
+ * @param loader [KClass] 所在的 [ClassLoader] - 不填使用默认 [ClassLoader]
+ * @param initiate 方法体
+ * @return [Boolean] 是否存在
+ */
+inline fun KClass<*>.hasPropertySignature(loader: ClassLoader? = null,initiate: KPropertySignatureConditions) = propertySignature(loader,initiate).ignored().isNoSuch.not()
+
+/**
  * 查找方法是否存在
  * @param initiate 方法体
  * @return [Boolean] 是否存在
  */
 inline fun KClass<*>.hasFunction(initiate: KFunctionConditions) = function(initiate).ignored().isNoSuch.not()
+
+/**
+ * 查找方法签名是否存在
+ * @param loader [KClass] 所在的 [ClassLoader] - 不填使用默认 [ClassLoader]
+ * @param initiate 方法体
+ * @return [Boolean] 是否存在
+ */
+inline fun KClass<*>.hasFunctionSignature(loader: ClassLoader? = null,initiate: KFunctionSignatureConditions) = functionSignature(loader,initiate).ignored().isNoSuch.not()
 
 /**
  * 查找构造方法是否存在
@@ -918,14 +938,14 @@ inline fun KClass<*>.property(initiate: KPropertyConditions = {}) = KPropertyFin
  *
  * 此方法以通过 [Metadata] 中定义的属性名获取Java层真正的签名
  *
- * [KPropertySignatureFinderConditions] 中对属性类型进行筛选如果目标类型也有问题可能依然会出错，建议使用属性名筛选
+ * [KPropertySignatureConditions] 中对属性类型进行筛选如果目标类型也有问题可能依然会出错，建议使用属性名筛选
  *
  * - 此方法不涉及转 Kotlin 的反射属性可以避免一些异常 [Metadata] 数据报错
  * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
  * @param initiate 查找方法体
  * @return [KFunctionFinder.Result]
  */
-inline fun KClass<*>.propertySignature(loader: ClassLoader? = null,initiate: KPropertySignatureFinderConditions = {}) = KPropertySignatureFinder(classSet = this,loader).apply(initiate).build()
+inline fun KClass<*>.propertySignature(loader: ClassLoader? = null,initiate: KPropertySignatureConditions = {}) = KPropertySignatureFinder(classSet = this,loader).apply(initiate).build()
 
 /**
  * 查找并得到方法
@@ -1120,6 +1140,19 @@ inline fun KClass<*>.allFunctions(isAccessible: Boolean = true, result: (index: 
     }
 
 /**
+ * 遍历当前类中的所有方法签名
+ * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramClasss] 所在的 [ClassLoader]
+ * @param result 回调 - ([Int] 下标,Constructor [KFunction] 实例)
+ */
+inline fun KClass<*>.allFunctionSignatures(loader: ClassLoader? = null,result: (index: Int, function: KFunctionSignatureSupport) -> Unit){
+    val nameResolver = memberScope?.deserializationContext?.nameResolver ?: return
+    val protos = (memberScope?.impl ?: return).functionProtos
+    mutableListOf<ProtoBuf.Function>().also { buf -> protos.values.forEach { buf += it } }.forEachIndexed { index, function ->
+        result(index,KFunctionSignatureSupport(this, loader, nameResolver, function))
+    }
+}
+
+/**
  * 遍历当前类中的所有构造方法
  * @param isAccessible 是否强制设置成员为可访问类型 - 默认是
  * @param result 回调 - ([Int] 下标,Constructor [KFunction] 实例)
@@ -1145,6 +1178,19 @@ inline fun KClass<*>.allPropertys(isAccessible: Boolean = true, result: (index: 
             p,
             it.also { e -> e.isAccessible = isAccessible })
     }
+
+/**
+ * 遍历当前类中的所有变量签名
+ * @param loader loader [ClassLoader] - 属性类型所使用的 [ClassLoader]
+ * @param result 回调 - ([Int] 下标,[KProperty] 实例)
+ */
+inline fun KClass<*>.allPropertySignatures(loader: ClassLoader? = null,result: (index: Int, property: KPropertySignatureSupport) -> Unit){
+    val nameResolver = memberScope?.deserializationContext?.nameResolver ?: return
+    val protos = (memberScope?.impl ?: return).propertyProtos
+    mutableListOf<ProtoBuf.Property>().also { buf -> protos.values.forEach { buf += it } }.forEachIndexed { index, property ->
+        result(index, KPropertySignatureSupport(this, loader, nameResolver, property.getExtension(JvmProtoBuf.propertySignature)))
+    }
+}
 
 /**
  * 查找并得到类

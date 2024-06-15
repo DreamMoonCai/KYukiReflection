@@ -156,7 +156,7 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
          * - 若你设置了 [remedys] 请使用 [wait] 回调结果方法
          * @param instance [KFunctionSignatureSupport.member] 所在的实例对象 - 如果是静态可不填 - 默认 null
          * @param declaringClass [KClass] 方法所在的 [KClass]
-         * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramTypes] 所在的 [ClassLoader]
+         * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramClasss] 所在的 [ClassLoader]
          * @return [Instance]
          */
         fun get(instance: Any? = null,declaringClass:KClass<*>? = null,loader: ClassLoader? = this@KFunctionSignatureFinder.loader) = Instance(instance, give()?.getMemberOrNull(declaringClass,loader))
@@ -171,7 +171,7 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
          * - 若你设置了 [remedys] 请使用 [waitAll] 回调结果方法
          * @param instance [KFunctionSignatureSupport.member] 所在的实例对象 - 如果是静态可不填 - 默认 null
          * @param declaringClass [KClass] 方法所在的 [KClass]
-         * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramTypes] 所在的 [ClassLoader]
+         * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramClasss] 所在的 [ClassLoader]
          * @return [MutableList]<[Instance]>
          */
         fun all(instance: Any? = null,declaringClass:KClass<*>? = null,loader: ClassLoader? = this@KFunctionSignatureFinder.loader) =
@@ -207,7 +207,7 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
          * - 若你没有设置 [remedys] 此方法将不会被回调
          * @param instance [KFunctionSignatureSupport.member] 所在的实例对象 - 如果是静态可不填 - 默认 null
          * @param declaringClass [KClass] 方法所在的 [KClass]
-         * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramTypes] 所在的 [ClassLoader]
+         * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramClasss] 所在的 [ClassLoader]
          * @param initiate 回调 [Instance]
          */
         fun wait(instance: Any? = null,declaringClass:KClass<*>? = null,loader: ClassLoader? = this@KFunctionSignatureFinder.loader, initiate: Instance.() -> Unit) {
@@ -225,7 +225,7 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
          * - 若你没有设置 [remedys] 此方法将不会被回调
          * @param instance [KFunctionSignatureSupport.member] 所在的实例对象 - 如果是静态可不填 - 默认 null
          * @param declaringClass [KClass] 方法所在的 [KClass]
-         * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramTypes] 所在的 [ClassLoader]
+         * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramClasss] 所在的 [ClassLoader]
          * @param initiate 回调 [MutableList]<[Instance]>
          */
         fun waitAll(instance: Any? = null,declaringClass:KClass<*>? = null,loader: ClassLoader? = this@KFunctionSignatureFinder.loader, initiate: MutableList<Instance>.() -> Unit) {

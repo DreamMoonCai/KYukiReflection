@@ -5,12 +5,15 @@ import com.dream.yukireflection.utils.DexSignUtil
 import java.lang.reflect.Field
 import java.lang.reflect.Member
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
 import kotlin.reflect.jvm.internal.impl.metadata.deserialization.NameResolver
 import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
 
 /**
  * 属性签名处理支持组件
  *
+ * @property declaringClass 属性声明类
+ * @property loader [ClassLoader] - 属性类型所使用的 [ClassLoader]
  * @property nameResolver 名称解析器
  * @property proto 属性签名
  */
@@ -33,11 +36,35 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
         val typeDescriptor by lazy { nameResolver.getString(proto.desc) }
 
         /**
+         * 字段类型 [KType] 通过 [getMember] 获取泛型类型转 [KType]
+         *
+         * 获取此字段以 [KType] 描述的结果
+         *
+         * 没有找到泛型类型时为 [getReturnClass]
+         *
+         * 如需指定 [declaringClass] 请使用方法方式调用
+         */
+        val returnType by lazy { getReturnType() }
+
+        /**
+         * 字段类型 [KType] 通过 [getMember] 获取泛型类型转 [KType]
+         *
+         * 获取此字段以 [KType] 描述的结果
+         *
+         * 没有找到泛型类型时为 [getReturnClass]
+         *
+         * 如需指定 [declaringClass] 请使用方法方式调用
+         *
+         * - 获取时不会触发异常
+         */
+        val returnTypeOrNull by lazy { getReturnTypeOrNull() }
+
+        /**
          * 字段类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果
          *
          * 如需指定 [ClassLoader] 请使用方法方式调用
          */
-        val type by lazy { getType() }
+        val returnClass by lazy { getReturnClass() }
 
         /**
          * 字段类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果
@@ -46,7 +73,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
          *
          * - 获取时不会触发异常
          */
-        val typeOrNull by lazy { getTypeOrNull() }
+        val returnClassOrNull by lazy { getReturnClassOrNull() }
 
         /**
          * 字段成员 [Field] 使用创建此描述符对象的根源类 [declaringClass] 进行字段查找
@@ -65,12 +92,37 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
         val memberOrNull by lazy { getMemberOrNull() }
 
         /**
+         * 字段类型 [KType] 通过 [getMember] 获取泛型类型转 [KType]
+         *
+         * 没有找到泛型类型时为 [getReturnClass]
+         *
+         * 获取此字段以 [KType] 描述的结果
+         * @param declaringClass [KClass] 字段所在的 [KClass]
+         * @return [KType] or null
+         */
+        fun getReturnType(declaringClass: KClass<*>? = null): KType = runCatching { getMember(declaringClass).genericType.kotlinType }.getOrNull() ?: getReturnClass(loader).type
+
+        /**
+         * 字段类型 [KType] 通过 [getMember] 获取泛型类型转 [KType]
+         *
+         * 获取此字段以 [KType] 描述的结果
+         *
+         * 没有找到泛型类型时为 [getReturnClass]
+         *
+         * - 获取时不会触发异常
+         *
+         * @param declaringClass [KClass] 字段所在的 [KClass]
+         * @return [KType] or null
+         */
+        fun getReturnTypeOrNull(declaringClass: KClass<*>? = null): KType? = runCatching { getReturnType(declaringClass) }.getOrNull()
+
+        /**
          * 字段类型 [KClass] 使用指定 [loader] 描述结果
          *
          * @param loader [ClassLoader] 字段类型 [findType] 所在的 [ClassLoader]
          * @return [KClass]
          */
-        fun getType(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(typeDescriptor).toKClassOrNull(loader ?: this@KPropertySignatureSupport.loader) ?: error("Descriptor: $typeDescriptor, cannot be converted to [KClass].")
+        fun getReturnClass(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(typeDescriptor).toKClassOrNull(loader ?: this@KPropertySignatureSupport.loader) ?: error("Descriptor: $typeDescriptor, cannot be converted to [KClass].")
 
         /**
          * 字段类型 [KClass] 使用指定 [loader] 描述结果
@@ -80,7 +132,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
          * @param loader [ClassLoader] 字段类型 [findType] 所在的 [ClassLoader]
          * @return [KClass] or null
          */
-        fun getTypeOrNull(loader: ClassLoader? = null): KClass<*>? = runCatching { getType(loader) }.getOrNull()
+        fun getReturnClassOrNull(loader: ClassLoader? = null): KClass<*>? = runCatching { getReturnClass(loader) }.getOrNull()
 
         /**
          * 字段成员 [Field] 使用指定 [declaringClass] 描述结果
@@ -177,6 +229,42 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     val syntheticFunctionOrNull by lazy { runCatching { syntheticFunction }.getOrNull() }
 
     /**
+     * 获取此属性可获取的泛型返回类型 [KType]
+     *
+     * [field]、[getter]、[setter]
+     *
+     * 没有找到泛型类型时为 [getReturnClass]
+     */
+    val returnType by lazy { getReturnType() }
+
+    /**
+     * 获取此属性可获取的泛型返回类型 [KType]
+     *
+     * [field]、[getter]、[setter]
+     *
+     * 没有找到泛型类型时为 [getReturnClass]
+     *
+     * - 获取时不会触发异常
+     */
+    val returnTypeOrNull by lazy { getReturnTypeOrNull() }
+
+    /**
+     * 获取此属性可获取的返回类型 [KClass]
+     *
+     * [field]、[getter]、[setter]
+     */
+    val returnClass by lazy { getReturnClass() }
+
+    /**
+     * 获取此属性可获取的返回类型 [KClass]
+     *
+     * [field]、[getter]、[setter]
+     *
+     * - 获取时不会触发异常
+     */
+    val returnClassOrNull by lazy { getReturnClassOrNull() }
+
+    /**
      * 获取此属性可获取的成员 [Member]
      *
      * [field]、[getter]、[setter]
@@ -184,13 +272,63 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     val member: Member by lazy { getMember() }
 
     /**
-     * 字段成员 [Field] 使用创建此描述符对象的根源类 [declaringClass] 进行字段查找
+     * 获取此属性可获取的成员 [Member]
      *
-     * 获取此字段以 [Field] 描述的结果
+     * [field]、[getter]、[setter]
      *
      * - 获取时不会触发异常
      */
     val memberOrNull by lazy { getMemberOrNull() }
+
+    /**
+     * 获取此属性可获取的泛型返回类型 [KType]
+     *
+     * [field]、[getter]、[setter] 依次尝试
+     *
+     * 没有找到泛型类型时为 [getReturnClass]
+     *
+     * @param declaringClass [KClass] - 属性所在的 [KClass]
+     * @param loader [ClassLoader] - 属性类型所使用的 [ClassLoader]
+     * @return [KType]
+     */
+    fun getReturnType(declaringClass: KClass<*>? = null,loader: ClassLoader? = null) = fieldOrNull?.getReturnTypeOrNull(declaringClass) ?: getterOrNull?.getReturnType(declaringClass,loader) ?: setterOrNull?.getParamTypesOrNull(declaringClass,loader)?.first() ?: error("This property does not get the return type, please check $hasSignature.")
+
+    /**
+     * 获取此属性可获取的泛型返回类型 [KType]
+     *
+     * [field]、[getter]、[setter] 依次尝试
+     *
+     * 没有找到泛型类型时为 [getReturnClass]
+     *
+     * - 获取时不会触发异常
+     *
+     * @param declaringClass [KClass] - 属性所在的 [KClass]
+     * @param loader [ClassLoader] - 属性类型所使用的 [ClassLoader]
+     * @return [KType] or null
+     */
+    fun getReturnTypeOrNull(declaringClass: KClass<*>? = null,loader: ClassLoader? = null) = runCatching { getReturnType(declaringClass,loader) }.getOrNull()
+
+    /**
+     * 获取此属性可获取的返回类型 [KClass]
+     *
+     * [field]、[getter]、[setter] 依次尝试
+     *
+     * @param loader [ClassLoader] - 属性类型所使用的 [ClassLoader]
+     * @return [KClass]
+     */
+    fun getReturnClass(loader: ClassLoader? = null) = fieldOrNull?.getReturnClassOrNull(loader) ?: getterOrNull?.getReturnClassOrNull(loader) ?: setterOrNull?.getParamClasssOrNull(loader)?.first() ?: error("This property does not get the return type, please check $hasSignature.")
+
+    /**
+     * 获取此属性可获取的返回类型 [KClass]
+     *
+     * [field]、[getter]、[setter] 依次尝试
+     *
+     * - 获取时不会触发异常
+     *
+     * @param loader [ClassLoader] - 属性类型所使用的 [ClassLoader]
+     * @return [KClass] or null
+     */
+    fun getReturnClassOrNull(loader: ClassLoader? = null) = runCatching { getReturnClass(loader) }.getOrNull()
 
     /**
      * 获取此属性可获取的成员 [Member]

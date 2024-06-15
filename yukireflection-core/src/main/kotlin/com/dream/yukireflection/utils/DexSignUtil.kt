@@ -83,10 +83,10 @@ object DexSignUtil {
         if (typeSign.length == 1) {
             return primitiveTypeName(typeSign)
         }
-        if (typeSign[0] != 'L' || typeSign[typeSign.length - 1] != ';') {
-            throw IllegalStateException("Unknown class sign: $typeSign")
+        if (typeSign[0] == 'L' && typeSign[typeSign.length - 1] == ';') {
+            return typeSign.substring(1, typeSign.length - 1).replace('/', '.')
         }
-        return typeSign.substring(1, typeSign.length - 1).replace('/', '.')
+        throw IllegalStateException("Unknown class sign: $typeSign")
     }
 
     /**
@@ -118,7 +118,7 @@ object DexSignUtil {
                 Long::class.javaPrimitiveType -> "long"
                 Double::class.javaPrimitiveType -> "double"
                 Void.TYPE -> "void"
-                else -> throw IllegalStateException("Unknown primitive type: $clazz")
+                else -> error("Unknown primitive type: $clazz")
             }
         }
         return clazz.name
@@ -152,10 +152,10 @@ object DexSignUtil {
             params.add(getTypeName(sign))
             left = ++right
         }
-        if (left != right) {
-            throw IllegalStateException("Unknown signString: $paramSigns")
+        if (left == right) {
+            return params
         }
-        return params
+        throw IllegalStateException("Unknown signString: $paramSigns")
     }
 
     /**
@@ -184,7 +184,7 @@ object DexSignUtil {
                 Long::class.javaPrimitiveType -> "J"
                 Double::class.javaPrimitiveType -> "D"
                 Void.TYPE -> "V"
-                else -> throw IllegalStateException("Unknown primitive type: $type")
+                else -> error("Unknown primitive type: $type")
             }
         }
         return if (type.isArray) "[" + getTypeSign(type.componentType!!)
