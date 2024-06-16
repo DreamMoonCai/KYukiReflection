@@ -34,9 +34,6 @@ android {
             "-Xno-receiver-assertions"
         )
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
-    }
     buildFeatures {
         buildConfig = true
         compose = true
