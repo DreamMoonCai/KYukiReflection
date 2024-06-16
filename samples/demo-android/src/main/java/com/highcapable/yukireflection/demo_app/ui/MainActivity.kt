@@ -43,22 +43,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import com.highcapable.yukireflection.YukiReflection
+import com.dream.yukireflection.KYukiReflection
 import com.highcapable.yukireflection.demo_app.BuildConfig
 import com.highcapable.yukireflection.demo_app.R
 import com.highcapable.yukireflection.demo_app.test.Main
-import com.highcapable.yukireflection.factory.buildOf
-import com.highcapable.yukireflection.factory.classOf
-import com.highcapable.yukireflection.factory.current
-import com.highcapable.yukireflection.factory.field
-import com.highcapable.yukireflection.factory.method
-import com.highcapable.yukireflection.type.java.StringClass
+import com.dream.yukireflection.factory.*
+import com.dream.yukireflection.type.kotlin.StringKClass
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        YukiReflection.configs { isDebug = BuildConfig.DEBUG }
+        KYukiReflection.configs { isDebug = BuildConfig.DEBUG }
         setContent {
             MaterialTheme(colorScheme = MaterialTheme.colorScheme.copy(primary = Color(ContextCompat.getColor(this, R.color.yuki_theme_color)))) {
                 MainLayout()
@@ -68,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     fun MainLayout() {
-        val currentVersion = "${YukiReflection.TAG} Version: ${YukiReflection.VERSION}"
+        val currentVersion = "${KYukiReflection.TAG} Version: ${KYukiReflection.VERSION}"
         val operationState = remember { mutableStateOf("Waiting for your operation") }
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -94,9 +90,9 @@ class MainActivity : AppCompatActivity() {
             Button(
                 onClick = {
                     operationState.value =
-                        classOf<Main>().buildOf("I am reflection call of new object") { param(StringClass) }
-                            ?.current()
-                            ?.method {
+                        kclassOf<Main>().buildOf("I am reflection call of new object") { param(StringKClass) }
+                            ?.currentKotlin()
+                            ?.function {
                                 name = "getContent"
                                 emptyParam()
                             }?.string() ?: ""
@@ -113,7 +109,7 @@ class MainActivity : AppCompatActivity() {
             }
             Button(
                 onClick = {
-                    operationState.value = classOf<Main>().method {
+                    operationState.value = kclassOf<Main>().function {
                         name = "getStaticContent"
                         modifiers { isStatic }
                     }.get().string()
@@ -124,7 +120,7 @@ class MainActivity : AppCompatActivity() {
             }
             Button(
                 onClick = {
-                    classOf<Main>().field {
+                    kclassOf<Main>().property {
                         name = "staticContent"
                         modifiers { isStatic }
                     }.get().set("I am static! Modified by reflection")

@@ -1,6 +1,4 @@
-@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS",
-    "RecursivePropertyAccessor"
-)
+@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE", "RecursivePropertyAccessor")
 package com.dream.yukireflection.factory
 
 import com.dream.yukireflection.finder.callable.KConstructorFinder

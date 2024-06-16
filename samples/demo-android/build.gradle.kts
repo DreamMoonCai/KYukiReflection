@@ -1,6 +1,7 @@
 plugins {
     autowire(libs.plugins.android.application)
     autowire(libs.plugins.kotlin.android)
+    autowire(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -26,7 +27,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
         freeCompilerArgs = listOf(
             "-Xno-param-assertions",
             "-Xno-call-assertions",

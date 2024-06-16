@@ -1,5 +1,6 @@
 plugins {
     autowire(libs.plugins.kotlin.jvm)
+    autowire(libs.plugins.kotlin.compose)
     autowire(libs.plugins.jetbrains.compose)
 }
 
