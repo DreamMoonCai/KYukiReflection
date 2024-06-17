@@ -23,7 +23,7 @@ val version = YukiReflection.VERSION
 
 ::: tip
 
-更多功能请参考 [YukiReflection](../api/public/com/DreamMoonCai/YukiReflection/YukiReflection)。
+更多功能请参考 [YukiReflection](../api/public/com/DreamMoonCai/KYukiReflection/YukiReflection)。
 
 :::
 
@@ -104,6 +104,6 @@ YukiReflection.configs {
 
 ::: tip
 
-更多功能请参考 [YukiReflection.configs](../api/public/com/DreamMoonCai/YukiReflection/YukiReflection#configs-method) 方法、[YukiReflection.Configs](../api/public/com/DreamMoonCai/YukiReflection/YukiReflection#configs-object)。
+更多功能请参考 [YukiReflection.configs](../api/public/com/DreamMoonCai/KYukiReflection/YukiReflection#configs-method) 方法、[YukiReflection.Configs](../api/public/com/DreamMoonCai/KYukiReflection/YukiReflection#configs-object)。
 
 :::

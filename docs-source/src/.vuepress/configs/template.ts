@@ -1,6 +1,6 @@
 import { i18n } from './utils';
 
-const baseApiPath = '/api/public/com/DreamMoonCai/YukiReflection/';
+const baseApiPath = '/api/public/com/DreamMoonCai/KYukiReflection/';
 
 const navigationLinks = {
     start: [
@@ -57,8 +57,8 @@ export const configs = {
         port: 9000
     },
     website: {
-        base: '/YukiReflection/',
-        icon: '/YukiReflection/images/logo.png',
+        base: '/KYukiReflection/',
+        icon: '/KYukiReflection/images/logo.png',
         logo: '/images/logo.png',
         title: 'KYuki Reflection',
         locales: {
@@ -100,7 +100,7 @@ export const navBarItems = {
             text: 'API Document',
             children: [{ text: 'Document Introduction', link: i18n.string(navigationLinks.apiDocs[0], 'en') }, {
                 text: 'Public API',
-                link: i18n.string(navigationLinks.kotlinApi[0], 'en'),
+                link: i18n.string(navigationLinks.api[0], 'en'),
                 activeMatch: i18n.string(navigationLinks.apiDocs[1], 'en')
             }, {
                 text: 'Features',
@@ -137,7 +137,7 @@ export const navBarItems = {
             text: 'API 文档',
             children: [{ text: '文档介绍', link: i18n.string(navigationLinks.apiDocs[0], 'zh-cn') }, {
                 text: 'Public API',
-                link: i18n.string(navigationLinks.kotlinApi[0], 'zh-cn'),
+                link: i18n.string(navigationLinks.api[0], 'zh-cn'),
                 activeMatch: i18n.string(navigationLinks.apiDocs[1], 'zh-cn')
             }, {
                 text: '功能介绍',
@@ -173,7 +173,7 @@ export const sideBarItems = {
         children: [i18n.string(navigationLinks.apiDocs[0], '/en'), {
             text: 'Public API' + i18n.space,
             collapsible: true,
-            children: i18n.array(navigationLinks.kotlinApi, '/en')
+            children: i18n.array(navigationLinks.api, '/en')
         }, i18n.string(navigationLinks.apiDocs[2], '/en')]
     }, {
         text: 'About',
@@ -194,7 +194,7 @@ export const sideBarItems = {
         children: [i18n.string(navigationLinks.apiDocs[0], 'zh-cn'), {
             text: 'Public API' + i18n.space,
             collapsible: true,
-            children: i18n.array(navigationLinks.kotlinApi, 'zh-cn')
+            children: i18n.array(navigationLinks.api, 'zh-cn')
         }, i18n.string(navigationLinks.apiDocs[2], 'zh-cn')]
     }, {
         text: '关于',

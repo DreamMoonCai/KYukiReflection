@@ -13,6 +13,6 @@ You can configure related functions through `YukiReflection.configs { ... }` met
 Configuration related content basically follows the use of `YukiReflection.Configs`. If you have any questions, please check the `YukiReflection.Configs` related configuration.
 ::: tip
 
-For more functions, please refer to [YukiReflection.configs](../api/public/com/DreamMoonCai/YukiReflection/YukiReflection#configs-method) method, [YukiReflection.Configs](../api/public/com/DreamMoonCai/YukiReflection/YukiReflection#configs-object).
+For more functions, please refer to [YukiReflection.configs](../api/public/com/DreamMoonCai/KYukiReflection/YukiReflection#configs-method) method, [YukiReflection.Configs](../api/public/com/DreamMoonCai/KYukiReflection/YukiReflection#configs-object).
 
 :::

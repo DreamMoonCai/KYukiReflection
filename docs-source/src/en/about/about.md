@@ -4,7 +4,7 @@
 
 ## License
 
-[Apache-2.0](https://github.com/DreamMoonCai/YukiReflection/blob/master/LICENSE)
+[Apache-2.0](https://github.com/DreamMoonCai/KYukiReflection/blob/master/LICENSE)
 
 ```:no-line-numbers
 Apache License Version 2.0
