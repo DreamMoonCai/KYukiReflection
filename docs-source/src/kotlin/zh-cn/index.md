@@ -4,10 +4,10 @@ title: KYukiReflection-首页
 heroImage: /images/logo.png
 actions:
   - text: 快速上手
-    link: /zh-cn/kotlin/guide/home
+    link: /zh-cn/guide/home
     type: primary
   - text: 更新日志
-    link: /zh-cn/kotlin/about/changelog
+    link: /zh-cn/about/changelog
     type: secondary
 features:
   - title: 符合直觉

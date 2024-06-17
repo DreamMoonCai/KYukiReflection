@@ -4,10 +4,10 @@ title: KYukiReflection-Home
 heroImage: /images/logo.png
 actions:
   - text: Get Started
-    link: /en/kotlin/guide/home
+    link: /en/guide/home
     type: primary
   - text: Changelog
-    link: /en/kotlin/about/changelog
+    link: /en/about/changelog
     type: secondary
 features:
   - title: Intuitive
