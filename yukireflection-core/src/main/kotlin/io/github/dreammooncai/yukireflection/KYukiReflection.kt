@@ -25,7 +25,7 @@ package io.github.dreammooncai.yukireflection
 
 import io.github.dreammooncai.yukireflection.factory.declaredPropertys
 import io.github.dreammooncai.yukireflection.log.KYLog
-import io.github.dreammooncai.yukireflection.generated.YukiReflectionProperties
+import io.github.dreammooncai.yukireflection.generated.KYukiReflectionProperties
 import java.lang.reflect.Member
 import kotlin.reflect.KClass
 import kotlin.reflect.full.declaredFunctions

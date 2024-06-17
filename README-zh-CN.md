@@ -8,7 +8,7 @@
 
 <img src="img-src/icon.png" width = "100" height = "100" alt="LOGO"/>
 
-🌴️ 一个使用 Kotlin 构建的用于 Java 和 Android 平台高效反射 API。
+🌴️ 一个使用 Kotlin 构建的用于 Java 和 Android 平台高效反射 API。完全附加 Kotlin 高阶反射。
 
 [English](README.md) | 简体中文
 
@@ -19,7 +19,7 @@
 
 ## 这是什么
 
-这是一个使用 Kotlin 基于 Java 原生反射 API 重新打造的一套简洁、高效的反射 API，同时也是 [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI)
+这是一个使用 Kotlin 基于 Java 原生反射 API 重新打造的一套简洁、高效的反射 API，同时也是 [KYukiHookAPI](https://github.com/DreamMoonCai/KYukiHookAPI)
 正在使用的核心功能。
 
 名称取自 [《ももくり》女主 栗原 雪(Yuki)](https://www.bilibili.com/bangumi/play/ss5016)。

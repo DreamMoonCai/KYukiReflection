@@ -8,7 +8,7 @@
 
 <img src="img-src/icon.png" width = "100" height = "100" alt="LOGO"/>
 
-🌴️ An efficient Reflection API for Java and Android built in Kotlin.
+🌴️ An efficient Reflection API for Java and Android built in Kotlin. Fully attach Kotlin high-order reflections.
 
 English | [简体中文](README-zh-CN.md)
 
@@ -20,7 +20,7 @@ This project belongs to the above-mentioned organization, **click the link above
 ## What's this
 
 This is a concise and efficient Reflection API rebuilt based on Java's native Reflection API using Kotlin,
-and it is also the core function being used by [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI).
+and it is also the core function being used by [KYukiHookAPI](https://github.com/DreamMoonCai/KYukiHookAPI).
 
 The name is taken from ["ももくり" heroine Yuki Kurihara](https://www.bilibili.com/bangumi/play/ss5016).
 

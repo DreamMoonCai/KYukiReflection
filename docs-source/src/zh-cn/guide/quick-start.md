@@ -109,9 +109,9 @@ dependencies {
 
 ::: danger
 
-如果你的项目目前正在使用 [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI) 的 1.x.x 版本，请不要重复集成 **KYukiReflection**，因为 **YukiHookAPI** 已经包含了其中的功能且存在针对相关功能的改动，重复集成会造成功能性冲突引发异常，此时你应该前往 **YukiHookAPI** 的 [文档](https://dreammooncai.github.io/YukiHookAPI/zh-cn/) 查看对应的使用教程。
+如果你的项目目前正在使用 [KYukiHookAPI](https://github.com/DreamMoonCai/KYukiHookAPI) 的 1.x.x 版本，请不要重复集成 **KYukiReflection**，因为 **KYukiHookAPI** 已经包含了其中的功能且存在针对相关功能的改动，重复集成会造成功能性冲突引发异常，此时你应该前往 **KYukiHookAPI** 的 [文档](https://dreammooncai.github.io/KYukiHookAPI/zh-cn/) 查看对应的使用教程。
 
-**YukiHookAPI** 将在 **2.0.0** 版本完全分离 **KYukiReflection**，届时你可以同时与 **YukiHookAPI** 使用。
+**KYukiHookAPI** 将在 **2.0.0** 版本完全分离 **KYukiReflection**，届时你可以同时与 **KYukiHookAPI** 使用。
 
 :::
 

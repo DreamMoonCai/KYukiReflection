@@ -1,18 +1,21 @@
 ---
 home: true
-title: 首页
+title: KYukiReflection-首页
 heroImage: /images/logo.png
 actions:
-  - text: YukiReflection
-    link: /kotlin/zh-cn/
+  - text: 快速上手
+    link: /zh-cn/guide/home
+    type: primary
+  - text: 更新日志
+    link: /zh-cn/about/changelog
     type: secondary
 features:
-  - title: 轻量优雅
-    details: 拥有一套强大、优雅、人性化、完全使用 Kotlin lambda 打造的 API，可以帮你快速实现字节码的查找以及反射功能。
-  - title: 可跨平台
-    details: 不仅仅是 Android 平台，它与 Java API 高度兼容，可使用在任何 Kotlin on JVM 的项目上，有 Java 的地方就可以使用。
-  - title: 快速上手
-    details: 简单易用，不需要繁琐的配置，不需要十足的开发经验，搭建环境集成依赖即可立即开始使用。
+  - title: 符合直觉
+    details: KYukiReflection 来自 YukiReflection 在设计逻辑上遵循原来的大部分内容，使得 KYukiReflection 的体验与 YukiReflection 使用体验一致。
+  - title: 泛型细化
+    details: 针对于 YukiReflection 支持比较薄弱的泛型相关，此套API完美适配了更多可能情况细化泛型体验。
+  - title: 条件多元
+    details: 对于 Kotlin 的支持不旨在纸上谈兵而是全方位拓展，支持所有关键字的修饰符条件，支持各种泛型，各种定制化参数，对可空特性和方差特性条件检索支持等，提供更细致的条件体验。 
 footer: Apache-2.0 License | Copyright (C) 2019-2023 HighCapable
 ---
 
@@ -21,7 +24,9 @@ footer: Apache-2.0 License | Copyright (C) 2019-2023 HighCapable
 ```java
 public class World {
 
-    private void sayHello(String content) {
+    public static class A<T>{}
+
+    private void sayHello(A<String> content) {
         System.out.println("Hello " + content + "!");
     }
 }
@@ -29,9 +34,10 @@ public class World {
 
 ```kotlin
 val newWorld = World()
-classOf<World>().method {
+val newWorldA = World.A<String>()
+kclassOf<World>().method {
     name = "sayHello"
-    param(StringClass)
-    type = UnitType
-}.get(newWorld).call("YukiReflection")
+    param(VagueKotlin.generic(StringKClass))
+    returnType = UnitKClass
+}.get(newWorld).call(newWorldA)
 ```

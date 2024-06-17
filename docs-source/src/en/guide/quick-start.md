@@ -110,13 +110,13 @@ Please change **&lt;yuki-version&gt;** to the latest version [here](../about/cha
 
 ::: danger
 
-If your project is currently using the 1.x.x version of [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI), please do not integrate **KYukiReflection** repeatedly, because **YukiHookAPI** already includes it functions and there are changes to related functions.
+If your project is currently using the 1.x.x version of [KYukiHookAPI](https://github.com/DreamMoonCai/KYukiHookAPI), please do not integrate **KYukiReflection** repeatedly, because **KYukiHookAPI** already includes it functions and there are changes to related functions.
 
 Repeated integration will cause functional conflicts and cause exceptions.
 
-In this case, you should go to the [Documentation](https://dreammooncai.github.io/YukiHookAPI/zh-cn/) of **YukiHookAPI** view the corresponding usage tutorial.
+In this case, you should go to the [Documentation](https://dreammooncai.github.io/KYukiHookAPI/zh-cn/) of **KYukiHookAPI** view the corresponding usage tutorial.
 
-**YukiHookAPI** will be completely separated from **KYukiReflection** in version **2.0.0**, by which time you can use it with **YukiHookAPI** at the same time.
+**KYukiHookAPI** will be completely separated from **KYukiReflection** in version **2.0.0**, by which time you can use it with **KYukiHookAPI** at the same time.
 
 :::
 
