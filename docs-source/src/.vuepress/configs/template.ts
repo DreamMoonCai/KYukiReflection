@@ -100,7 +100,7 @@ export const navBarItems = {
             text: 'API Document',
             children: [{ text: 'Document Introduction', link: i18n.string(navigationLinks.apiDocs[0], 'en') }, {
                 text: 'Public API',
-                link: i18n.string(navigationLinks.api[0], 'en'),
+                link: i18n.string(navigationLinks.publicApi[0], 'en'),
                 activeMatch: i18n.string(navigationLinks.apiDocs[1], 'en')
             }, {
                 text: 'Features',
@@ -137,7 +137,7 @@ export const navBarItems = {
             text: 'API 文档',
             children: [{ text: '文档介绍', link: i18n.string(navigationLinks.apiDocs[0], 'zh-cn') }, {
                 text: 'Public API',
-                link: i18n.string(navigationLinks.api[0], 'zh-cn'),
+                link: i18n.string(navigationLinks.publicApi[0], 'zh-cn'),
                 activeMatch: i18n.string(navigationLinks.apiDocs[1], 'zh-cn')
             }, {
                 text: '功能介绍',
@@ -173,7 +173,7 @@ export const sideBarItems = {
         children: [i18n.string(navigationLinks.apiDocs[0], 'en'), {
             text: 'Public API' + i18n.space,
             collapsible: true,
-            children: i18n.array(navigationLinks.api, 'en')
+            children: i18n.array(navigationLinks.publicApi, 'en')
         }, i18n.string(navigationLinks.apiDocs[2], 'en')]
     }, {
         text: 'About',
@@ -194,7 +194,7 @@ export const sideBarItems = {
         children: [i18n.string(navigationLinks.apiDocs[0], 'zh-cn'), {
             text: 'Public API' + i18n.space,
             collapsible: true,
-            children: i18n.array(navigationLinks.api, 'zh-cn')
+            children: i18n.array(navigationLinks.publicApi, 'zh-cn')
         }, i18n.string(navigationLinks.apiDocs[2], 'zh-cn')]
     }, {
         text: '关于',
