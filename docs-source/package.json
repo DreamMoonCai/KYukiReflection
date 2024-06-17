@@ -1,5 +1,5 @@
 {
-  "name": "yukireflection_docs",
+  "name": "kyukireflection_docs",
   "license": "Apache-2.0",
   "devDependencies": {
     "@mr-hope/vuepress-plugin-copy-code": "^1.30.0",
