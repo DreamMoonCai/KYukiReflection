@@ -64,12 +64,12 @@ export const configs = {
         locales: {
             '/en/': {
                 title: 'KYuki Reflection',
-                lang: 'kotlin-en-US',
+                lang: 'en-US',
                 description: 'An efficient Reflection API for Java and Android built in Kotlin - Fully attach Kotlin high-order reflections.Fully attach Kotlin high-order reflections.'
             },
             '/zh-cn/': {
                 title: 'KYuki Reflection',
-                lang: 'kotlin-zh-CN',
+                lang: 'zh-CN',
                 description: '一个使用 Kotlin 构建的用于 Java 和 Android 平台高效反射 API - 完全附加 Kotlin 高阶反射'
             }
         }
