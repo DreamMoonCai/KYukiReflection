@@ -1,6 +1,6 @@
 import { i18n } from './utils';
 
-const baseApiPath = '/api/public/com/highcapable/yukireflection/';
+const baseApiPath = '/api/public/com/DreamMoonCai/YukiReflection/';
 
 const baseKotlinApiPath = '/api/public/com/dream/yukireflection/';
 
@@ -88,7 +88,7 @@ export const configs = {
         }
     },
     github: {
-        repo: 'https://github.com/HighCapable/YukiReflection',
+        repo: 'https://github.com/DreamMoonCai/YukiReflection',
         branch: 'master',
         dir: 'docs-source/src'
     }

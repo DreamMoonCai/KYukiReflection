@@ -23,7 +23,7 @@ You can judge the difference between different versions or display it in the abo
 
 ::: tip
 
-For more functions, please refer to [YukiReflection](../api/public/com/highcapable/yukireflection/YukiReflection).
+For more functions, please refer to [YukiReflection](../api/public/com/DreamMoonCai/YukiReflection/YukiReflection).
 
 :::
 
@@ -104,6 +104,6 @@ YukiReflection.configs {
 
 ::: tip
 
-For more functions, please refer to [YukiReflection.configs](../api/public/com/highcapable/yukireflection/YukiReflection#configs-method) method, [YukiReflection.Configs](../api/public/com/highcapable/yukireflection/YukiReflection#configs-object).
+For more functions, please refer to [YukiReflection.configs](../api/public/com/DreamMoonCai/YukiReflection/YukiReflection#configs-method) method, [YukiReflection.Configs](../api/public/com/DreamMoonCai/YukiReflection/YukiReflection#configs-object).
 
 :::

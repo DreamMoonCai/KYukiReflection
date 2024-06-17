@@ -119,27 +119,27 @@ MyClass().also {
 
 在配置文件中，你无需添加 `Class` 作为后缀。
 
-你可以在 Gradle 插件中定义生成的根包名，默认为 `com.highcapable.yukireflection.generated.classes`。
+你可以在 Gradle 插件中定义生成的根包名，默认为 `io.github.dreammooncai.yukireflection.generated.classes`。
 
 > 示例如下
 
 ```properties
 # 最基本的定义方式就是直接写名称
-# 将会生成到 com.highcapable.yukireflection.generated.classes.BundleClass
+# 将会生成到 io.github.dreammooncai.yukireflection.generated.classes.BundleClass
 android.os.Bundle=Bundle
 # 你可以在前方使用 "." 的形式来定义前置子包名
 # 例如我们想把这个类定义到想要的包名
-# 将会生成到 com.highcapable.yukireflection.generated.classes.myandroid.myos.BundleClass
+# 将会生成到 io.github.dreammooncai.yukireflection.generated.classes.myandroid.myos.BundleClass
 android.os.Bundle=myandroid.myos.Bundle
 # 你也可以不填写键值内容，这将使用键值名称作为定义的包名和类名
-# 将会生成到 com.highcapable.yukireflection.generated.classes.android.os.BundleClass
+# 将会生成到 io.github.dreammooncai.yukireflection.generated.classes.android.os.BundleClass
 android.os.Bundle
 ```
 
 上述方式生成的 `Class` 对象的大概代码形式如下。
 
 ```kotlin
-package com.highcapable.yukireflection.generated.classes.android.os
+package io.github.dreammooncai.yukireflection.generated.classes.android.os
 
 // 在默认 ClassLoader 的情况下使用
 val BundleClass: Class<*> = "android.os.Bundle".toClass()
@@ -160,7 +160,7 @@ android.os.Bundle?
 上述方式生成的 `Class` 对象的大概代码形式如下。
 
 ```kotlin
-package com.highcapable.yukireflection.generated.classes.android.os
+package io.github.dreammooncai.yukireflection.generated.classes.android.os
 
 // 在默认 ClassLoader 的情况下使用
 val BundleClass: Class<*>? = "android.os.Bundle".toClassOrNull()
@@ -181,7 +181,7 @@ android.os.Bundle!!
 上述方式生成的 `Class` 对象的大概代码形式如下。
 
 ```kotlin
-package com.highcapable.yukireflection.generated.classes.android.os
+package io.github.dreammooncai.yukireflection.generated.classes.android.os
 
 import android.os.Bundle
 

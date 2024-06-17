@@ -37,4 +37,4 @@
 -renamesourcefileattribute P
 -keepattributes SourceFile,LineNumberTable
 
--keep class com.highcapable.yukireflection.demo_app.test.Main {*;}
+-keep class io.github.dreammooncai.yukireflection.demo_app.demo_app.test.Main {*;}

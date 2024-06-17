@@ -1,6 +1,6 @@
 # Quick Start
 
-> Integrate `YukiReflection` into your project.
+> Integrate `KYukiReflection` into your project.
 
 ## Environment Requirements
 
@@ -41,7 +41,7 @@ repositories:
   sonatype-oss-releases:
 
 libraries:
-  com.highcapable.yukireflection:
+  io.github.dreammooncai.yukireflection:
     api:
       version: +
   ...
@@ -55,7 +55,7 @@ Next, deploy dependencies in your project `build.gradle.kts`.
 
 ```kotlin
 dependencies {
-    implementation(com.highcapable.yukireflection.api)
+    implementation(io.github.dreammooncai.yukireflection.api)
     // ...
 }
 ```
@@ -92,7 +92,7 @@ Add dependencies in your project `build.gradle.kts` or `build.gradle`.
 
 ```kotlin
 dependencies {
-    implementation("com.highcapable.yukireflection:api:<yuki-version>")
+    implementation("io.github.dreammooncai.yukireflection:api:<yuki-version>")
     // ...
 }
 ```
@@ -101,7 +101,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'com.highcapable.yukireflection:api:<yuki-version>'
+    implementation 'io.github.dreammooncai.yukireflection:api:<yuki-version>'
     // ...
 }
 ```
@@ -110,13 +110,13 @@ Please change **&lt;yuki-version&gt;** to the latest version [here](../about/cha
 
 ::: danger
 
-If your project is currently using the 1.x.x version of [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI), please do not integrate **YukiReflection** repeatedly, because **YukiHookAPI** already includes it functions and there are changes to related functions.
+If your project is currently using the 1.x.x version of [YukiHookAPI](https://github.com/HighCapable/YukiHookAPI), please do not integrate **KYukiReflection** repeatedly, because **YukiHookAPI** already includes it functions and there are changes to related functions.
 
 Repeated integration will cause functional conflicts and cause exceptions.
 
 In this case, you should go to the [Documentation](https://dreammoonboy.github.io/YukiHookAPI/zh-cn/) of **YukiHookAPI** view the corresponding usage tutorial.
 
-**YukiHookAPI** will be completely separated from **YukiReflection** in version **2.0.0**, by which time you can use it with **YukiHookAPI** at the same time.
+**YukiHookAPI** will be completely separated from **KYukiReflection** in version **2.0.0**, by which time you can use it with **YukiHookAPI** at the same time.
 
 :::
 

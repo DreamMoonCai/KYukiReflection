@@ -1,8 +1,8 @@
 # Yuki Reflection
 
-[![GitHub license](https://img.shields.io/github/license/HighCapable/YukiReflection?color=blue)](https://github.com/HighCapable/YukiReflection/blob/master/LICENSE)
-[![GitHub release](https://img.shields.io/github/v/release/HighCapable/YukiReflection?display_name=release&logo=github&color=green)](https://github.com/HighCapable/YukiReflection/releases)
-[![Telegram](https://img.shields.io/badge/discussion-Telegram-blue.svg?logo=telegram)](https://t.me/YukiReflection)
+[![GitHub license](https://img.shields.io/github/license/DreamMoonCai/KYukiReflection?color=blue)](https://github.com/DreamMoonCai/KYukiReflection/blob/master/LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/DreamMoonCai/KYukiReflection?display_name=release&logo=github&color=green)](https://github.com/DreamMoonCai/KYukiReflection/releases)
+[![Telegram](https://img.shields.io/badge/discussion-Telegram-blue.svg?logo=telegram)](https://t.me/KYukiReflection)
 [![Telegram](https://img.shields.io/badge/discussion%20dev-Telegram-blue.svg?logo=telegram)](https://t.me/HighCapable_Dev)
 [![QQ](https://img.shields.io/badge/discussion%20dev-QQ-blue.svg?logo=tencent-qq&logoColor=red)](https://qm.qq.com/cgi-bin/qm/qr?k=Pnsc5RY6N2mBKFjOLPiYldbAbprAU3V7&jump_from=webapi&authKey=X5EsOVzLXt1dRunge8ryTxDRrh9/IiW1Pua75eDLh9RE3KXE+bwXIYF5cWri/9lf)
 
@@ -26,7 +26,7 @@
 
 ## 开始使用
 
-[点击这里](https://dreammoonboy.github.io/YukiReflection/zh-cn/) 前往文档页面查看更多详细教程和内容。
+[点击这里](https://dreammoonboy.github.io/KYukiReflection/zh-cn/) 前往文档页面查看更多详细教程和内容。
 
 ## 项目推广
 
@@ -41,7 +41,7 @@
 
 ## Star History
 
-![Star History Chart](https://api.star-history.com/svg?repos=HighCapable/YukiReflection&type=Date)
+![Star History Chart](https://api.star-history.com/svg?repos=DreamMoonCai/KYukiReflection&type=Date)
 
 ## 许可证
 

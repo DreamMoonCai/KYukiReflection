@@ -23,6 +23,6 @@ sweetProperty {
     project(":yukireflection-core") { sourcesCode { className = rootProject.name } }
 }
 
-rootProject.name = "YukiReflection"
+rootProject.name = "KYukiReflection"
 include(":samples:demo-android", ":samples:demo-jvm")
 include(":yukireflection-core")

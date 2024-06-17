@@ -1,7 +1,7 @@
 ---
 next:
   text: Public API
-  link: /en/api/public/com/highcapable/yukireflection/YukiReflection
+  link: /en/api/public/com/DreamMoonCai/YukiReflection/YukiReflection
 ---
 
 # Document Introduce
