@@ -6,19 +6,17 @@
 
 - Windows 7 及以上/macOS 10.14 及以上/Linux 发行版 (Arch/Debian)
 
-- Android Studio 2021.1 及以上
+- Android Studio 2024.1 及以上
 
-- IntelliJ IDEA 2021.1 及以上
+- IntelliJ IDEA 2024.2(暂不支持安卓最新组件) 及以上
 
-- Kotlin 1.7.0 及以上
+- Kotlin 2.0.0 及以上
 
-- Android Gradle Plugin 7.0 及以上
+- Android Gradle Plugin 8.5 及以上
 
-- Gradle 7.0 及以上
+- Gradle 8.8 及以上
 
-- Java 11 及以上
-
-- Java 17 及以上 (Since API `1.0.3`)
+- Java 21 及以上
 
 ## 项目要求
 
@@ -109,15 +107,15 @@ dependencies {
 
 ::: danger
 
-如果你的项目目前正在使用 [KYukiHookAPI](https://github.com/DreamMoonCai/KYukiHookAPI) 的 1.x.x 版本，请不要重复集成 **KYukiReflection**，因为 **KYukiHookAPI** 已经包含了其中的功能且存在针对相关功能的改动，重复集成会造成功能性冲突引发异常，此时你应该前往 **KYukiHookAPI** 的 [文档](https://dreammooncai.github.io/KYukiHookAPI/zh-cn/) 查看对应的使用教程。
+如果你的项目目前正在使用 [KYukiHookAPI](https://github.com/DreamMoonCai/KYukiHookAPI) 的 1.x.x 版本，你依然可以继续集成 **KYukiReflection**，因为 **KYukiHookAPI** 所依赖于此库即使不集成也会隐式打包到您的项目，后续可能会另作改动，更多使用教程请参阅 **KYukiHookAPI** 的 [文档](https://dreammooncai.github.io/KYukiHookAPI/zh-cn/) 查看对应的使用教程。
 
-**KYukiHookAPI** 将在 **2.0.0** 版本完全分离 **KYukiReflection**，届时你可以同时与 **KYukiHookAPI** 使用。
+**KYukiHookAPI** 将在 **YukiHookAPI 2.0.0** 版本进行相关参考变动。
 
 :::
 
 #### 配置 Java 版本
 
-在你的项目 `build.gradle.kts` 或 `build.gradle` 中修改 Kotlin 的 Java 版本为 17 及以上。
+在你的项目 `build.gradle.kts` 或 `build.gradle` 中修改 Kotlin 的 Java 版本为 21 及以上。
 
 > Kotlin DSL
 
@@ -149,6 +147,6 @@ android {
 
 ::: warning
 
-自 API **1.0.3** 版本后 Kotlin 使用的 Java 版本默认为 21，不再支持 11 及以下版本。
+自 API **1.0.1** 版本后 Kotlin 使用的 Java 版本默认为 21，不再支持 11 及以下版本。
 
 :::

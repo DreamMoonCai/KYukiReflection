@@ -6,19 +6,17 @@
 
 - Windows 7 and above / macOS 10.14 and above / Linux distributions (Arch/Debian)
 
-- Android Studio 2021.1 and above
+- Android Studio 2024.1 and above
 
-- IntelliJ IDEA 2021.1 and above
+- IntelliJ IDEA 2024.2(The latest Android components are not supported at this time) and above
 
-- Kotlin 1.7.0 and above
+- Kotlin 2.0.0 and above
 
-- Android Gradle Plugin 7.0 and above
+- Android Gradle Plugin 8.5 and above
 
-- Gradle 7.0 and above
+- Gradle 8.8 and above
 
-- Java 11 and above
-
-- Java 17 and above (Since API `1.0.3`)
+- Java 21 and above
 
 ## Project Requirements
 
@@ -110,11 +108,13 @@ Please change **&lt;yuki-version&gt;** to the latest version [here](../about/cha
 
 ::: danger
 
-If your project is currently using the 1.x.x version of [KYukiHookAPI](https://github.com/DreamMoonCai/KYukiHookAPI), please do not integrate **KYukiReflection** repeatedly, because **KYukiHookAPI** already includes it functions and there are changes to related functions.
+If your project is currently using the 1.x.x version of [KYukiHookAPI](https://github.com/DreamMoonCai/KYukiHookAPI),You can still continue to integrate **KYukiReflection**, because the library that **KYukiHookAPI depends on will be implicitly packaged into your project even if it is not integrated,
 
-Repeated integration will cause functional conflicts and cause exceptions.
+and may be changed in the future, 
 
-In this case, you should go to the [Documentation](https://dreammooncai.github.io/KYukiHookAPI/zh-cn/) of **KYukiHookAPI** view the corresponding usage tutorial.
+for more tutorials, please refer to the [Documentation] (https://dreammooncai.github.io/KYukiHookAPI/zh-cn/) of **KYukiHookAPI** Check out the tutorials.
+
+KYukiHookAPI will be changed in YukiHookAPI 2.0.0.
 
 **KYukiHookAPI** will be completely separated from **KYukiReflection** in version **2.0.0**, by which time you can use it with **KYukiHookAPI** at the same time.
 
@@ -122,7 +122,7 @@ In this case, you should go to the [Documentation](https://dreammooncai.github.i
 
 #### Configure Java Version
 
-Modify the Java version of Kotlin in your project `build.gradle.kts` or `build.gradle` to 17 or above.
+Modify the Java version of Kotlin in your project `build.gradle.kts` or `build.gradle` to 21 or above.
 
 > Kotlin DSL
 
@@ -154,6 +154,6 @@ android {
 
 ::: warning
 
-Since API **1.0.3**, the Java version used by Kotlin defaults to 21, and versions 11 and below are no longer supported.
+Since API **1.0.1**, the Java version used by Kotlin defaults to 21, and versions 11 and below are no longer supported.
 
 :::
