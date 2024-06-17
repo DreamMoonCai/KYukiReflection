@@ -1,6 +1,6 @@
 import { i18n } from './utils';
 
-const baseApiPath = '/api/public/com/DreamMoonCai/KYukiReflection/';
+const baseApiPath = '/api/public/io/github/DreamMoonCai/KYukiReflection/';
 
 const navigationLinks = {
     start: [
