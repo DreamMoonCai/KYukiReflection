@@ -539,7 +539,7 @@ open class KFunctionFinder internal constructor(final override val classSet: KCl
      * @return [MutableList]<[KFunction]>
      * @throws NoSuchMethodError 如果找不到 [KFunction]
      */
-    private val result get() = io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findFunctions(usedClassSet, rulesData)
+    private val result get() = KReflectionTool.findFunctions(usedClassSet, rulesData)
 
     /**
      * 设置实例

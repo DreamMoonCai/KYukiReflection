@@ -612,7 +612,7 @@ inline fun KVariousClass.toKClassOrNull(loader: ClassLoader? = null, initialize:
  * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
  */
 inline fun String.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) =
-    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findClassByName(name = this, loader, initialize)
+    KReflectionTool.findClassByName(name = this, loader, initialize)
 
 /**
  * 通过字符串类名转换为 [loader] 中的实体类
@@ -871,7 +871,7 @@ fun lazyKClassOrNull(variousClass: KVariousClass, initialize: Boolean = false, l
  * @param loader [KClass] 所在的 [ClassLoader] - 不填使用默认 [ClassLoader]
  * @return [Boolean] 是否存在
  */
-inline fun String.hasKClass(loader: ClassLoader? = null) = io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.hasClassByName(name = this, loader)
+inline fun String.hasKClass(loader: ClassLoader? = null) = KReflectionTool.hasClassByName(name = this, loader)
 
 /**
  * 查找变量是否存在

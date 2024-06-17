@@ -389,7 +389,7 @@ class KClassFinder internal constructor(classSet: Collection<KClass<*>>? = null)
      * @return [MutableList]<[KClass]>
      * @throws NoClassDefFoundError 如果找不到 [KClass]
      */
-    private val result get() = io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findClasses(classSet, rulesData)
+    private val result get() = KReflectionTool.findClasses(classSet, rulesData)
 
     /**
      * 设置实例

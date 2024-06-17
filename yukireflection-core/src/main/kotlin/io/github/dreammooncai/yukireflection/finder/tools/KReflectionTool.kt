@@ -87,7 +87,7 @@ internal object KReflectionTool {
      * @param loader [KClass] 所在的 [ClassLoader]
      * @return [Boolean]
      */
-    internal fun hasClassByName(name: String, loader: ClassLoader?) = runCatching { io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findClassByName(
+    internal fun hasClassByName(name: String, loader: ClassLoader?) = runCatching { KReflectionTool.findClassByName(
         name,
         loader
     ); true }.getOrNull() ?: false
@@ -111,7 +111,7 @@ internal object KReflectionTool {
          * @param loader [Class] 所在的 [ClassLoader] - 默认为 [currentClassLoader]
          * @return [Class]
          */
-        fun classForName(jvmName: String, initialize: Boolean, loader: ClassLoader? = io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.currentClassLoader) =
+        fun classForName(jvmName: String, initialize: Boolean, loader: ClassLoader? = KReflectionTool.currentClassLoader) =
             Class.forName(jvmName, initialize, loader)
 
         /**
@@ -119,18 +119,18 @@ internal object KReflectionTool {
          * @return [Class] or null
          */
         fun loadWithDefaultClassLoader() = if (initialize.not()) loader?.loadClass(jvmName) else classForName(jvmName, initialize, loader)
-        return io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.MemoryCache.classData[uniqueCode] ?: runCatching {
+        return KReflectionTool.MemoryCache.classData[uniqueCode] ?: runCatching {
             if (jvmName.endsWith("[]")) {
-                val clazz = io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findClassByName(
+                val clazz = KReflectionTool.findClassByName(
                     jvmName.substring(
                         0,
                         jvmName.length - 2
                     ), loader, initialize
                 )
-                return ArrayClass(clazz).also { io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.MemoryCache.classData[uniqueCode] = it }
+                return ArrayClass(clazz).also { KReflectionTool.MemoryCache.classData[uniqueCode] = it }
             }
             if (jvmName.startsWith("[")){
-                return io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findClassByName(
+                return KReflectionTool.findClassByName(
                     DexSignUtil.getTypeName(
                         jvmName
                     ), loader, initialize
@@ -148,10 +148,10 @@ internal object KReflectionTool {
                 "void" -> UnitKClass.java
                 else -> null
             }
-            if (baseType != null) return baseType.kotlin.also { io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.MemoryCache.classData[uniqueCode] = it }
-            (loadWithDefaultClassLoader() ?: classForName(jvmName, initialize)).kotlin.also { io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.MemoryCache.classData[uniqueCode] = it }
-        }.getOrNull() ?: throw io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.createException(
-            loader ?: io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.currentClassLoader,
+            if (baseType != null) return baseType.kotlin.also { KReflectionTool.MemoryCache.classData[uniqueCode] = it }
+            (loadWithDefaultClassLoader() ?: classForName(jvmName, initialize)).kotlin.also { KReflectionTool.MemoryCache.classData[uniqueCode] = it }
+        }.getOrNull() ?: throw KReflectionTool.createException(
+            loader ?: KReflectionTool.currentClassLoader,
             name = KBaseFinder.TAG_CLASS,
             "name:[$jvmName]"
         )
@@ -168,7 +168,7 @@ internal object KReflectionTool {
     internal fun findClasses(classSet: Collection<KClass<*>>?, rulesData: KClassRulesData) = rulesData.createResult {
         mutableListOf<KClass<*>>().also { classes ->
             if (!rulesData.isInitialize) {
-                classes += classSet?.first() ?: throw io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.createException(
+                classes += classSet?.first() ?: throw KReflectionTool.createException(
                     classSet,
                     objectName,
                     *templates
@@ -264,7 +264,7 @@ internal object KReflectionTool {
                                 rule.conditions {
                                     value.name.takeIf { it.isNotBlank() }?.also { and(it == function.name) }
                                     value.returnType?.takeIf { value.exists(it) }?.also { and(
-                                        io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                                        KReflectionTool.typeEq(
                                             it,
                                             function.returnType
                                         )
@@ -276,7 +276,7 @@ internal object KReflectionTool {
                                     value.paramCountConditions
                                         ?.also { function.valueParameters.size.also { s -> runCatching { and(it(s.cast(), s)) } } }
                                     value.paramTypes?.takeIf { value.exists(*it) }?.also { and(
-                                        io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramTypesEq(
+                                        KReflectionTool.paramTypesEq(
                                             it,
                                             function.valueParameters.toTypedArray()
                                         )
@@ -284,7 +284,7 @@ internal object KReflectionTool {
                                     value.paramTypesConditions
                                         ?.also { function.also { t -> runCatching { and(it(t.paramTypes(), t.valueParameters)) } } }
                                     value.paramNames?.takeIf { value.exists(*it) }?.also { and(
-                                        io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramNamesEq(
+                                        KReflectionTool.paramNamesEq(
                                             it,
                                             function.valueParameters.map { it.name }.toTypedArray()
                                         )
@@ -308,7 +308,7 @@ internal object KReflectionTool {
                                     value.paramCountConditions
                                         ?.also { constructor.valueParameters.size.also { s -> runCatching { and(it(s.cast(), s)) } } }
                                     value.paramTypes?.takeIf { value.exists(*it) }?.also { and(
-                                        io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramTypesEq(
+                                        KReflectionTool.paramTypesEq(
                                             it,
                                             constructor.valueParameters.toTypedArray()
                                         )
@@ -316,7 +316,7 @@ internal object KReflectionTool {
                                     value.paramTypesConditions
                                         ?.also { constructor.also { t -> runCatching { and(it(t.paramTypes(), t.valueParameters)) } } }
                                     value.paramNames?.takeIf { value.exists(*it) }?.also { and(
-                                        io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramNamesEq(
+                                        KReflectionTool.paramNamesEq(
                                             it,
                                             constructor.valueParameters.map { it.name }.toTypedArray()
                                         )
@@ -334,7 +334,7 @@ internal object KReflectionTool {
             classSet?.forEach {
                 startProcess(it)
             }
-        }.takeIf { it.isNotEmpty() } ?: throw io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.createException(
+        }.takeIf { it.isNotEmpty() } ?: throw KReflectionTool.createException(
             classSet,
             objectName,
             *templates
@@ -361,7 +361,7 @@ internal object KReflectionTool {
                 var iNameCds = -1
                 var iTypeCds = -1
                 val iLType = type?.let(matchIndex) { e -> declares.findLastIndex {
-                    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                    KReflectionTool.typeEq(
                         e,
                         it.returnType
                     )
@@ -374,7 +374,7 @@ internal object KReflectionTool {
                 declares.forEachIndexed { index, instance ->
                     conditions {
                         type?.also {
-                            and((io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                            and((KReflectionTool.typeEq(
                                 it,
                                 instance.returnType
                             )).let { hold ->
@@ -451,7 +451,7 @@ internal object KReflectionTool {
                 var iNameCds = -1
                 var iTypeCds = -1
                 val iLType = type?.let(matchIndex) { e -> declares.findLastIndex {
-                    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                    KReflectionTool.typeEq(
                         e,
                         it.type()
                     )
@@ -471,7 +471,7 @@ internal object KReflectionTool {
                 declares.forEachIndexed { index, instance ->
                     conditions {
                         type?.also {
-                            and((io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                            and((KReflectionTool.typeEq(
                                 it,
                                 instance.type()
                             )).let { hold ->
@@ -550,7 +550,7 @@ internal object KReflectionTool {
                 var iModify = -1
                 var iNameCds = -1
                 val iLReturnType = returnType?.let(matchIndex) { e -> declares.findLastIndex {
-                    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                    KReflectionTool.typeEq(
                         e,
                         it.returnType
                     )
@@ -565,7 +565,7 @@ internal object KReflectionTool {
                     declares.findLastIndex { it.valueParameters.size.let { s -> runOrFalse { e(s.cast(), s) } } }
                 } ?: -1
                 val iLParamTypes = paramTypes?.let(matchIndex) { e -> declares.findLastIndex {
-                    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramTypesEq(
+                    KReflectionTool.paramTypesEq(
                         e,
                         it.valueParameters.toTypedArray()
                     )
@@ -573,7 +573,7 @@ internal object KReflectionTool {
                 val iLParamTypesCds = paramTypesConditions
                     ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse { e(it.paramTypes(), it.valueParameters) } } } ?: -1
                 val iLParamNames = paramNames?.let(matchIndex) { e -> declares.findLastIndex {
-                    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramNamesEq(
+                    KReflectionTool.paramNamesEq(
                         e,
                         it.valueParameters.map { it.name }.toTypedArray()
                     )
@@ -593,7 +593,7 @@ internal object KReflectionTool {
                             })
                         }
                         returnType?.also {
-                            and((io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                            and((KReflectionTool.typeEq(
                                 it,
                                 instance.returnType
                             )).let { hold ->
@@ -627,7 +627,7 @@ internal object KReflectionTool {
                         }
                         paramTypes?.also {
                             and(
-                                io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramTypesEq(
+                                KReflectionTool.paramTypesEq(
                                     it,
                                     instance.valueParameters.toTypedArray()
                                 ).let { hold ->
@@ -643,7 +643,7 @@ internal object KReflectionTool {
                         }
                         paramNames?.also {
                             and(
-                                io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramNamesEq(
+                                KReflectionTool.paramNamesEq(
                                     it,
                                     instance.valueParameters.map { it.name }.toTypedArray()
                                 ).let { hold ->
@@ -721,7 +721,7 @@ internal object KReflectionTool {
                     var iModify = -1
                     var iNameCds = -1
                     val iLReturnType = returnType?.let(matchIndex) { e -> declares.findLastIndex {
-                        io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                        KReflectionTool.typeEq(
                             e,
                             it.support().getReturnTypeOrNull(classSet, loader)
                         )
@@ -739,7 +739,7 @@ internal object KReflectionTool {
                         declares.findLastIndex { it.valueParameterCount.let { s -> runOrFalse { e(s.cast(), s) } } }
                     } ?: -1
                     val iLParamTypes = paramTypes?.let(matchIndex) { e -> declares.findLastIndex {
-                        io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramTypesEq(
+                        KReflectionTool.paramTypesEq(
                             e,
                             it.support().getParamTypesOrNull(classSet, loader)?.toTypedArray()
                         )
@@ -768,7 +768,7 @@ internal object KReflectionTool {
                             })
                         } } } ?: -1
                     val iLParamNames = paramNames?.let(matchIndex) { e -> declares.findLastIndex {
-                        io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramNamesEq(
+                        KReflectionTool.paramNamesEq(
                             e,
                             it.valueParameterList.map { nameResolver.getString(it.name) }.toTypedArray()
                         )
@@ -791,7 +791,7 @@ internal object KReflectionTool {
                                 })
                             }
                             returnType?.also {
-                                and((io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                                and((KReflectionTool.typeEq(
                                     it,
                                     instance.support().getReturnTypeOrNull(classSet, loader)
                                 )).let { hold ->
@@ -828,7 +828,7 @@ internal object KReflectionTool {
                             }
                             paramTypes?.also {
                                 and(
-                                    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramTypesEq(
+                                    KReflectionTool.paramTypesEq(
                                         it,
                                         instance.support().getParamTypesOrNull(classSet, loader)?.toTypedArray()
                                     ).let { hold ->
@@ -865,7 +865,7 @@ internal object KReflectionTool {
                             }
                             paramNames?.also {
                                 and(
-                                    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramNamesEq(
+                                    KReflectionTool.paramNamesEq(
                                         it,
                                         instance.valueParameterList.map { nameResolver.getString(it.name) }
                                             .toTypedArray()
@@ -933,7 +933,7 @@ internal object KReflectionTool {
                     declares.findLastIndex { it.valueParameters.size.let { s -> runOrFalse { e(s.cast(), s) } } }
                 } ?: -1
                 val iLParamTypes = paramTypes?.let(matchIndex) { e -> declares.findLastIndex {
-                    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramTypesEq(
+                    KReflectionTool.paramTypesEq(
                         e,
                         it.valueParameters.toTypedArray()
                     )
@@ -941,7 +941,7 @@ internal object KReflectionTool {
                 val iLParamTypesCds = paramTypesConditions
                     ?.let(matchIndex) { e -> declares.findLastIndex { runOrFalse { e(it.paramTypes(), it.valueParameters) } } } ?: -1
                 val iLParamNames = paramNames?.let(matchIndex) { e -> declares.findLastIndex {
-                    io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramNamesEq(
+                    KReflectionTool.paramNamesEq(
                         e,
                         it.valueParameters.map { it.name }.toTypedArray()
                     )
@@ -971,7 +971,7 @@ internal object KReflectionTool {
                         }
                         paramTypes?.also {
                             and(
-                                io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramTypesEq(
+                                KReflectionTool.paramTypesEq(
                                     it,
                                     instance.valueParameters.toTypedArray()
                                 ).let { hold ->
@@ -987,7 +987,7 @@ internal object KReflectionTool {
                         }
                         paramNames?.also {
                             and(
-                                io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.paramNamesEq(
+                                KReflectionTool.paramNamesEq(
                                     it,
                                     instance.valueParameters.map { it.name }.toTypedArray()
                                 ).let { hold ->
@@ -1040,7 +1040,7 @@ internal object KReflectionTool {
         }
         var splicing = ""
         content.forEach { if (it.isNotBlank()) splicing += "$space$it\n" }
-        val template = "Can't find this $name in [$instanceSet]:\n${splicing}Generated by ${io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.TAG}"
+        val template = "Can't find this $name in [$instanceSet]:\n${splicing}Generated by ${KReflectionTool.TAG}"
         return when (name) {
             KBaseFinder.TAG_CLASS -> NoClassDefFoundError(template)
             KBaseFinder.TAG_PROPERTY -> NoSuchFieldError(template)
@@ -1282,7 +1282,7 @@ internal object KReflectionTool {
             else -> {
                 if (compare == null || original == null) return false
                 if (compare.all { it == VagueKotlin }) error("The number of VagueType must be at least less than the count of paramTypes")
-                for (i in compare.indices) return io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.typeEq(
+                for (i in compare.indices) return KReflectionTool.typeEq(
                     compare[i],
                     original[i]
                 )
@@ -1366,21 +1366,21 @@ internal object KReflectionTool {
     private inline fun <reified T, R : KCallableRulesData> R.findSuperOrThrow(classSet: KClass<*>): T = when (this) {
         is KPropertyRulesData ->
             if (isFindInSuper && classSet.hasExtends)
-                io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findPropertys(
+                KReflectionTool.findPropertys(
                     classSet.superclass,
                     rulesData = this
                 ) as T
             else throwNotFoundError(classSet)
         is KFunctionRulesData ->
             if (isFindInSuper && classSet.hasExtends)
-                io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findFunctions(
+                KReflectionTool.findFunctions(
                     classSet.superclass,
                     rulesData = this
                 ) as T
             else throwNotFoundError(classSet)
         is KConstructorRulesData ->
             if (isFindInSuper && classSet.hasExtends)
-                io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findConstructors(
+                KReflectionTool.findConstructors(
                     classSet.superclass,
                     rulesData = this
                 ) as T
@@ -1397,17 +1397,17 @@ internal object KReflectionTool {
      * @throws IllegalStateException 如果 [KBaseRulesData] 的类型错误
      */
     private fun KCallableRulesData.throwNotFoundError(instanceSet: Any?): Nothing = when (this) {
-        is KPropertyRulesData -> throw io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.createException(
+        is KPropertyRulesData -> throw KReflectionTool.createException(
             instanceSet,
             objectName,
             *templates
         )
-        is KFunctionRulesData -> throw io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.createException(
+        is KFunctionRulesData -> throw KReflectionTool.createException(
             instanceSet,
             objectName,
             *templates
         )
-        is KConstructorRulesData -> throw io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.createException(
+        is KConstructorRulesData -> throw KReflectionTool.createException(
             instanceSet,
             objectName,
             *templates

@@ -29,7 +29,7 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
      * @return [MutableList]<[KFunctionSignatureSupport]>
      * @throws NoSuchMethodError 如果找不到 [KFunctionSignatureSupport]
      */
-    private val result get() = io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findFunctionSignatures(usedClassSet, rulesData,loader)
+    private val result get() = KReflectionTool.findFunctionSignatures(usedClassSet, rulesData,loader)
 
     /**
      * 设置实例

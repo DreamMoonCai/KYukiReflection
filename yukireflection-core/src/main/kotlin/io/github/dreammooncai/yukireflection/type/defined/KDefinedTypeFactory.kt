@@ -50,14 +50,14 @@ class VagueClass private constructor()
  * @return [KClass]<[UndefinedClass]>
  */
 @Suppress("UNCHECKED_CAST")
-internal val UndefinedKotlin get() = ("io.github.dreammooncai.yukireflection.type.defined.UndefinedType".toKClassOrNull() ?: kclassOf<UndefinedClass>()) as KClass<UndefinedClass>
+internal val UndefinedKotlin get() = ("com.highcapable.yukireflection.type.defined.UndefinedType".toKClassOrNull() ?: kclassOf<UndefinedClass>()) as KClass<UndefinedClass>
 
 /**
  * 得到模糊类型
  * @return [KClass]<[VagueClass]>
  */
 @Suppress("UNCHECKED_CAST")
-val VagueKotlin get() = ("io.github.dreammooncai.yukireflection.type.defined.VagueType".toKClassOrNull() ?: kclassOf<VagueClass>()) as KClass<VagueClass>
+val VagueKotlin get() = ("com.highcapable.yukireflection.type.defined.VagueType".toKClassOrNull() ?: kclassOf<VagueClass>()) as KClass<VagueClass>
 
 /**
  * 模糊根的泛型对象

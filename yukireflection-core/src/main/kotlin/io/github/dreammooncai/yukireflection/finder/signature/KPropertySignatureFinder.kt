@@ -33,7 +33,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
      * @return [MutableList]<[KPropertySignatureSupport]>
      * @throws NoSuchMethodError 如果找不到 [KPropertySignatureSupport]
      */
-    private val result get() = io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findPropertySignatures(usedClassSet, rulesData,loader)
+    private val result get() = KReflectionTool.findPropertySignatures(usedClassSet, rulesData,loader)
 
     /**
      * 设置实例

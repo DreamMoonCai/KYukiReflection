@@ -327,7 +327,7 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
      * @return [MutableList]<Constructor [KFunction]>
      * @throws NoSuchMethodError 如果找不到 Constructor [KFunction]
      */
-    private val result by lazy { io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findConstructors(usedClassSet, rulesData) }
+    private val result by lazy { KReflectionTool.findConstructors(usedClassSet, rulesData) }
 
     /**
      * 设置实例

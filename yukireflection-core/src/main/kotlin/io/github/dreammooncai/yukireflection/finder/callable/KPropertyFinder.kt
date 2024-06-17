@@ -284,7 +284,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
      * @return [MutableList]<[KProperty]>
      * @throws NoSuchFieldError 如果找不到 [KProperty]
      */
-    private val result get() = io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool.findPropertys(usedClassSet, rulesData)
+    private val result get() = KReflectionTool.findPropertys(usedClassSet, rulesData)
 
     /**
      * 设置实例
