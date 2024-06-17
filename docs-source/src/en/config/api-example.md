@@ -1,35 +1,35 @@
 # API Basic Configs
 
-> The basic configuration method of `YukiReflection` is introduced here.
+> The basic configuration method of `KYukiReflection` is introduced here.
 
-`YukiReflection` can be used directly without some complex configuration, and does not conflict with Java's native Reflection API.
+`KYukiReflection` can be used directly without some complex configuration, and does not conflict with Java's native Reflection API.
 
-You can configure some functions of `YukiReflection` before using it.
+You can configure some functions of `KYukiReflection` before using it.
 
 ## Get the API Tag & Version
 
-You can get the current tag and version of `YukiReflection` as follows.
+You can get the current tag and version of `KYukiReflection` as follows.
 
 > The following example
 
 ```kotlin
 // Get the tag
-val tag = YukiReflection.TAG
+val tag = KYukiReflection.TAG
 // Get the version
-val version = YukiReflection.VERSION
+val version = KYukiReflection.VERSION
 ```
 
 You can judge the difference between different versions or display it in the about information by obtaining the version.
 
 ::: tip
 
-For more functions, please refer to [YukiReflection](../api/public/com/DreamMoonCai/KYukiReflection/YukiReflection).
+For more functions, please refer to [KYukiReflection](../api/public/com/DreamMoonCai/KYukiReflection/KYukiReflection).
 
 :::
 
 ## Configure API Related Functions
 
-You can configure related functions through `YukiReflection.configs { ... }` method or `YukiReflection.Configs`.
+You can configure related functions through `KYukiReflection.configs { ... }` method or `KYukiReflection.Configs`.
 
 ### Custom Debug Log Tag
 
@@ -41,7 +41,7 @@ Logs inside the API will be printed using this tag.
 
 ```kotlin
 // Via the configs method
-YukiReflection.configs {
+KYukiReflection.configs {
     debugLog {
         tag = "YourCustomTag"
     }
@@ -60,24 +60,24 @@ The Debug mode is disabled by default, and when enabled, detailed logs (such as 
 
 ```kotlin
 // Via the configs method
-YukiReflection.configs {
+KYukiReflection.configs {
     isDebug = true
 }
 // Set directly
-YukiReflection.Configs.isDebug = true
+KYukiReflection.Configs.isDebug = true
 ```
 
 ### Enable or Disable Debug Logs
 
 You can use the following methods to enable or disable debug logs.
 
-This function is enabled by default, and disable will stop `YukiReflection` output all logs.
+This function is enabled by default, and disable will stop `KYukiReflection` output all logs.
 
 > The following example
 
 ```kotlin
 // Via the configs method
-YukiReflection.configs {
+KYukiReflection.configs {
     debugLog {
         isEnable = true
     }
@@ -88,12 +88,12 @@ YLog.Configs.isEnable = true
 
 ### Use the configs Method to Configure
 
-In order to configure multiple features at once, you can directly use the `YukiReflection.configs { ... }` method to configure.
+In order to configure multiple features at once, you can directly use the `KYukiReflection.configs { ... }` method to configure.
 
 > The following example
 
 ```kotlin
-YukiReflection.configs {
+KYukiReflection.configs {
     debugLog {
         tag = "YourCustomTag"
         isEnable = true
@@ -104,6 +104,6 @@ YukiReflection.configs {
 
 ::: tip
 
-For more functions, please refer to [YukiReflection.configs](../api/public/com/DreamMoonCai/KYukiReflection/YukiReflection#configs-method) method, [YukiReflection.Configs](../api/public/com/DreamMoonCai/KYukiReflection/YukiReflection#configs-object).
+For more functions, please refer to [KYukiReflection.configs](../api/public/com/DreamMoonCai/KYukiReflection/KYukiReflection#configs-method) method, [YukiReflection.Configs](../api/public/com/DreamMoonCai/KYukiReflection/KYukiReflection#configs-object).
 
 :::
