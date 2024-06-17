@@ -65,7 +65,7 @@ export const configs = {
         base: '/YukiReflection/',
         icon: '/YukiReflection/images/logo.png',
         logo: '/images/logo.png',
-        title: 'Yuki Reflection',
+        title: 'KYuki Reflection',
         locales: {
             '/kotlin/en/': {
                 title: 'KYuki Reflection',

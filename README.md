@@ -1,4 +1,4 @@
-# Yuki Reflection
+# KYuki Reflection
 
 [![GitHub license](https://img.shields.io/github/license/DreamMoonCai/KYukiReflection?color=blue)](https://github.com/DreamMoonCai/KYukiReflection/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/v/release/DreamMoonCai/KYukiReflection?display_name=release&logo=github&color=green)](https://github.com/DreamMoonCai/KYukiReflection/releases)
@@ -26,7 +26,7 @@ The name is taken from ["ももくり" heroine Yuki Kurihara](https://www.bilibi
 
 ## Get Started
 
-[Click here](https://dreammoonboy.github.io/KYukiReflection/en/) go to the documentation page for more detailed tutorials and content.
+[Click here](https://dreammooncai.github.io/KYukiReflection/en/) go to the documentation page for more detailed tutorials and content.
 
 ## Promotion
 

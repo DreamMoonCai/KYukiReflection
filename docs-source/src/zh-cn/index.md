@@ -3,7 +3,7 @@ home: true
 title: 首页
 heroImage: /images/logo.png
 actions:
-  - text: KYukiReflection
+  - text: YukiReflection
     link: /kotlin/zh-cn/
     type: secondary
 features:

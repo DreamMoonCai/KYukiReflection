@@ -33,7 +33,7 @@
 > 示例如下
 
 :::: code-group
-::: code-group-item Yuki Reflection
+::: code-group-item KYuki Reflection
 
 ```kotlin
 "android.os.SystemProperties".toClass()

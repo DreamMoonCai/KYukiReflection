@@ -3,7 +3,7 @@ home: true
 title: Home
 heroImage: /images/logo.png
 actions:
-  - text: KYukiReflection
+  - text: YukiReflection
     link: /kotlin/en/
     type: secondary
 features:

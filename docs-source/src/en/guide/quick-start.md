@@ -114,7 +114,7 @@ If your project is currently using the 1.x.x version of [YukiHookAPI](https://gi
 
 Repeated integration will cause functional conflicts and cause exceptions.
 
-In this case, you should go to the [Documentation](https://dreammoonboy.github.io/YukiHookAPI/zh-cn/) of **YukiHookAPI** view the corresponding usage tutorial.
+In this case, you should go to the [Documentation](https://dreammooncai.github.io/YukiHookAPI/zh-cn/) of **YukiHookAPI** view the corresponding usage tutorial.
 
 **YukiHookAPI** will be completely separated from **KYukiReflection** in version **2.0.0**, by which time you can use it with **YukiHookAPI** at the same time.
 
