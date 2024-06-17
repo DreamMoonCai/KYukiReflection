@@ -17,7 +17,7 @@ const navigationLinks = {
         '/api/features'
     ],
     publicApi: [
-        baseApiPath + 'YukiReflection',
+        baseApiPath + 'KYukiReflection',
         baseApiPath + 'type/android/ComponentTypeFactory',
         baseApiPath + 'type/android/GraphicsTypeFactory',
         baseApiPath + 'type/android/ViewTypeFactory',
@@ -162,23 +162,23 @@ export const sideBarItems = {
     '/en/': [{
         text: 'Get Started',
         collapsible: true,
-        children: i18n.array(navigationLinks.start, '/en')
+        children: i18n.array(navigationLinks.start, 'en')
     }, {
         text: 'Configs',
         collapsible: true,
-        children: i18n.array(navigationLinks.config, '/en')
+        children: i18n.array(navigationLinks.config, 'en')
     }, {
         text: 'API Document',
         collapsible: true,
-        children: [i18n.string(navigationLinks.apiDocs[0], '/en'), {
+        children: [i18n.string(navigationLinks.apiDocs[0], 'en'), {
             text: 'Public API' + i18n.space,
             collapsible: true,
-            children: i18n.array(navigationLinks.api, '/en')
-        }, i18n.string(navigationLinks.apiDocs[2], '/en')]
+            children: i18n.array(navigationLinks.api, 'en')
+        }, i18n.string(navigationLinks.apiDocs[2], 'en')]
     }, {
         text: 'About',
         collapsible: true,
-        children: i18n.array(navigationLinks.about, '/en')
+        children: i18n.array(navigationLinks.about, 'en')
     }],
     '/zh-cn/': [{
         text: '入门',
