@@ -23,8 +23,8 @@ export default {
         locales: {
             '/en/': {
                 navbar: navBarItems['/en/'],
-                selectLanguageText: 'Kotlin - English (US)',
-                selectLanguageName: 'Kotlin - English',
+                selectLanguageText: 'English (US)',
+                selectLanguageName: 'English',
                 editLinkText: 'Edit this page on GitHub',
                 tip: 'Tips',
                 warning: 'Notice',
@@ -32,8 +32,8 @@ export default {
             },
             '/zh-cn/': {
                 navbar: navBarItems['/zh-cn/'],
-                selectLanguageText: 'Kotlin - 简体中文 (CN)',
-                selectLanguageName: 'Kotlin - 简体中文',
+                selectLanguageText: '简体中文 (CN)',
+                selectLanguageName: '简体中文',
                 editLinkText: '在 GitHub 上编辑此页',
                 notFound: ['这里什么都没有', '我们怎么到这来了？', '这是一个 404 页面', '看起来我们进入了错误的链接'],
                 backToHome: '回到首页',
@@ -53,7 +53,7 @@ export default {
             isSearchable: (page) => page.path !== '/',
             locales: {
                 '/en/': { placeholder: 'Search' },
-                '/zh-cn/': { placeholder: '搜索' },
+                '/zh-cn/': { placeholder: '搜索' }
             }
         })
     ]
