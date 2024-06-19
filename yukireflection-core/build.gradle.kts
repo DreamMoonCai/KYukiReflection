@@ -24,6 +24,7 @@ kotlin {
 
 dependencies {
     compileOnly(autowire("libs/android-34.jar"))
+    compileOnly(autowire("libs/KYukiHookAPI_V1.0.0.jar"))// Hook API
     implementation(org.jetbrains.kotlin.kotlin.reflect)
 }
 

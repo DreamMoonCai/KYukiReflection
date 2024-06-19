@@ -1,8 +1,10 @@
+@file:Suppress("INVISIBLE_REFERENCE","INVISIBLE_MEMBER")
 package io.github.dreammooncai.yukireflection.helper
 
 import io.github.dreammooncai.yukireflection.factory.function
 import io.github.dreammooncai.yukireflection.type.kotlin.YukiHookHelperKClass
 import java.lang.reflect.Member
+import com.highcapable.yukihookapi.hook.core.api.helper.YukiHookHelper
 
 object KYukiHookHelper {
     /**
@@ -16,12 +18,7 @@ object KYukiHookHelper {
         if(YukiHookHelperKClass == null){
             return false
         }
-        return runCatching {
-            YukiHookHelperKClass!!.function { name = "isMemberHooked" }.get().boolean(member)
-        }.getOrElse {
-            it.printStackTrace()
-            false
-        }
+        return YukiHookHelper.isMemberHooked(member)
     }
 
     /**
@@ -39,12 +36,7 @@ object KYukiHookHelper {
         if(YukiHookHelperKClass == null){
             return null
         }
-        return runCatching {
-            YukiHookHelperKClass!!.function { name = "invokeOriginalMember" }.get().call(member, instance, args)
-        }.getOrElse {
-            it.printStackTrace()
-            null
-        }
+        return YukiHookHelper.invokeOriginalMember(member,instance,args)
     }
 
 }
