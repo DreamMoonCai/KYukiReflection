@@ -1212,6 +1212,8 @@ inline fun Array<out KClass<*>>.findClass(initiate: KClassConditions) =
 
 /**
  * 查找并得到类
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @param loader [ClassLoader] 装载实例 - 默认空 - 不填使用默认 [ClassLoader]
  * @param initiate 查找方法体
  * @return [KClassFinder.Result]
  */
@@ -1221,6 +1223,8 @@ inline fun Collection<String>.findClass(loader: ClassLoader? = null, initialize:
 
 /**
  * 查找并得到类
+ * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
+ * @param loader [ClassLoader] 装载实例 - 默认空 - 不填使用默认 [ClassLoader]
  * @param initiate 查找方法体
  * @return [KClassFinder.Result]
  */

@@ -263,7 +263,7 @@ class OptimizedImplementationSupport(private val scope: DeserializedMemberScope,
  *
  * - 此方法不涉及转 Kotlin 的反射属性可以避免一些异常 [Metadata] 数据报错
  * @param declaringClass 属性所在类
- * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
+ * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader] - 不填使用 [declaringClass] [KClass.classLoader]
  * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
  * @param initiate 条件方法体
  * @return [KPropertySignatureSupport] or null - 找不到返回null
@@ -281,7 +281,7 @@ inline fun KProperty<*>.signature(declaringClass: KClass<*>? = this.declaringCla
  *
  * - 此方法不涉及转 Kotlin 的反射函数可以避免一些异常 [Metadata] 数据报错
  * @param declaringClass 属性所在类
- * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
+ * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader] - 不填使用 [declaringClass] [KClass.classLoader]
  * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
  * @param initiate 条件方法体
  * @return [KFunctionFinder.Result] or null - 找不到返回null
