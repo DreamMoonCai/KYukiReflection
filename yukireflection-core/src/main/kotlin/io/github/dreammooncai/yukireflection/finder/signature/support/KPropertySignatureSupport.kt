@@ -119,7 +119,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
         /**
          * 字段类型 [KClass] 使用指定 [loader] 描述结果
          *
-         * @param loader [ClassLoader] 字段类型 [findType] 所在的 [ClassLoader]
+         * @param loader [ClassLoader] 字段类型 [type] 所在的 [ClassLoader]
          * @return [KClass]
          */
         fun getReturnClass(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(typeDescriptor).toKClassOrNull(loader ?: this@KPropertySignatureSupport.loader) ?: error("Descriptor: $typeDescriptor, cannot be converted to [KClass].")
@@ -129,7 +129,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
          *
          * - 获取时不会触发异常
          *
-         * @param loader [ClassLoader] 字段类型 [findType] 所在的 [ClassLoader]
+         * @param loader [ClassLoader] 字段类型 [type] 所在的 [ClassLoader]
          * @return [KClass] or null
          */
         fun getReturnClassOrNull(loader: ClassLoader? = null): KClass<*>? = runCatching { getReturnClass(loader) }.getOrNull()
@@ -186,7 +186,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取Getter函数签名处理支持组件
      */
-    val getterOrNull by lazy { runCatching { getter }.getOrNull() }
+    val getterOrNull by lazy { runCatching { getter }.getOrNull().takeIf { hasGetter } }
 
     /**
      * 获取Setter函数签名处理支持组件
@@ -196,7 +196,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取Setter函数签名处理支持组件
      */
-    val setterOrNull by lazy { runCatching { setter }.getOrNull() }
+    val setterOrNull by lazy { runCatching { setter }.getOrNull().takeIf { hasSetter } }
 
     /**
      * 获取字段签名处理支持组件
@@ -206,7 +206,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取字段签名处理支持组件
      */
-    val fieldOrNull by lazy { runCatching { field }.getOrNull() }
+    val fieldOrNull by lazy { runCatching { field }.getOrNull().takeIf { hasField } }
 
     /**
      * 获取委托函数签名处理支持组件
@@ -216,7 +216,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取委托函数签名处理支持组件
      */
-    val delegateFunctionOrNull by lazy { runCatching { delegateFunction }.getOrNull() }
+    val delegateFunctionOrNull by lazy { runCatching { delegateFunction }.getOrNull().takeIf { hasDelegateFunction } }
 
     /**
      * 获取合成函数签名处理支持组件
@@ -226,7 +226,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
     /**
      * 获取合成函数签名处理支持组件
      */
-    val syntheticFunctionOrNull by lazy { runCatching { syntheticFunction }.getOrNull() }
+    val syntheticFunctionOrNull by lazy { runCatching { syntheticFunction }.getOrNull().takeIf { hasSyntheticFunction } }
 
     /**
      * 获取此属性可获取的泛型返回类型 [KType]

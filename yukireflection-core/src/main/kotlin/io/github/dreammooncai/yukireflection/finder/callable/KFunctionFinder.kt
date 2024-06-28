@@ -76,175 +76,6 @@ open class KFunctionFinder internal constructor(final override val classSet: KCl
     }
 
     /**
-     * 将此函数相关内容附加到此查找器
-     *
-     * 将影响[name]、[returnType]、[param]
-     *
-     * 重载引用使用示例 ↓
-     *
-     * ```kotlin
-     *
-     *  class Main{
-     *      fun sub(a:Int):Int{}
-     *
-     *      fun sub(c:Double):String{}
-     *  }
-     *
-     *  attach(Main::sub) // error:不知道附加哪个函数
-     *  attach<String>(Main::sub) // 将使用返回类型为String的函数
-     * ```
-     *
-     * @param R 返回类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
-     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
-     */
-    @JvmName("attach_1")
-    fun <R> attach(function:KFunction<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
-        fun KClass<*>.toClass() = if (loader == null) this else toKClass(loader)
-
-        fun attachMember(e:Throwable? = null){
-            val method = function.javaMethodNoError ?: function.refImpl?.javaMethodNoError ?: let {
-                errorMsg("Converting javaMethod failed !!!", e)
-                return
-            }
-            this@KFunctionFinder.name = method.name
-            this@KFunctionFinder.returnType = method.returnType.kotlin.toClass()
-            if (method.parameterTypes.isEmpty())
-                emptyParam()
-            else
-                param(*method.parameterTypes.map { it.kotlin.toClass() }.toTypedArray())
-        }
-        fun attachCallable(function: KFunction<*>){
-            this@KFunctionFinder.name = function.name
-            this@KFunctionFinder.returnType = runCatching {
-                if (loader != null)
-                    function.returnClass.toClass()
-                else
-                    function.returnType
-            }.getOrNull() ?: function.returnClass.toClass()
-            if (function.valueParameters.isEmpty())
-                emptyParam()
-            else
-                param(*function.valueParameters.map {
-                    if (loader != null)
-                        it.kotlin.toClass()
-                    else
-                        it
-                }.toTypedArray())
-        }
-        if (isUseMember)
-            attachMember()
-        else runCatching {
-            attachCallable(function)
-        }.getOrNull() ?: runCatching {
-            attachCallable(function.refImpl!!)
-        }.getOrElse {
-            attachMember(it)
-        }
-    }
-
-    /**
-     * 将此函数相关内容附加到此查找器
-     *
-     * 将影响[name]、[returnType]、[param]
-     *
-     * 重载引用使用示例 ↓
-     *
-     * ```java
-     *
-     *  class Main{
-     *      public static void sub(){}
-     *      public void sub(){}
-     *  }
-     *
-     *  attach(Main::sub) // error:不知道附加哪个函数
-     *  attachStatic(Main::sub) // 将使用静态sub
-     * ```
-     *
-     * @param R 返回类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
-     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
-     */
-    @JvmName("attachStatic_0")
-    fun <R> attachStatic(function:KFunction0<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
-        attach(function,loader,isUseMember)
-    }
-
-    /**
-     * 将此函数相关内容附加到此查找器
-     *
-     * 将影响[name]、[returnType]、[param]
-     *
-     * 重载引用使用示例 ↓
-     *
-     * ```java
-     *
-     *  class Main{
-     *      public void sub(a:Int):String{}
-     *      public void sub():String{}
-     *      public void sub(b:Int):Int{}
-     *  }
-     *
-     *  attach<String>(Main::sub) // error:尽管筛选了返回值但依然不知道附加哪个函数
-     *  attachEmptyParam(Main::sub) // 将使用没有参数sub
-     * ```
-     *
-     * @param R 返回类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
-     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
-     */
-    fun <R> attachEmptyParam(function:KFunction1<*,R>,loader: ClassLoader? = null,isUseMember:Boolean = false) {
-        attach(function, loader, isUseMember)
-    }
-
-    /**
-     * 将此函数相关内容附加到此查找器 - 指定参数的快捷方法 参阅:[attach]
-     *
-     * 将影响[name]、[returnType]、[param]
-     *
-     * 重载引用使用示例 ↓
-     *
-     * ```kotlin
-     *
-     *  class Main{
-     *      fun sub(a:Int):Int{}
-     *
-     *      fun sub(c:Double):Int{}
-     *  }
-     *
-     *  attach(Main::sub) // error:不知道附加哪个函数
-     *  attach<Double,Int>(Main::sub) // 将使用第一个参数为Double返回类型为Int的函数
-     * ```
-     *
-     * @param P1 第一个参数的类型
-     * @param R 返回类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
-     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
-     */
-    @JvmName("attach_2")
-    fun <P1, R> attach(function:KFunction2<*,P1, R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
-        attach<R>(function,loader, isUseMember)
-    }
-
-    /**
-     * 将此函数相关内容附加到此查找器 - 指定参数的快捷方法 参阅:[attach]
-     *
-     * 将影响[name]、[returnType]、[param]
-     *
-     * 重载引用参考[attach]
-     *
-     * @param P1 第一个参数的类型
-     * @param P2 第二个参数的类型
-     * @param R 返回类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
-     * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
-     */
-    @JvmName("attach_3")
-    fun <P1,P2,R> attach(function:KFunction3<*,P1,P2,R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
-        attach<R>(function,loader, isUseMember)
-    }
-
-    /**
      * 设置 [KFunction] 名称
      *
      * - 若不填写名称则必须存在一个其它条件
@@ -798,13 +629,15 @@ open class KFunctionFinder internal constructor(final override val classSet: KCl
          * @param instance 当前 [KFunction] 所在类的实例对象
          * @param function 当前 [KFunction] 实例对象
          */
-        inner class Instance internal constructor(private var instance: Any?, private val function: KFunction<*>?) {
+        inner class Instance internal constructor(private var instance: Any?, private val function: KFunction<*>?):BaseInstance {
 
             init {
                 if (instance == null){
                     instance = runCatching { function?.instanceParameter?.kotlin?.objectInstance }.getOrNull()
                 }
             }
+
+            override fun callResult(vararg args: Any?): Any? = call(*args)
 
             /**
              * @see [useMember]

@@ -4,7 +4,9 @@ package io.github.dreammooncai.yukireflection.finder.signature
 
 import io.github.dreammooncai.yukireflection.bean.KCurrentClass
 import io.github.dreammooncai.yukireflection.factory.*
+import io.github.dreammooncai.yukireflection.finder.callable.KFunctionFinder
 import io.github.dreammooncai.yukireflection.finder.callable.KPropertyFinder
+import io.github.dreammooncai.yukireflection.finder.signature.support.KFunctionSignatureSupport
 import io.github.dreammooncai.yukireflection.finder.signature.support.KPropertySignatureSupport
 import io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool
 import io.github.dreammooncai.yukireflection.helper.KYukiHookHelper
@@ -17,6 +19,7 @@ import kotlin.reflect.KProperty
 import java.lang.reflect.Field
 import java.lang.reflect.Member
 import java.lang.reflect.Method
+import kotlin.reflect.KFunction
 
 /**
  * 通过 [KProperty] 签名查找 [KPropertySignatureSupport.member] 类
@@ -143,6 +146,16 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
         val isNoSuch: Boolean = false,
         internal val throwable: Throwable? = null
     ) : BaseResult {
+
+        /**
+         * 获取属性的 getter 组成的 [KFunctionSignatureSupport] 查找结果实现类
+         */
+        val getter get() = KFunctionSignatureFinder(classSet).also { finder -> finder.callableSignatureInstances += giveAll().map { it.getter } }.Result(isNoSuch,throwable)
+
+        /**
+         * 获取属性的 setter 组成的 [KFunctionSignatureSupport] 查找结果实现类
+         */
+        val setter get() = KFunctionSignatureFinder(classSet).also { finder -> finder.callableSignatureInstances += giveAll().map { it.setter } }.Result(isNoSuch,throwable)
 
         /**
          * 创建监听结果事件方法体
@@ -298,7 +311,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
          * @param instance 当前 [Field]、get/set [Method] 所在类的实例对象
          * @param member 当前 [Field]、get/set [Method] 实例对象
          */
-        inner class Instance internal constructor(private val instance: Any?, private val member: Member?,private val setter:Method? = null) {
+        inner class Instance internal constructor(private val instance: Any?, private val member: Member?,private val setter:Method? = null):BaseInstance {
 
             init {
                 when (member){
@@ -311,6 +324,8 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
                 }
                 setter.also { it?.isAccessible = true }
             }
+
+            override fun callResult(vararg args: Any?): Any? = self
 
             /** 标识需要调用当前 get/set [Method] 未经 Hook 的原始方法 */
             private var isCallOriginal = false

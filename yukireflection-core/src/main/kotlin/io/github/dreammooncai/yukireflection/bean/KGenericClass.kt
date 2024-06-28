@@ -289,9 +289,9 @@ class KGenericClass internal constructor(val type: KType) :List<KTypeProjection>
             is KParameter -> other.type.generic()
             is KProperty<*> -> other.generic()
             is KGenericClass -> other
-            Void.TYPE,Void::class,Void::class.java -> return UnitKClass == type.classifier
-            is Class<*> -> return other.kotlin == type.classifier
-            is KClassifier -> return other == type.classifier
+            Void.TYPE,Void::class,Void::class.java -> return UnitKClass == type.classifier.kotlin
+            is Class<*> -> return other.kotlin == type.classifier.kotlin
+            is KClassifier -> return other.kotlin == type.classifier.kotlin
             else -> return false
         }
 
@@ -305,15 +305,15 @@ class KGenericClass internal constructor(val type: KType) :List<KTypeProjection>
         }
 
         if(type.arguments.size != otherGeneric.type.arguments.size) return false
-        if (type.arguments.isEmpty() && otherGeneric.type.arguments.isEmpty())return type.classifier == otherGeneric.type.classifier
+        if (type.arguments.isEmpty() && otherGeneric.type.arguments.isEmpty())return type.classifier.kotlin == otherGeneric.type.classifier?.kotlin
         var isEq:Boolean
         type.arguments.forEachIndexed { index, kTypeProjection ->
             if (isVariance && kTypeProjection.variance != otherGeneric.type.arguments[index].variance)return false
-            isEq = kTypeProjection == KTypeProjection.STAR || kTypeProjection.type?.kotlin == VagueKotlin
+            isEq = kTypeProjection == KTypeProjection.STAR || kTypeProjection.type?.kotlin == VagueKotlin || otherGeneric.type.arguments[index] == KTypeProjection.STAR || otherGeneric.type.arguments[index].type?.kotlin == VagueKotlin
             isEq = isEq || kTypeProjection.type?.generic()?.setVariance(isVariance)?.setMarkedNullable(isMarkedNullable)?.setAnnotation(isAnnotation) == otherGeneric.type.arguments[index].type?.generic()?.setVariance(isVariance)?.setMarkedNullable(isMarkedNullable)?.setAnnotation(isAnnotation)
             if (!isEq)return false
         }
-        return type.classifier == otherGeneric.type.classifier
+        return type.classifier.kotlin == otherGeneric.type.classifier.kotlin
     }
 
     /**

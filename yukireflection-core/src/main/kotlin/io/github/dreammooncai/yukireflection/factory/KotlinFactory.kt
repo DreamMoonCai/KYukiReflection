@@ -135,6 +135,14 @@ inline val KProperty<*>.javaFieldNoError: Field?
     get() = runCatching { javaField }.getOrNull()
 
 /**
+ * 获取属性的Java字段表示方式
+ *
+ * 没有获取到时使用签名方式获取
+ */
+inline val KProperty<*>.javaSignatureField: Field?
+    get() = javaFieldNoError ?: refClass?.let { signature(it).give()?.fieldOrNull?.memberOrNull }
+
+/**
  * Returns a Java [Method] instance corresponding to the getter of the given property,
  * or `null` if the property has no getter, for example in case of a simple private `val` in a class.
  *
@@ -142,6 +150,14 @@ inline val KProperty<*>.javaFieldNoError: Field?
  */
 inline val KProperty<*>.javaGetterNoError: Method?
     get() = runCatching { javaGetter }.getOrNull()
+
+/**
+ * 获取属性的Java getter表示方式
+ *
+ * 没有获取到时使用签名方式获取
+ */
+inline val KProperty<*>.javaSignatureGetter: Method?
+    get() = javaGetterNoError ?: refClass?.let { signature(it).give()?.getterOrNull?.memberOrNull }
 
 /**
  * Returns a Java [Method] instance corresponding to the setter of the given mutable property,
@@ -152,6 +168,13 @@ inline val KProperty<*>.javaGetterNoError: Method?
 inline val KMutableProperty<*>.javaSetterNoError: Method?
     get() = runCatching { javaSetter }.getOrNull()
 
+/**
+ * 获取属性的Java setter表示方式
+ *
+ * 没有获取到时使用签名方式获取
+ */
+inline val KMutableProperty<*>.javaSignatureSetter: Method?
+    get() = javaSetterNoError ?: refClass?.let { signature(it).give()?.setterOrNull?.memberOrNull }
 
 /**
  * Returns a Java [Method] instance corresponding to the given Kotlin function,
@@ -161,6 +184,14 @@ inline val KMutableProperty<*>.javaSetterNoError: Method?
  */
 inline val KFunction<*>.javaMethodNoError: Method?
     get() = runCatching { javaMethod }.getOrNull()
+
+/**
+ * 获取函数的Java 方法表示方式
+ *
+ * 没有获取到时使用签名方式获取
+ */
+inline val KFunction<*>.javaSignatureMethod: Method?
+    get() = javaMethodNoError ?: refClass?.let { signature(it).give()?.memberOrNull }
 
 /**
  * Returns a Java [Constructor] instance corresponding to the given Kotlin function,
@@ -179,6 +210,17 @@ inline val <T> KFunction<T>.javaConstructorNoError: Constructor<T>?
 inline val KCallable<*>.javaMember:Member? get() = when (this) {
     is KProperty -> javaFieldNoError ?: javaGetterNoError ?: (this as? KMutableProperty<*>?)?.javaSetterNoError
     is KFunction -> javaMethodNoError ?: javaConstructorNoError
+    else -> null
+}
+
+/**
+ * 获取字段/函数的Java 字段/getter/setter/方法表示方式
+ *
+ * 没有获取到时使用签名方式获取
+ */
+inline val KCallable<*>.javaSignatureMember: Member? get() = when (this) {
+    is KProperty -> javaSignatureField ?: javaSignatureGetter ?: (this as? KMutableProperty<*>?)?.javaSignatureSetter
+    is KFunction -> javaSignatureMethod ?: javaConstructorNoError
     else -> null
 }
 

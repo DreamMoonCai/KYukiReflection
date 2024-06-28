@@ -63,7 +63,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
     /**
      * 将此属性相关内容附加到此查找器
      *
-     * 将影响[name]、[findType]
+     * 将影响[name]、[type]
      *
      * @param R 属性类型
      * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
@@ -72,92 +72,6 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
     @JvmName("attach_exp")
     fun <R> KProperty<R>.attach(loader: ClassLoader? = null,isUseMember:Boolean = false){
         attach(this, loader,isUseMember)
-    }
-
-    /**
-     * 将此属性相关内容附加到此查找器
-     *
-     * 将影响[name]、[findType]
-     *
-     * 多个属性引用使用示例 ↓
-     *
-     * ```kotlin
-     *
-     *  class Main{
-     *      var sub = ""
-     *      companion object{
-     *          var sub = 5
-     *      }
-     *  }
-     *
-     *  attach(Main::sub) // error:不知道附加哪个属性伴生对象情况下优先使用var sub = ""
-     *  attach<Int>(Main::sub) // 将使用返回类型为Int的属性也就是伴生对象中的属性
-     * ```
-     *
-     * @param R 属性类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
-     * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
-     */
-    fun <R> attach(function: KProperty<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
-        fun KClass<*>.toClass() = if (loader == null) this else toKClass(loader)
-
-        fun attachMember(e:Throwable? = null){
-            val member = function.javaMember ?: function.refImpl?.javaMember ?: let {
-                errorMsg("Converting javaMethod failed !!!", e)
-                return
-            }
-            this@KPropertyFinder.name = member.name
-            this@KPropertyFinder.type = when(member){
-                is Field -> member.type.kotlin.toClass()
-                is Method -> member.returnType.kotlin.toClass()
-                else -> null
-            }
-        }
-        fun attachCallable(property: KProperty<*>){
-            this@KPropertyFinder.name = property.name
-            this@KPropertyFinder.type = runCatching {
-                if (loader != null)
-                    property.returnClass.toClass()
-                else
-                    property.returnType
-            }.getOrNull() ?: property.returnClass.toClass()
-        }
-        if (isUseMember)
-            attachMember()
-        else runCatching {
-            attachCallable(function)
-        }.getOrNull() ?: runCatching {
-            attachCallable(function.refImpl!!)
-        }.getOrElse {
-            attachMember(it)
-        }
-    }
-
-    /**
-     * 将此属性相关内容附加到此查找器
-     *
-     * 将影响[name]、[findType]
-     *
-     * @param R 属性类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
-     * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
-     */
-    fun <R> attachStatic(function: KProperty0<R>,loader: ClassLoader? = null, isUseMember:Boolean = false){
-        attach(function,loader,isUseMember)
-    }
-
-    /**
-     * 将此属性相关内容附加到此查找器
-     *
-     * 将影响[name]、[findType]
-     *
-     * @param ExpandThis 拓展类的类型
-     * @param R 属性类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
-     * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
-     */
-    fun <ExpandThis,R> attach(function: KProperty2<*,ExpandThis,R>,loader: ClassLoader? = null, isUseMember:Boolean = false){
-        attach<R>(function,loader,isUseMember)
     }
 
     /**
@@ -395,6 +309,16 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
     ) : BaseResult {
 
         /**
+         * 获取属性的 getter 组成的 [KFunction] 查找结果实现类
+         */
+        val getter get() = KFunctionFinder(classSet).also { finder -> finder.callableInstances += giveAll().map { it.getter } }.Result(isNoSuch,throwable)
+
+        /**
+         * 获取属性的 setter 组成的 [KFunction] 查找结果实现类
+         */
+        val setter get() = KFunctionFinder(classSet).also { finder -> finder.callableInstances += giveAll().mapNotNull { it.toMutableOrNull?.setter } }.Result(isNoSuch,throwable)
+
+        /**
          * 创建监听结果事件方法体
          * @param initiate 方法体
          * @return [Result] 可继续向下监听
@@ -549,13 +473,15 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
          * @param instance 当前 [KProperty] 所在类的实例对象
          * @param property 当前 [KProperty] 实例对象
          */
-        inner class Instance internal constructor(private var instance: Any?, private val property: KProperty<*>?) {
+        inner class Instance internal constructor(private var instance: Any?, private val property: KProperty<*>?):BaseInstance {
 
             init {
                 if (instance == null){
                     instance = runCatching { property?.instanceParameter?.kotlin?.objectInstance }.getOrNull()
                 }
             }
+
+            override fun callResult(vararg args: Any?): Any? = self
 
             /**
              * @see [useMember]

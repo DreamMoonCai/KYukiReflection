@@ -289,11 +289,13 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
          * @param instance 当前 [Method] 所在类的实例对象
          * @param method 当前 [Method] 实例对象
          */
-        inner class Instance internal constructor(private val instance: Any?, private val method: Method?) {
+        inner class Instance internal constructor(private val instance: Any?, private val method: Method?):BaseInstance {
 
             init {
                 method.also { it?.isAccessible = true }
             }
+
+            override fun callResult(vararg args: Any?): Any? = call(*args)
 
             /** 标识需要调用当前 [Method] 未经 Hook 的原始方法 */
             private var isCallOriginal = false

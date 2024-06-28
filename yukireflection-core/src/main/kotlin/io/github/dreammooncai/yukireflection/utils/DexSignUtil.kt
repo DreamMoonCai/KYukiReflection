@@ -30,7 +30,7 @@ import java.lang.reflect.Method
 /**
  * 复制自 Dexkit 项目 DexSignUtil
  */
-object DexSignUtil {
+internal object DexSignUtil {
 
     private val primitiveMap: Map<String, String> = mutableMapOf(
         "boolean" to "Z",

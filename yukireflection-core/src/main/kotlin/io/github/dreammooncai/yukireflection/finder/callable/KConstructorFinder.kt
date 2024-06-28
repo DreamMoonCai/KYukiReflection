@@ -80,49 +80,6 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
     }
 
     /**
-     * 将此构造函数相关内容附加到此查找器
-     *
-     * 将影响[param]
-     *
-     * @param R 返回类型/构造目标类的类型
-     * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
-     * @param isUseMember 是否将构造函数转换为JavaMethod再进行附加 - 即使为false当构造函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
-     */
-    fun <R> attach(function: KFunction<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
-        fun KClass<*>.toClass() = if (loader == null) this else toKClass(loader)
-
-        fun attachMember(e:Throwable? = null){
-            val method = function.javaConstructorNoError ?: function.refImpl?.javaConstructorNoError ?: let {
-                errorMsg("Converting javaMethod failed !!!", e)
-                return
-            }
-            if (method.parameterTypes.isEmpty())
-                emptyParam()
-            else
-                param(*method.parameterTypes.map { it.kotlin.toClass() }.toTypedArray())
-        }
-        fun attachCallable(function: KFunction<*>){
-            if (function.valueParameters.isEmpty())
-                emptyParam()
-            else
-                param(*function.valueParameters.map {
-                    if (loader != null)
-                        it.kotlin.toClass()
-                    else it
-                }.toTypedArray())
-        }
-        if (isUseMember)
-            attachMember()
-        else runCatching {
-            attachCallable(function)
-        }.getOrNull() ?: runCatching {
-            attachCallable(function.refImpl!!)
-        }.getOrElse {
-            attachMember(it)
-        }
-    }
-
-    /**
      * 设置 Constructor [KFunction] 参数个数
      *
      * 你可以不使用 [param] 指定参数类型而是仅使用此变量指定参数个数
@@ -576,7 +533,9 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
          * - 请使用 [get]、[wait]、[all]、[waitAll] 方法来获取 [Instance]
          * @param constructor 当前 Constructor [KFunction] 实例对象
          */
-        inner class Instance internal constructor(private val constructor: KFunction<*>?) {
+        inner class Instance internal constructor(private val constructor: KFunction<*>?):BaseInstance {
+
+            override fun callResult(vararg args: Any?): Any? = call(*args)
 
             /**
              * @see [useMember]

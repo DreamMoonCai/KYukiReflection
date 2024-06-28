@@ -199,4 +199,20 @@ abstract class KBaseFinder {
      * - 此功能交由方法体自动完成 - 你不应该手动继承此接口
      */
     interface BaseResult
+
+    /**
+     * 查找结果实例处理接口
+     *
+     * - 此功能交由方法体自动完成 - 你不应该手动继承此接口
+     */
+    interface BaseInstance{
+        /**
+         * 执行以获得此实例的执行结果
+         *
+         * - 此功能交由方法体自动完成 - 你不应该手动继承此接口
+         * @param args 参数列表
+         * @return 执行结果
+         */
+        fun callResult(vararg args:Any?):Any? = null
+    }
 }
