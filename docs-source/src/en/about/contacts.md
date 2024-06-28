@@ -1,5 +1,7 @@
 # Contact Us
 
+> This page is based entirely on the original author of `YukiReflection` and has nothing to do with `KYukiReflection`, and `KYukiReflection` does not provide any contact information at this time.
+
 > If you have any questions in use, or have any constructive suggestions, you can contact us.
 
 Join our developers group.

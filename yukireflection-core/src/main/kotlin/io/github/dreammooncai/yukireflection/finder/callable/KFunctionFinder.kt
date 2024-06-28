@@ -633,7 +633,7 @@ open class KFunctionFinder internal constructor(final override val classSet: KCl
 
             init {
                 if (instance == null){
-                    instance = runCatching { function?.instanceParameter?.kotlin?.objectInstance }.getOrNull()
+                    instance = runCatching { function?.instanceParameter?.kotlin?.singletonInstance }.getOrNull()
                 }
             }
 

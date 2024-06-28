@@ -6,7 +6,7 @@ next:
 
 # Document Introduce
 
-> The document here will synchronize the relevant usage of the latest API version, please keep `YukiReflection` as the latest version to use the latest version of the function.
+> The document here will synchronize the relevant usage of the latest API version, please keep `KYukiReflection` as the latest version to use the latest version of the function.
 
 ## Function Description
 

@@ -477,7 +477,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
 
             init {
                 if (instance == null){
-                    instance = runCatching { property?.instanceParameter?.kotlin?.objectInstance }.getOrNull()
+                    instance = runCatching { property?.instanceParameter?.kotlin?.singletonInstance }.getOrNull()
                 }
             }
 

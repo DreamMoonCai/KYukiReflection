@@ -1,4 +1,11 @@
-@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS","INVISIBLE_MEMBER","INVISIBLE_REFERENCE")
+@file:Suppress(
+    "UNCHECKED_CAST",
+    "NOTHING_TO_INLINE",
+    "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE",
+    "MISSING_DEPENDENCY_SUPERCLASS",
+    "INVISIBLE_MEMBER",
+    "INVISIBLE_REFERENCE"
+)
 
 package io.github.dreammooncai.yukireflection.factory
 
@@ -37,6 +44,7 @@ import kotlin.reflect.full.valueParameters
 import kotlin.reflect.jvm.internal.calls.ThrowingCaller.returnType
 import kotlin.reflect.jvm.internal.impl.descriptors.CallableMemberDescriptor
 import kotlin.reflect.jvm.internal.impl.descriptors.ClassDescriptor
+import kotlin.reflect.jvm.internal.impl.descriptors.ClassKind
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
 import kotlin.reflect.jvm.isAccessible
@@ -129,11 +137,12 @@ inline val KType.kotlin get() = this.jvmErasure
  *
  * [KTypeParameter] -> 根据界限获取最合适的 [KClass]
  */
-inline val KClassifier?.kotlin get() = when (this) {
-    is KClass<*> -> this
-    is KTypeParameter -> this.type.jvmErasure
-    else -> error("Unknown classifier type \"$this\"")
-}
+inline val KClassifier?.kotlin
+    get() = when (this) {
+        is KClass<*> -> this
+        is KTypeParameter -> this.type.jvmErasure
+        else -> error("Unknown classifier type \"$this\"")
+    }
 
 /**
  * 获取当前 [KClass] 的顶级操作对象
@@ -164,7 +173,8 @@ inline val KClass<*>.existTop get() = isTop || "${name}Kt".toKClassOrNull() != n
  * 获取顶层文件或类的 [KClass]
  */
 val KDeclarationContainer.kotlin
-    get() = this as? KClass<*> ?: this::class.property { name = "jClass";superClass() }.get(this).cast<Class<*>>()?.kotlin ?: error("Failed to find Class in $this.")
+    get() = this as? KClass<*> ?: this::class.property { name = "jClass";superClass() }.get(this).cast<Class<*>>()?.kotlin
+    ?: error("Failed to find Class in $this.")
 
 /**
  * 获取顶层文件或类的所有 [KProperty]
@@ -292,7 +302,9 @@ inline val KProperty<*>.isVar: Boolean
  */
 val KCallable<*>.declaringClass
     get() = refClass ?: when (this) {
-        is KProperty -> javaFieldNoError?.declaringClass ?: javaGetterNoError?.declaringClass ?: (this as? KMutableProperty<*>?)?.javaSetterNoError?.declaringClass
+        is KProperty -> javaFieldNoError?.declaringClass ?: javaGetterNoError?.declaringClass
+        ?: (this as? KMutableProperty<*>?)?.javaSetterNoError?.declaringClass
+
         is KFunction -> javaMethodNoError?.declaringClass ?: javaConstructorNoError?.declaringClass
         else -> null
     }?.kotlin
@@ -373,7 +385,7 @@ inline val KCallable<*>.refClass
  *
  * - 未获取到细致信息时返回 null
  */
-inline val <T,K:KCallable<T>> K.refImpl
+inline val <T, K : KCallable<T>> K.refImpl
     get() = runCatching { ref.impl as K }.getOrNull()
 
 /**
@@ -486,9 +498,21 @@ inline val KClass<*>.generics get() = typeParameters
 inline val KClassifier.type get() = starProjectedType
 
 /**
+ * 当前 [KClass] 的描述符
+ */
+inline val KClass<*>.descriptor get() = (this as kotlin.reflect.jvm.internal.KClassifierImpl).descriptor as ClassDescriptor
+
+/**
+ * 当前 [KClass] 是否是 object 类
+ */
+inline val KClass<*>.isObject get() = descriptor.kind == ClassKind.OBJECT
+
+/**
  * 根据当前 [KClass] 获取其单例实例
  *
  * 此方法是 [KClass.objectInstance] 的变种但无视固定的实例名称
+ *
+ * 如果当前 [KClass] 是伴生对象类时将返回其伴生对象实例
  *
  * 优先对懒汉模式进行获取，获取不到时使用饿汉模式，支持被混淆的单例或对象类
  *
@@ -508,16 +532,17 @@ inline val KClassifier.type get() = starProjectedType
  *     } --> INSTANCE:A 实例
  *
  */
-inline val <T: Any> KClass<T>.singletonInstance get() = let {
-    function {
-        returnType = it
-        emptyParam()
-        modifiers { isStatic }
-    }.get().invoke<T>() ?: property {
-        type = it
-        modifiers { isStatic }
-    }.get().cast<T>()
-}
+inline val <T : Any> KClass<T>.singletonInstance
+    get() = if (isCompanion) enclosingClass?.companionSingletonInstance else let {
+        function {
+            returnType = it
+            emptyParam()
+            modifiers { isStatic }
+        }.get().invoke<T>() ?: property {
+            type = it
+            modifiers { isStatic }
+        }.get().cast<T>()
+    }
 
 /**
  * 当前 [KClass] 的伴生对象单例实例
@@ -534,16 +559,17 @@ inline val <T: Any> KClass<T>.singletonInstance get() = let {
  *
  * 在未找到时将按照通过查找方法的方式获取 尽管不一定有用
  */
-inline val KClass<*>.companionSingletonInstance get() = companionObject?.let {
-    property {
-        type = it
-        modifiers { isStatic }
-    }.get().any() ?: function {
-        returnType = it
-        emptyParam()
-        modifiers { isStatic }
-    }.get().call()
-}
+inline val KClass<*>.companionSingletonInstance
+    get() = companionObject?.let {
+        property {
+            type = it
+            modifiers { isStatic }
+        }.get().any() ?: function {
+            returnType = it
+            emptyParam()
+            modifiers { isStatic }
+        }.get().call()
+    }
 
 /**
  * 当前 [KType] 是否是基本类型
@@ -608,10 +634,10 @@ inline val KType.java get() = kotlin.java
  * @param isCountThisRef 是否计入this对象
  * @return [Int] 参数下标
  */
-inline fun KCallable<*>.findParameterIndexByName(name: String,isCountExtensionRef:Boolean = false,isCountThisRef:Boolean = false): Int {
+inline fun KCallable<*>.findParameterIndexByName(name: String, isCountExtensionRef: Boolean = false, isCountThisRef: Boolean = false): Int {
     var count = 0
     parameters.forEach {
-        if (it.name == name)return count
+        if (it.name == name) return count
         if (it.kind == KParameter.Kind.INSTANCE && !isCountThisRef)
             return@forEach
         if (it.kind == KParameter.Kind.EXTENSION_RECEIVER && !isCountExtensionRef)
@@ -676,22 +702,24 @@ inline val KClass<*>.classLoader get() = this.java.classLoader!!
  *
  * Getter 函数的类型可能是 [KProperty.Getter] 或函数名为 <get-xxx>
  */
-inline val KFunction<*>.isGetter get() = when {
-    this is KProperty.Getter<*> -> true
-    this.name.startsWith("<get-") && this.name.endsWith(">") -> true
-    else -> false
-}
+inline val KFunction<*>.isGetter
+    get() = when {
+        this is KProperty.Getter<*> -> true
+        this.name.startsWith("<get-") && this.name.endsWith(">") -> true
+        else -> false
+    }
 
 /**
  * 当前 [KFunction] 是否是 Setter 函数
  *
  * Setter 函数的类型可能是 [KMutableProperty.Setter] 或函数名为 <set-xxx>
  */
-inline val KFunction<*>.isSetter get() = when {
-    this is KMutableProperty.Setter<*> -> true
-    this.name.startsWith("<set-") && this.name.endsWith(">") -> true
-    else -> false
-}
+inline val KFunction<*>.isSetter
+    get() = when {
+        this is KMutableProperty.Setter<*> -> true
+        this.name.startsWith("<set-") && this.name.endsWith(">") -> true
+        else -> false
+    }
 
 /**
  * 通过 [KVariousClass] 获取 [KClass]
@@ -700,7 +728,7 @@ inline val KFunction<*>.isSetter get() = when {
  * @return [KClass]
  * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
  */
-inline fun KVariousClass.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) = get(loader,initialize)
+inline fun KVariousClass.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) = get(loader, initialize)
 
 /**
  * 通过 [KVariousClass] 获取 [KClass]
@@ -710,7 +738,7 @@ inline fun KVariousClass.toKClass(loader: ClassLoader? = null, initialize: Boole
  * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
  * @return [KClass] or null
  */
-inline fun KVariousClass.toKClassOrNull(loader: ClassLoader? = null, initialize: Boolean = false) = getOrNull(loader,initialize)
+inline fun KVariousClass.toKClassOrNull(loader: ClassLoader? = null, initialize: Boolean = false) = getOrNull(loader, initialize)
 
 /**
  * 通过字符串类名转换为 [loader] 中的实体类
@@ -785,7 +813,8 @@ inline fun <reified T> KClass<T & Any>.toKClass(loader: ClassLoader? = null, ini
  * @param initialize 是否初始化 [KClass] 的静态方法块 - 默认否
  * @return [KClass] or null
  */
-inline fun KClass<*>.toKClassOrNull(loader: ClassLoader? = null, initialize: Boolean = false) = runCatching { toKClass(loader, initialize) }.getOrNull()
+inline fun KClass<*>.toKClassOrNull(loader: ClassLoader? = null, initialize: Boolean = false) =
+    runCatching { toKClass(loader, initialize) }.getOrNull()
 
 /**
  * 通过此[KClass]的字符串类名转换为 [loader] 中的实体类 - 意为重新获取
@@ -811,10 +840,10 @@ inline fun <reified T> KClass<T & Any>.toKClassOrNull(loader: ClassLoader? = nul
  * @param isUseMember 是否使用Java方式反射获取参数名和参数类型 - 默认否
  * @return [KCallable] 新获取到的可调用实例
  */
-inline fun <K:KCallable<V>,V> K.toKCallable(clazz: KClass<*>? = null,loader: ClassLoader? = null,isUseMember: Boolean = false): K {
-    return when (this){
-        is KProperty<*> -> this.toKProperty(clazz,loader,isUseMember)
-        is KFunction<*> -> this.toKFunction(clazz,loader,isUseMember)
+inline fun <K : KCallable<V>, V> K.toKCallable(clazz: KClass<*>? = null, loader: ClassLoader? = null, isUseMember: Boolean = false): K {
+    return when (this) {
+        is KProperty<*> -> this.toKProperty(clazz, loader, isUseMember)
+        is KFunction<*> -> this.toKFunction(clazz, loader, isUseMember)
         else -> error("Unsupported KCallable type: $this")
     }
 }
@@ -832,7 +861,8 @@ inline fun <K:KCallable<V>,V> K.toKCallable(clazz: KClass<*>? = null,loader: Cla
  * @param isUseMember 是否使用Java方式反射获取参数名和参数类型 - 默认否
  * @return [KCallable] 新获取到的可调用实例 or null
  */
-inline fun <K:KCallable<V>,V> K.toKCallableOrNull(clazz: KClass<*>? = null,loader: ClassLoader? = null,isUseMember: Boolean = false) = runCatching { toKCallable(clazz,loader,isUseMember) }.getOrNull()
+inline fun <K : KCallable<V>, V> K.toKCallableOrNull(clazz: KClass<*>? = null, loader: ClassLoader? = null, isUseMember: Boolean = false) =
+    runCatching { toKCallable(clazz, loader, isUseMember) }.getOrNull()
 
 /**
  * 通过 [clazz] 和 [this] 获取其中的 [KProperty]
@@ -846,10 +876,10 @@ inline fun <K:KCallable<V>,V> K.toKCallableOrNull(clazz: KClass<*>? = null,loade
  * @param isUseMember 是否使用Java方式反射获取参数名和参数类型 - 默认否
  * @return [KProperty] 新获取到的可调用实例
  */
-inline fun <K:KProperty<V>,V> K.toKProperty(clazz: KClass<*>? = null,loader: ClassLoader? = null,isUseMember: Boolean = false): K {
+inline fun <K : KProperty<V>, V> K.toKProperty(clazz: KClass<*>? = null, loader: ClassLoader? = null, isUseMember: Boolean = false): K {
     val declaringClass = (clazz ?: declaringClass)?.toKClass(loader) ?: throw NoClassDefFoundError("$clazz not found in $loader")
     return declaringClass.property {
-        this@toKProperty.attach(loader,isUseMember)
+        this@toKProperty.attach(loader, isUseMember)
     }.give() as K
 }
 
@@ -866,7 +896,8 @@ inline fun <K:KProperty<V>,V> K.toKProperty(clazz: KClass<*>? = null,loader: Cla
  * @param isUseMember 是否使用Java方式反射获取参数名和参数类型 - 默认否
  * @return [KProperty] 新获取到的可调用实例 or null
  */
-inline fun <K:KProperty<V>,V> K.toKPropertyOrNull(clazz: KClass<*>? = null,loader: ClassLoader? = null,isUseMember: Boolean = false) = runCatching { toKProperty(clazz,loader,isUseMember) }.getOrNull()
+inline fun <K : KProperty<V>, V> K.toKPropertyOrNull(clazz: KClass<*>? = null, loader: ClassLoader? = null, isUseMember: Boolean = false) =
+    runCatching { toKProperty(clazz, loader, isUseMember) }.getOrNull()
 
 /**
  * 通过 [clazz] 和 [this] 获取其中的 [KFunction]
@@ -880,10 +911,10 @@ inline fun <K:KProperty<V>,V> K.toKPropertyOrNull(clazz: KClass<*>? = null,loade
  * @param isUseMember 是否使用Java方式反射获取参数名和参数类型 - 默认否
  * @return [KFunction] 新获取到的可调用实例
  */
-inline fun <K:KFunction<V>,V> K.toKFunction(clazz: KClass<*>? = null,loader: ClassLoader? = null,isUseMember: Boolean = false): K {
+inline fun <K : KFunction<V>, V> K.toKFunction(clazz: KClass<*>? = null, loader: ClassLoader? = null, isUseMember: Boolean = false): K {
     val declaringClass = (clazz ?: declaringClass)?.toKClass(loader) ?: throw NoClassDefFoundError("$clazz not found in $loader")
     return declaringClass.function {
-        this@toKFunction.attach(loader,isUseMember)
+        this@toKFunction.attach(loader, isUseMember)
     }.give() as K
 }
 
@@ -900,7 +931,8 @@ inline fun <K:KFunction<V>,V> K.toKFunction(clazz: KClass<*>? = null,loader: Cla
  * @param isUseMember 是否使用Java方式反射获取参数名和参数类型 - 默认否
  * @return [KFunction] 新获取到的可调用实例 or null
  */
-inline fun <K:KFunction<V>,V> K.toKFunctionOrNull(clazz: KClass<*>? = null,loader: ClassLoader? = null,isUseMember: Boolean = false) = runCatching { toKFunction(clazz,loader,isUseMember) }.getOrNull()
+inline fun <K : KFunction<V>, V> K.toKFunctionOrNull(clazz: KClass<*>? = null, loader: ClassLoader? = null, isUseMember: Boolean = false) =
+    runCatching { toKFunction(clazz, loader, isUseMember) }.getOrNull()
 
 /**
  * 通过 [T] 得到其 [KClass] 实例并转换为实体类
@@ -994,7 +1026,8 @@ inline fun KClass<*>.hasProperty(initiate: KPropertyConditions) = property(initi
  * @param initiate 方法体
  * @return [Boolean] 是否存在
  */
-inline fun KClass<*>.hasPropertySignature(loader: ClassLoader? = null,initiate: KPropertySignatureConditions) = propertySignature(loader,initiate).ignored().isNoSuch.not()
+inline fun KClass<*>.hasPropertySignature(loader: ClassLoader? = null, initiate: KPropertySignatureConditions) =
+    propertySignature(loader, initiate).ignored().isNoSuch.not()
 
 /**
  * 查找方法是否存在
@@ -1009,7 +1042,8 @@ inline fun KClass<*>.hasFunction(initiate: KFunctionConditions) = function(initi
  * @param initiate 方法体
  * @return [Boolean] 是否存在
  */
-inline fun KClass<*>.hasFunctionSignature(loader: ClassLoader? = null,initiate: KFunctionSignatureConditions) = functionSignature(loader,initiate).ignored().isNoSuch.not()
+inline fun KClass<*>.hasFunctionSignature(loader: ClassLoader? = null, initiate: KFunctionSignatureConditions) =
+    functionSignature(loader, initiate).ignored().isNoSuch.not()
 
 /**
  * 查找构造方法是否存在
@@ -1048,7 +1082,8 @@ inline fun KClass<*>.property(initiate: KPropertyConditions = {}) = KPropertyFin
  * @param initiate 查找方法体
  * @return [KPropertyFinder.Result]
  */
-inline fun KBaseFinder.BaseInstance.property(vararg args:Any?,initiate: KPropertyConditions = {}) = callResult(*args)?.let { it::class.property(initiate).get(it) } ?: KPropertyFinder().Result().Instance(null,null)
+inline fun KBaseFinder.BaseInstance.property(vararg args: Any?, initiate: KPropertyConditions = {}) =
+    callResult(*args)?.let { it::class.property(initiate).get(it) } ?: KPropertyFinder().Result().Instance(null, null)
 
 /**
  * 查找并得到方法签名
@@ -1064,7 +1099,8 @@ inline fun KBaseFinder.BaseInstance.property(vararg args:Any?,initiate: KPropert
  * @param initiate 查找方法体
  * @return [KFunctionFinder.Result]
  */
-inline fun KClass<*>.propertySignature(loader: ClassLoader? = null,initiate: KPropertySignatureConditions = {}) = KPropertySignatureFinder(classSet = this,loader).apply(initiate).build()
+inline fun KClass<*>.propertySignature(loader: ClassLoader? = null, initiate: KPropertySignatureConditions = {}) =
+    KPropertySignatureFinder(classSet = this, loader).apply(initiate).build()
 
 /**
  * 查找并得到方法
@@ -1082,7 +1118,8 @@ inline fun KClass<*>.function(initiate: KFunctionConditions = {}) = KFunctionFin
  * @param initiate 查找方法体
  * @return [KFunctionFinder.Result]
  */
-inline fun KBaseFinder.BaseInstance.function(vararg args:Any?,initiate: KFunctionConditions = {}) = callResult(*args)?.let { it::class.function(initiate).get(it) } ?: KFunctionFinder().Result().Instance(null,null)
+inline fun KBaseFinder.BaseInstance.function(vararg args: Any?, initiate: KFunctionConditions = {}) =
+    callResult(*args)?.let { it::class.function(initiate).get(it) } ?: KFunctionFinder().Result().Instance(null, null)
 
 /**
  * 查找并得到方法签名
@@ -1098,7 +1135,8 @@ inline fun KBaseFinder.BaseInstance.function(vararg args:Any?,initiate: KFunctio
  * @param initiate 查找方法体
  * @return [KFunctionFinder.Result]
  */
-inline fun KClass<*>.functionSignature(loader: ClassLoader? = null,initiate: KFunctionSignatureConditions = {}) = KFunctionSignatureFinder(classSet = this,loader).apply(initiate).build()
+inline fun KClass<*>.functionSignature(loader: ClassLoader? = null, initiate: KFunctionSignatureConditions = {}) =
+    KFunctionSignatureFinder(classSet = this, loader).apply(initiate).build()
 
 /**
  * 查找并得到构造方法
@@ -1116,7 +1154,8 @@ inline fun KClass<*>.constructor(initiate: KConstructorConditions = {}) = KConst
  * @param initiate 查找方法体
  * @return [KConstructorFinder.Result]
  */
-inline fun KBaseFinder.BaseInstance.constructor(vararg args:Any?,initiate: KConstructorConditions = {}) = callResult(*args)?.let { it::class.constructor(initiate).get() } ?: KConstructorFinder().Result().Instance(null)
+inline fun KBaseFinder.BaseInstance.constructor(vararg args: Any?, initiate: KConstructorConditions = {}) =
+    callResult(*args)?.let { it::class.constructor(initiate).get() } ?: KConstructorFinder().Result().Instance(null)
 
 /**
  * 获得当前 [KClass] 的父类中来自尖括号的泛型对象
@@ -1262,7 +1301,9 @@ inline val KCallable<*>.isExtension
 inline val KCallable<*>.descriptor
     get() =
         KCallableImplKClass.java.getDeclaredMethod("getDescriptor").also { it.isAccessible = true }
-            .invoke(if (KCallableImplKClass.isCase(this)) this else runCatching { ref }.getOrNull()?.impl ?: error("No descriptive implementation found!!!")
+            .invoke(
+                if (KCallableImplKClass.isCase(this)) this else runCatching { ref }.getOrNull()?.impl
+                    ?: error("No descriptive implementation found!!!")
             ) as? CallableMemberDescriptor?
 
 
@@ -1285,11 +1326,11 @@ inline fun KClass<*>.allFunctions(isAccessible: Boolean = true, result: (index: 
  * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramClasss] 所在的 [ClassLoader]
  * @param result 回调 - ([Int] 下标,Constructor [KFunction] 实例)
  */
-inline fun KClass<*>.allFunctionSignatures(loader: ClassLoader? = null,result: (index: Int, function: KFunctionSignatureSupport) -> Unit){
+inline fun KClass<*>.allFunctionSignatures(loader: ClassLoader? = null, result: (index: Int, function: KFunctionSignatureSupport) -> Unit) {
     val nameResolver = memberScope?.deserializationContext?.nameResolver ?: return
     val protos = (memberScope?.impl ?: return).functionProtos
     mutableListOf<ProtoBuf.Function>().also { buf -> protos.values.forEach { buf += it } }.forEachIndexed { index, function ->
-        result(index,KFunctionSignatureSupport(this, loader, nameResolver, function))
+        result(index, KFunctionSignatureSupport(this, loader, nameResolver, function))
     }
 }
 
@@ -1325,7 +1366,7 @@ inline fun KClass<*>.allPropertys(isAccessible: Boolean = true, result: (index: 
  * @param loader loader [ClassLoader] - 属性类型所使用的 [ClassLoader]
  * @param result 回调 - ([Int] 下标,[KProperty] 实例)
  */
-inline fun KClass<*>.allPropertySignatures(loader: ClassLoader? = null,result: (index: Int, property: KPropertySignatureSupport) -> Unit){
+inline fun KClass<*>.allPropertySignatures(loader: ClassLoader? = null, result: (index: Int, property: KPropertySignatureSupport) -> Unit) {
     val nameResolver = memberScope?.deserializationContext?.nameResolver ?: return
     val protos = (memberScope?.impl ?: return).propertyProtos
     mutableListOf<ProtoBuf.Property>().also { buf -> protos.values.forEach { buf += it } }.forEachIndexed { index, property ->
@@ -1462,12 +1503,15 @@ inline fun KProperty<*>.instance(thisRef: Any? = null, extensionRef: Any? = null
  * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
  * @param isUseMember 是否将构造函数转换为JavaMethod再进行附加 - 即使为false当构造函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
  */
-fun <R> KConstructorFinder.attach(function: KFunction<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
+fun <R> KConstructorFinder.attach(function: KFunction<R>, loader: ClassLoader? = null, isUseMember: Boolean = false) {
     fun KClass<*>.toClass() = if (loader == null) this else toKClass(loader)
 
-    fun attachMember(e:Throwable? = null){
+    fun attachMember(e: Throwable? = null) {
         val method = function.javaConstructorNoError ?: function.refImpl?.javaConstructorNoError ?: let {
-            errorMsg("This constructor cannot be attached, or the constructor is hidden by Kotlin to prohibit reflection, you can try to use [java.constructor {}] to do the reflection !!!", e)
+            errorMsg(
+                "This constructor cannot be attached, or the constructor is hidden by Kotlin to prohibit reflection, you can try to use [java.constructor {}] to do the reflection !!!",
+                e
+            )
             return
         }
         if (method.parameterTypes.isEmpty())
@@ -1475,7 +1519,8 @@ fun <R> KConstructorFinder.attach(function: KFunction<R>,loader: ClassLoader? = 
         else
             param(*method.parameterTypes.map { it.kotlin.toClass() }.toTypedArray())
     }
-    fun attachCallable(function: KFunction<*>){
+
+    fun attachCallable(function: KFunction<*>) {
         if (function.valueParameters.isEmpty())
             emptyParam()
         else
@@ -1520,22 +1565,26 @@ fun <R> KConstructorFinder.attach(function: KFunction<R>,loader: ClassLoader? = 
  * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
  * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
  */
-fun <R> KPropertyFinder.attach(function: KProperty<R>,loader: ClassLoader? = null,isUseMember:Boolean = false){
+fun <R> KPropertyFinder.attach(function: KProperty<R>, loader: ClassLoader? = null, isUseMember: Boolean = false) {
     fun KClass<*>.toClass() = if (loader == null) this else toKClass(loader)
 
-    fun attachMember(e:Throwable? = null){
+    fun attachMember(e: Throwable? = null) {
         val member = function.javaMember ?: function.refImpl?.javaMember ?: let {
-            errorMsg("This property cannot be attached, or it is hidden by Kotlin to prohibit reflection, you can try to use [field {}] to reflect it !!!", e)
+            errorMsg(
+                "This property cannot be attached, or it is hidden by Kotlin to prohibit reflection, you can try to use [field {}] to reflect it !!!",
+                e
+            )
             return
         }
         this@attach.name = member.name
-        this@attach.type = when(member){
+        this@attach.type = when (member) {
             is Field -> member.type.kotlin.toClass()
             is Method -> member.returnType.kotlin.toClass()
             else -> null
         }
     }
-    fun attachCallable(property: KProperty<*>){
+
+    fun attachCallable(property: KProperty<*>) {
         this@attach.name = property.name
         this@attach.type = runCatching {
             if (loader != null)
@@ -1564,8 +1613,8 @@ fun <R> KPropertyFinder.attach(function: KProperty<R>,loader: ClassLoader? = nul
  * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
  * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
  */
-inline fun <R> KPropertyFinder.attachStatic(function: KProperty0<R>,loader: ClassLoader? = null, isUseMember:Boolean = false){
-    attach(function,loader,isUseMember)
+inline fun <R> KPropertyFinder.attachStatic(function: KProperty0<R>, loader: ClassLoader? = null, isUseMember: Boolean = false) {
+    attach(function, loader, isUseMember)
 }
 
 /**
@@ -1578,8 +1627,8 @@ inline fun <R> KPropertyFinder.attachStatic(function: KProperty0<R>,loader: Clas
  * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
  * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
  */
-inline fun <ExpandThis,R> KPropertyFinder.attach(function: KProperty2<*,ExpandThis,R>,loader: ClassLoader? = null, isUseMember:Boolean = false){
-    attach<R>(function,loader,isUseMember)
+inline fun <ExpandThis, R> KPropertyFinder.attach(function: KProperty2<*, ExpandThis, R>, loader: ClassLoader? = null, isUseMember: Boolean = false) {
+    attach<R>(function, loader, isUseMember)
 }
 
 /**
@@ -1676,8 +1725,8 @@ open class BindingInstanceSupport<T>(
         }
     }
 
-    protected fun verifyReferences(thisRef: Any?):BindingInstanceSupport<T>{
-        if (this.thisRef != null || thisRef == null || thisRef::class notExtends thisRefClass)return this
+    protected fun verifyReferences(thisRef: Any?): BindingInstanceSupport<T> {
+        if (this.thisRef != null || thisRef == null || thisRef::class notExtends thisRefClass) return this
         this.thisRef = thisRef
         return this
     }

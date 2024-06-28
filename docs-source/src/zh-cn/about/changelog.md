@@ -1,6 +1,6 @@
 # 更新日志
 
-> 这里记录了 `YukiReflection` 的版本更新历史。
+> 这里记录了 `KYukiReflection` 的版本更新历史。
 
 ::: danger
 
@@ -8,32 +8,18 @@
 
 :::
 
-### 1.0.3 | 2023.10.07 &ensp;<Badge type="tip" text="最新" vertical="middle" />
+### 1.0.2 | 2024.6.29 &ensp;<Badge type="tip" text="最新" vertical="middle" />
 
-- 许可协议由 `MIT` 变更为 `Apache-2.0`，在此之后的版本将由此许可协议进行分发，您在使用此版本后应变更相关许可协议
-- 将依赖库的类型由 **Android Library** (aar) 修改回 **Java Library** (jar)
-- 适配并支持原生 Java 平台 (部分功能仅限 Android 平台)
-- 修复 [fix get interfaces of class](https://github.com/HighCapable/YukiHookAPI/pull/38) 问题并合并到 `YukiReflection`
-- 作废了 ~~`isAllowPrintingLogs`~~，请开始使用 `debugLog` 方法
-- 新增 `YukiReflection.TAG`
-- 作废了 ~~`YukiReflection.API_VERSION_NAME`~~、~~`YukiReflection.API_VERSION_CODE`~~，统一合并到 `YukiReflection.VERSION`
-- 重构方法查找中的 `remendy` 功能，现在可以对其进行分步打印异常
-- 多重方法查找结果类型由 `HashSet` 改为 `MutableList`
-- 新增使用 `method()`、`constructor()`、`field()` 可直接获取到类中的所有对象功能
-- `constructor()` 的行为不再是 `constructor { emptyParam() }`
-- 新增 `lazyClass`、`lazyClassOrNull` 方法，可延迟装载 `Class`
+- 针对真实的使用场景我们增加了诸如 `singletonInstance` 和 `companionSingletonInstance` 这样的方法以快速获取单例和对象类实例
+- 进行 `bindProperty()` 方法委托绑定时如果被绑定的属性 `this` 与 `Class` 类型一致则不需要传入 `thisRef` ，将自动使用域内的`this`
+- 当使用 `Kotlin` 的反射查找获得的 函数、属性 为对象类或单例类成员则不需要传入 `thisRef` 将自动使用相关示例
+- 为元数据异常的 `Kotlin` 类增加签名查找方式，通过只读取 `Class` 的元数据来查找对应数据避免异常发生
+- 为查找的结果实例增加 `original` 函数使得允许调用没有进行 `Hook` 的相关内容，尽管这只在有 `HookAPI` 时才生效
+- 新增 `function` 查找结果实例或查找实例中可以直接获取 `getter`、`setter` 的 `property` 查找结果实例或查找实例
+- 新增 `KFunction`、`KProperty` 通过 `instance` 方法转换为查找结果实例
+- 优化 `Kotlin` 的反射查找和匹配适应程度
+- 更多内容请细节优化在使用中体现
 
-### 1.0.2 | 2023.04.25 &ensp;<Badge type="warning" text="过旧" vertical="middle" />
-
-- 修复一个严重问题，`Member` 缓存未生效且持续存储最终引发 APP 内存溢出 (OOM)，感谢 [Art-Chen](https://github.com/Art-Chen)
-- 移除 `Member` 的直接缓存功能并作废 ~~`YukiReflection.Configs.isEnableMemberCache`~~，保留 `Class` 的缓存功能
-- 对接查找功能到 `Sequence`，优化 `Member` 的查找速度与性能
-
-### 1.0.1 | 2023.04.16 &ensp;<Badge type="warning" text="过旧" vertical="middle" />
-
-- 将依赖库的类型由 **Java Library** (jar) 修改为 **Android Library** (aar)
-- 移除了 Android `type` 中的错误 `Class` 对象声明
-
-### 1.0.0 | 2023.01.26 &ensp;<Badge type="warning" text="过旧" vertical="middle" />
+### 1.0.1 | 2024.06.18 &ensp;<Badge type="warning" text="过旧" vertical="middle" />
 
 - 首个版本提交至 Maven

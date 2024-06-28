@@ -1,5 +1,7 @@
 # 联系我们
 
+> 本页面完全源于 `YukiReflection` 原作者相关内容 与 `KYukiReflection` 无关，`KYukiReflection` 暂且不会提供任何联系方式。
+
 > 如在使用中有任何问题，或有任何建设性的建议，都可以联系我们。
 
 加入我们的开发者群组。

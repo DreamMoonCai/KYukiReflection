@@ -1,6 +1,6 @@
 # Changelog
 
-> The version update history of `YukiReflection` is recorded here.
+> The version update history of `KYukiReflection` is recorded here.
 
 ::: danger
 
@@ -16,31 +16,17 @@ Time zone of version release date: **UTC+8**
 
 :::
 
-### 1.0.3 | 2023.10.07 &ensp;<Badge type="tip" text="latest" vertical="middle" />
+### 1.0.2 | 2024.6.29 &ensp;<Badge type="tip" text="最新" vertical="middle" />
 
-- The license agreement has been changed from `MIT` to `Apache-2.0`, subsequent versions will be distributed under this license agreement, you should change the relevant license agreement after using this version
-- Change the type of dependency library from **Android Library** (aar) back to **Java Library** (jar)
-- Adapt and support the native Java platform (some functions are only available on the Android platform)
-- Fixed [fix get interfaces of class](https://github.com/HighCapable/YukiHookAPI/pull/38) issue and merged into `YukiReflection`
-- Deprecated ~~`isAllowPrintingLogs`~~, please start using the `debugLog` method
-- Added `YukiReflection.TAG`
-- Obsolete ~~`YukiReflection.API_VERSION_NAME`~~, ~~`YukiReflection.API_VERSION_CODE`~~, merged into `YukiReflection.VERSION`
-- Refactored `remendy` functionality in find methods, which now prints exceptions in steps
-- The multi-method find result type is changed from `HashSet` to `MutableList`
-- Added `method()`, `constructor()`, `field()` to directly obtain all object functions in the class
-- `constructor()` no longer behaves like `constructor { emptyParam() }`
-- Added `lazyClass` and `lazyClassOrNull` methods to lazily load `Class`
-
-### 1.0.2 | 2023.04.25 &ensp;<Badge type="warning" text="stale" vertical="middle" />
-
-- Fixed a critical issue where the `Member` cache did not take effect and persistent storage eventually caused app out of memory (OOM), thanks to [Art-Chen](https://github.com/Art-Chen)
-- Remove the direct cache function of `Member` and deprecated ~~`YukiReflection.Configs.isEnableMemberCache`~~, keep the cache function of `Class`
-- Modified finder to `Sequence`, optimize the finding speed and performance of `Member`
-
-### 1.0.1 | 2023.04.16 &ensp;<Badge type="warning" text="stale" vertical="middle" />
-
-- Change the type of dependency library from **Java Library** (jar) to **Android Library** (aar)
-- Removed wrong `Class` object declaration in Android `type`
+- For real-world use cases, we've added methods such as `singletonInstance` and `companionSingletonInstance` to quickly fetch singleton and object class instances
+- When using the `bindProperty()` method to delegate binding, if the bound property `this` is the same as the `Class` type, you don't need to pass `thisRef`, and the `this` in the domain will be automatically used
+- When using `Kotlin` reflection lookup to get a function, property that is an object class or a singleton class member, you don't need to pass in `thisRef` and the relevant example will be used automatically
+- Added a signature lookup method for the `Kotlin` class with metadata exceptions, and only read the metadata of the `Class` to find the corresponding data to avoid exceptions
+- Adding an `original` function to the result instance of the lookup allows calls to be made about things that don't have a `Hook`, although this only works if there's a `HookAPI`
+- Add the `function` lookup result instance or the `property` lookup result instance or lookup instance of `getter` or `setter` can be directly obtained in the lookup instance
+- Added `KFunction` and `KProperty` to convert them into search result instances by using the `instance` method
+- Optimized the degree of reflection finding and matching adaptation of `Kotlin`
+- For more information, please optimize the details in use
 
 ### 1.0.0 | 2023.01.26 &ensp;<Badge type="warning" text="stale" vertical="middle" />
 

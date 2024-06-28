@@ -1,72 +1,72 @@
 # Features
 
-> This page contains usage examples for all core features of `YukiReflection`.
+> This page contains usage examples for all core features of `KYukiReflection`.
 
-## Class Extensions
+## KClass Extensions
 
-> Here are the extension functions related to the **Class** object itself.
+> Here are the extension functions related to the **KClass** object itself.
 
 ### Object Conversion
 
-Suppose we want to get a `Class` that cannot be called directly.
+Suppose we want to get a `KClass` that cannot be called directly.
 
-Normally, we can use the standard reflection API to find this `Class`.
+Normally, we can use the standard reflection API to find this `KClass`.
 
 > The following example
 
 ```kotlin
-// Class in the default ClassLoader environment
+// KClass in the default ClassLoader environment
 var instance = Class.forName("com.demo.Test")
-// Specify the Class in the ClassLoader environment
+// Specify the KClass in the ClassLoader environment
 val customClassLoader: ClassLoader? = ... // Assume this is your ClassLoader
-var instance = customClassLoader?.loadClass("com.demo.Test")
+var instance = customClassLoader?.loadClass("com.demo.Test")?.kotlin
 ```
 
-This is probably not very friendly, and `YukiReflection` provides you with a syntactic sugar that can be used anywhere.
+This is probably not very friendly, and `KYukiReflection` provides you with a syntactic sugar that can be used anywhere.
 
-The above writing can be written as `YukiReflection` as follows.
+The above writing can be written as `KYukiReflection` as follows.
 
 > The following example
 
 ```kotlin
-// Get this Class directly
-var instance = "com.demo.Test".toClass()
-// ClassLoader where the custom Class is located
+// Get this KClass directly
+var instance = "com.demo.Test".toKClass()
+// ClassLoader where the custom KClass is located
 val customClassLoader: ClassLoader? = ... // Assume this is your ClassLoader
-var instance = "com.demo.Test".toClass(customClassLoader)
+var instance = "com.demo.Test".toKClass(customClassLoader)
 ```
 
-If the current `Class` does not exist, using the above method will throw an exception.
+If the current `KClass` does not exist, using the above method will throw an exception.
 
-If you are not sure whether the `Class` exists, you can refer to the following solutions.
+If you are not sure whether the `KClass` exists, you can refer to the following solutions.
 
 > The following example
 
 ```kotlin
-// Get this Class directly
+// Get this KClass directly
 // If not available, the result will be null but no exception will be thrown
-var instance = "com.demo.Test".toClassOrNull()
-// ClassLoader where the custom Class is located
+var instance = "com.demo.Test".toKClassOrNull()
+// ClassLoader where the custom KClass is located
 val customClassLoader: ClassLoader? = ... // Assume this is your ClassLoader
 // If not available, the result will be null but no exception will be thrown
-var instance = "com.demo.Test".toClassOrNull(customClassLoader)
+var instance = "com.demo.Test".toKClassOrNull(customClassLoader)
 ```
 
-We can also get an existing `Class` object by mapping.
+We can also get an existing `KClass` object by mapping.
 
 > The following example
 
 ```kotlin
-// Assume this Class can be obtained directly
-var instance = classOf<Test>()
-// We can also customize the ClassLoader where the Class is located, which is very effective for stubs
+// Assume this KClass can be obtained directly
+var instance = kclassOf<Test>()// Or a more straightforward approach Test::class
+// We can also customize the ClassLoader where the KClass is located, which is very effective for stubs
 val customClassLoader: ClassLoader? = ... // Assume this is your ClassLoader
-var instance = classOf<Test>(customClassLoader)
+var instance = kclassOf<Test>(customClassLoader)
 ```
 
 ::: tip
 
-For more functions, please refer to [classOf](../api/public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#classof-method), [String.toClass](../api/public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#string-toclass-ext-method), [String.toClassOrNull](../api/public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#string-toclassornull-ext-method) methods.
+For more functions, please refer to [kclassOf](../api/public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#kclassof-method)、[String.toKClass](../api/public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#string-tokclass-ext-method)、[String.toKClassOrNull](../api/public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#string-tokclassornull-ext-method) methods.
 
 :::
 

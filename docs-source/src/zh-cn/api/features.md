@@ -1,14 +1,14 @@
 # 功能介绍
 
-> 这里包含了 `YukiReflection` 全部核心功能的用法示例。
+> 这里包含了 `KYukiReflection` 全部核心功能的用法示例。
 
-## Class 扩展
+## KClass 扩展
 
-> 这里是 **Class** 对象自身相关的扩展功能。
+> 这里是 **KClass** 对象自身相关的扩展功能。
 
 ### 对象转换
 
-假设我们要得到一个不能直接调用的 `Class`，通常情况下，我们可以使用标准的反射 API 去查找这个 `Class`。
+假设我们要得到一个不能直接调用的 `KClass`，通常情况下，我们可以使用标准的反射 API 去查找这个 `KClass`。
 
 > 示例如下
 
@@ -17,52 +17,52 @@
 var instance = Class.forName("com.demo.Test")
 // 指定 ClassLoader 环境下的 Class
 val customClassLoader: ClassLoader? = ... // 假设这个就是你的 ClassLoader
-var instance = customClassLoader?.loadClass("com.demo.Test")
+var instance = customClassLoader?.loadClass("com.demo.Test")?.kotlin
 ```
 
-这种写法大概不是很友好，此时 `YukiReflection` 就为你提供了一个可在任意地方使用的语法糖。
+这种写法大概不是很友好，此时 `KYukiReflection` 就为你提供了一个可在任意地方使用的语法糖。
 
-以上写法换做 `YukiReflection` 可写作如下形式。
+以上写法换做 `KYukiReflection` 可写作如下形式。
 
 > 示例如下
 
 ```kotlin
-// 直接得到这个 Class
-var instance = "com.demo.Test".toClass()
-// 自定义 Class 所在的 ClassLoader
+// 直接得到这个 KClass
+var instance = "com.demo.Test".toKClass()
+// 自定义 KClass 所在的 ClassLoader
 val customClassLoader: ClassLoader? = ... // 假设这个就是你的 ClassLoader
-var instance = "com.demo.Test".toClass(customClassLoader)
+var instance = "com.demo.Test".toKClass(customClassLoader)
 ```
 
-如果当前 `Class` 并不存在，使用上述方法会抛出异常，如果你不确定 `Class` 是否存在，可以参考下面的解决方案。
+如果当前 `KClass` 并不存在，使用上述方法会抛出异常，如果你不确定 `KClass` 是否存在，可以参考下面的解决方案。
 
 > 示例如下
 
 ```kotlin
-// 直接得到这个 Class
+// 直接得到这个 KClass
 // 得不到时结果会为 null 但不会抛出异常
-var instance = "com.demo.Test".toClassOrNull()
-// 自定义 Class 所在的 ClassLoader
+var instance = "com.demo.Test".toKClassOrNull()
+// 自定义 KClass 所在的 ClassLoader
 val customClassLoader: ClassLoader? = ... // 假设这个就是你的 ClassLoader
 // 得不到时结果会为 null 但不会抛出异常
-var instance = "com.demo.Test".toClassOrNull(customClassLoader)
+var instance = "com.demo.Test".toKClassOrNull(customClassLoader)
 ```
 
-我们还可以通过映射来得到一个存在的 `Class` 对象。
+我们还可以通过映射来得到一个存在的 `KClass` 对象。
 
 > 示例如下
 
 ```kotlin
-// 假设这个 Class 是能够被直接得到的
-var instance = classOf<Test>()
-// 我们同样可以自定义 Class 所在的 ClassLoader，这对于 stub 来说非常有效
+// 假设这个 KClass 是能够被直接得到的
+var instance = kclassOf<Test>()// 或者更直接的方法 Test::class
+// 我们同样可以自定义 KClass 所在的 ClassLoader，这对于 stub 来说非常有效
 val customClassLoader: ClassLoader? = ... // 假设这个就是你的 ClassLoader
-var instance = classOf<Test>(customClassLoader)
+var instance = kclassOf<Test>(customClassLoader)
 ```
 
 ::: tip
 
-更多功能请参考 [classOf](../api/public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#classof-method)、[String.toClass](../api/public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#string-toclass-ext-method)、[String.toClassOrNull](../api/public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#string-toclassornull-ext-method) 方法。
+更多功能请参考 [kclassOf](../api/public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#kclassof-method)、[String.toKClass](../api/public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#string-tokclass-ext-method)、[String.toKClassOrNull](../api/public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#string-tokclassornull-ext-method) 方法。
 
 :::
 
