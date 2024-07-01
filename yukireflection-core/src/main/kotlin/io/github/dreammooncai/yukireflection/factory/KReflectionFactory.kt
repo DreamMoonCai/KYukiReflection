@@ -9,6 +9,7 @@
 
 package io.github.dreammooncai.yukireflection.factory
 
+import com.highcapable.yukihookapi.YukiHookAPI.Status.Executor.name
 import io.github.dreammooncai.yukireflection.KYukiReflection
 import io.github.dreammooncai.yukireflection.bean.KCurrentClass
 import io.github.dreammooncai.yukireflection.bean.KGenericClass
@@ -560,15 +561,9 @@ inline val <T : Any> KClass<T>.singletonInstance
  * 在未找到时将按照通过查找方法的方式获取 尽管不一定有用
  */
 inline val KClass<*>.companionSingletonInstance
-    get() = companionObject?.let {
-        property {
-            type = it
-            modifiers { isStatic }
-        }.get().any() ?: function {
-            returnType = it
-            emptyParam()
-            modifiers { isStatic }
-        }.get().call()
+    get() = companionObject?.let { com ->
+        java.declaredFields.find { it.type == com.java && Modifier.isStatic(it.modifiers) }?.instance()?.any()
+            ?: java.declaredMethods.find { it.returnType == com.java && Modifier.isStatic(it.modifiers) }?.instance()?.call()
     }
 
 /**
@@ -1097,7 +1092,7 @@ inline fun KBaseFinder.BaseInstance.property(vararg args: Any?, initiate: KPrope
  * - 此方法不涉及转 Kotlin 的反射属性可以避免一些异常 [Metadata] 数据报错
  * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
  * @param initiate 查找方法体
- * @return [KFunctionFinder.Result]
+ * @return [KPropertySignatureFinder.Result]
  */
 inline fun KClass<*>.propertySignature(loader: ClassLoader? = null, initiate: KPropertySignatureConditions = {}) =
     KPropertySignatureFinder(classSet = this, loader).apply(initiate).build()
@@ -1133,7 +1128,7 @@ inline fun KBaseFinder.BaseInstance.function(vararg args: Any?, initiate: KFunct
  * - 此方法不涉及转 Kotlin 的反射函数可以避免一些异常 [Metadata] 数据报错
  * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
  * @param initiate 查找方法体
- * @return [KFunctionFinder.Result]
+ * @return [KFunctionSignatureFinder.Result]
  */
 inline fun KClass<*>.functionSignature(loader: ClassLoader? = null, initiate: KFunctionSignatureConditions = {}) =
     KFunctionSignatureFinder(classSet = this, loader).apply(initiate).build()
@@ -1660,7 +1655,7 @@ inline fun <ExpandThis, R> KPropertyFinder.attach(function: KProperty2<*, Expand
  * @property thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[thisRefClass]则使用拓展属性的this，否则为null
  * @property extensionRef 映射属性如果是拓展属性所需的拓展实例
  * @property isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
- * @property isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+ * @property isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
  * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
  */
 open class BindingInstanceSupport<T>(
@@ -1738,7 +1733,7 @@ open class BindingInstanceSupport<T>(
      * @property thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[thisRefClass]则使用拓展属性的this，否则为null
      * @property extensionRef 映射属性如果是拓展属性所需的拓展实例
      * @property isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
-     * @property isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+     * @property isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
      * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
      */
     class NonNull<T> internal constructor(
@@ -1764,7 +1759,7 @@ open class BindingInstanceSupport<T>(
      * @property thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[thisRefClass]则使用拓展属性的this，否则为null
      * @property extensionRef 映射属性如果是拓展属性所需的拓展实例
      * @property isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
-     * @property isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+     * @property isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
      * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
      */
     class Nullable<T> internal constructor(
@@ -1813,7 +1808,7 @@ open class BindingInstanceSupport<T>(
  * @param thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[KClass]则使用拓展属性的this，否则为null
  * @param extensionRef 映射属性如果是拓展属性所需的拓展实例
  * @param isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
- * @param isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+ * @param isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
  * @param mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
  */
 inline fun <T> KClass<*>.bindProperty(
@@ -1856,7 +1851,7 @@ inline fun <T> KClass<*>.bindProperty(
  * @param thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[KClass]则使用拓展属性的this，否则为null
  * @param extensionRef 映射属性如果是拓展属性所需的拓展实例
  * @param isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
- * @param isLazy 是否只加载一次[KPropertyFinder.Result.Instance] 默认是 否则每次get/set都将重新查找
+ * @param isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
  * @param mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
  */
 inline fun <T> KClass<*>.bindPropertyOrNull(
