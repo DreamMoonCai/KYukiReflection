@@ -1681,7 +1681,7 @@ open class BindingInstanceSupport<T>(
      */
     internal fun nullableGet(property: KProperty<*>): T? {
         return if (isLazy) {
-            if (lazy == null)
+            if (lazy == null || lazy?.get() == null)
                 lazy = WeakReference(thisRefClass.property {
                     mappingRules(property)
                 })
@@ -1704,7 +1704,7 @@ open class BindingInstanceSupport<T>(
      */
     internal fun nullableSet(property: KProperty<*>, value: T?) {
         if (isLazy) {
-            if (lazy == null)
+            if (lazy == null || lazy?.get() == null)
                 lazy = WeakReference(thisRefClass.property {
                     mappingRules(property)
                 })
