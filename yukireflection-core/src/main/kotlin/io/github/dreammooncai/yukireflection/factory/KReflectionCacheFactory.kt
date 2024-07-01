@@ -21,6 +21,8 @@ import io.github.dreammooncai.yukireflection.type.factory.KPropertyConditions
 import io.github.dreammooncai.yukireflection.type.factory.KPropertySignatureConditions
 import java.util.WeakHashMap
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.KProperty
 import kotlin.reflect.jvm.jvmName
 
 /**
@@ -43,6 +45,16 @@ inline fun KClass<*>.cacheProperty(descriptor:String? = null,initiate: KProperty
         cache.getOrElse("[${this.name}][$classLoader][property][$descriptor]"){ property(initiate) }
     } as KPropertyFinder.Result
 }
+
+/**
+ * 查找并得到变量 - 查询的结果将按照描述符缓存使用
+ * @param attachProperty 缓存所使用的描述符将使用[KProperty.name]
+ * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
+ * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
+ * @param initiate 查找方法体 - 默认使用 [KPropertyFinder.attach] 将 [attachProperty] 进行附加
+ * @return [KPropertyFinder.Result]
+ */
+inline fun KClass<*>.cacheProperty(attachProperty:KProperty<*>,loader: ClassLoader? = null,isUseMember:Boolean = false,initiate: KPropertyConditions = { attachProperty.attach(loader, isUseMember) }) = cacheProperty(attachProperty.name,initiate)
 
 /**
  * 查找并得到方法签名 - 查询的结果将按照描述符缓存使用
@@ -70,6 +82,24 @@ inline fun KClass<*>.cachePropertySignature(descriptor:String? = null,loader: Cl
 }
 
 /**
+ * 查找并得到方法签名 - 查询的结果将按照描述符缓存使用
+ *
+ * 获取此 [KClass] 指定 [initiate] 条件的签名
+ *
+ * 此方法以通过 [Metadata] 中定义的属性名获取Java层真正的签名
+ *
+ * [KPropertySignatureConditions] 中对属性类型进行筛选如果目标类型也有问题可能依然会出错，建议使用属性名筛选
+ *
+ * - 此方法不涉及转 Kotlin 的反射属性可以避免一些异常 [Metadata] 数据报错
+ * @param attachProperty 缓存所使用的描述符将使用[KProperty.name]
+ * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
+ * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
+ * @param initiate 查找方法体 - 默认使用 [KPropertyFinder.attach] 将 [attachProperty] 进行附加
+ * @return [KFunctionFinder.Result]
+ */
+inline fun KClass<*>.cachePropertySignature(attachProperty:KProperty<*>,loader: ClassLoader? = null,isUseMember:Boolean = false, initiate: KPropertySignatureConditions = { attachProperty.attach(loader,isUseMember) }) = cachePropertySignature(attachProperty.name,loader,initiate)
+
+/**
  * 查找并得到方法 - 查询的结果将按照描述符缓存使用
  * @param descriptor 缓存所使用的描述符 - 默认使用 [KFunctionFinder.name] 如果没有则报错
  * @param initiate 查找方法体
@@ -84,6 +114,16 @@ inline fun KClass<*>.cacheFunction(descriptor:String? = null,initiate: KFunction
         cache.getOrElse("[${this.name}][$classLoader][function][$descriptor]"){ function(initiate) }
     } as KFunctionFinder.Result
 }
+
+/**
+ * 查找并得到方法 - 查询的结果将按照描述符缓存使用
+ * @param attachFunction 缓存所使用的描述符将使用[KFunction.name]
+ * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
+ * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
+ * @param initiate 查找方法体
+ * @return [KFunctionFinder.Result]
+ */
+inline fun KClass<*>.cacheFunction(attachFunction:KFunction<*>,loader: ClassLoader? = null,isUseMember:Boolean = false,initiate: KFunctionConditions = { attachFunction.attach(loader, isUseMember) }) = cacheFunction(attachFunction.name,initiate)
 
 /**
  * 查找并得到方法签名 - 查询的结果将按照描述符缓存使用
@@ -111,6 +151,24 @@ inline fun KClass<*>.cacheFunctionSignature(descriptor:String? = null,loader: Cl
 }
 
 /**
+ * 查找并得到方法签名 - 查询的结果将按照描述符缓存使用
+ *
+ * 获取此 [KClass] 指定 [initiate] 条件的签名
+ *
+ * 此方法以通过 [Metadata] 中定义的函数名获取Java层真正的签名
+ *
+ * [KFunctionSignatureConditions] 中对返回类型和参数类型进行筛选如果目标类型也有问题可能依然会出错，建议使用参数名筛选
+ *
+ * - 此方法不涉及转 Kotlin 的反射函数可以避免一些异常 [Metadata] 数据报错
+ * @param attachFunction 缓存所使用的描述符将使用[KFunction.name]
+ * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
+ * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
+ * @param initiate 查找方法体
+ * @return [KFunctionSignatureFinder.Result]
+ */
+inline fun KClass<*>.cacheFunctionSignature(attachFunction:KFunction<*>,loader: ClassLoader? = null,isUseMember:Boolean = false,initiate: KFunctionSignatureConditions = { attachFunction.attach(loader,isUseMember) }) = cacheFunctionSignature(attachFunction.name,loader,initiate)
+
+/**
  * 查找并得到构造方法 - 查询的结果将按照描述符缓存使用
  * @param descriptor 缓存所使用的描述符
  * @param initiate 查找方法体
@@ -118,3 +176,13 @@ inline fun KClass<*>.cacheFunctionSignature(descriptor:String? = null,loader: Cl
  */
 inline fun KClass<*>.cacheConstructor(descriptor:String,initiate: KConstructorConditions = {}):KConstructorFinder.Result =
     cache.getOrElse("[${this.name}][$classLoader][constructor][$descriptor]"){ constructor(initiate) } as KConstructorFinder.Result
+
+/**
+ * 查找并得到构造方法 - 查询的结果将按照描述符缓存使用
+ * @param attachFunction 缓存所使用的描述符将使用[KFunction.name]
+ * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
+ * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
+ * @param initiate 查找方法体
+ * @return [KConstructorFinder.Result]
+ */
+inline fun KClass<*>.cacheConstructor(attachFunction:KFunction<*>,loader: ClassLoader? = null,isUseMember:Boolean = false,initiate: KConstructorConditions = { attachFunction.attach(loader,isUseMember) }) = cacheConstructor(attachFunction.name,initiate)
