@@ -534,15 +534,10 @@ inline val KClass<*>.isObject get() = descriptor.kind == ClassKind.OBJECT
  *
  */
 inline val <T : Any> KClass<T>.singletonInstance
-    get() = if (isCompanion) enclosingClass?.companionSingletonInstance else let {
-        function {
-            returnType = it
-            emptyParam()
-            modifiers { isStatic }
-        }.get().invoke<T>() ?: property {
-            type = it
-            modifiers { isStatic }
-        }.get().cast<T>()
+    get() = let {
+        runCatching { if (isCompanion) enclosingClass?.companionSingletonInstance else objectInstance }.getOrNull() ?:
+        java.declaredMethods.find { method -> method.returnType == it.java && method.parameterTypes.isEmpty() && Modifier.isStatic(method.modifiers) }?.instance()?.invoke<T>() ?:
+        java.declaredFields.find { field -> field.type == it.java && Modifier.isStatic(field.modifiers) }?.instance()?.cast<T>()
     }
 
 /**
@@ -561,7 +556,7 @@ inline val <T : Any> KClass<T>.singletonInstance
  * 在未找到时将按照通过查找方法的方式获取 尽管不一定有用
  */
 inline val KClass<*>.companionSingletonInstance
-    get() = companionObject?.let { com ->
+    get() = runCatching { companionObjectInstance }.getOrNull() ?: companionObject?.let { com ->
         java.declaredFields.find { it.type == com.java && Modifier.isStatic(it.modifiers) }?.instance()?.any()
             ?: java.declaredMethods.find { it.returnType == com.java && Modifier.isStatic(it.modifiers) }?.instance()?.call()
     }
