@@ -1492,7 +1492,7 @@ inline fun KProperty<*>.instance(thisRef: Any? = null, extensionRef: Any? = null
 /**
  * 将此构造函数相关内容附加到此查找器
  *
- * 将影响[KConstructorFinder.param]
+ * 将影响[KConstructorFinder.param] - 如果使用 attachCallable 附加 则额外影响 [KConstructorFinder.paramName]
  *
  * @param R 返回类型/构造目标类的类型
  * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
@@ -1524,6 +1524,7 @@ fun <R> KConstructorFinder.attach(function: KFunction<R>, loader: ClassLoader? =
                     it.kotlin.toClass()
                 else it
             }.toTypedArray())
+        paramName(*function.valueParameters.mapNotNull { it.name }.toTypedArray())
     }
     if (isUseMember)
         attachMember()

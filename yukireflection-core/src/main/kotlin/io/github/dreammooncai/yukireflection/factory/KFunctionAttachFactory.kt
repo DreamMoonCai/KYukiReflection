@@ -13,7 +13,7 @@ import kotlin.reflect.full.valueParameters
 /**
  * 将此函数相关内容附加到此查找器
  *
- * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param]
+ * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param] - 如果使用 attachCallable 附加 则额外影响 [KFunctionFinder.paramName]
  *
  * 重载引用使用示例 ↓
  *
@@ -66,6 +66,7 @@ fun <R> KFunctionFinder.attach(function: KFunction<R>, loader: ClassLoader? = nu
                 else
                     it
             }.toTypedArray())
+        paramName(*function.valueParameters.mapNotNull { it.name }.toTypedArray())
     }
     if (isUseMember)
         attachMember()
@@ -81,7 +82,7 @@ fun <R> KFunctionFinder.attach(function: KFunction<R>, loader: ClassLoader? = nu
 /**
  * 将此函数相关内容附加到此查找器
  *
- * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param]
+ * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param] - 如果使用 attachCallable 附加 则额外影响 [KFunctionFinder.paramName]
  *
  * 重载引用使用示例 ↓
  *
@@ -108,7 +109,7 @@ inline fun <R> KFunctionFinder.attachStatic(function: KFunction0<R>, loader: Cla
 /**
  * 将此函数相关内容附加到此查找器
  *
- * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param]
+ * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param] - 如果使用 attachCallable 附加 则额外影响 [KFunctionFinder.paramName]
  *
  * 重载引用使用示例 ↓
  *
@@ -135,7 +136,7 @@ inline fun <R> KFunctionFinder.attachEmptyParam(function: KFunction1<*, R>, load
 /**
  * 将此函数相关内容附加到此查找器 - 指定参数的快捷方法 参阅:[attach]
  *
- * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param]
+ * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param] - 如果使用 attachCallable 附加 则额外影响 [KFunctionFinder.paramName]
  *
  * 重载引用使用示例 ↓
  *
@@ -164,7 +165,7 @@ inline fun <P1, R> KFunctionFinder.attach(function: KFunction2<*, P1, R>, loader
 /**
  * 将此函数相关内容附加到此查找器 - 指定参数的快捷方法 参阅:[attach]
  *
- * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param]
+ * 将影响[KFunctionFinder.name]、[KFunctionFinder.returnType]、[KFunctionFinder.param] - 如果使用 attachCallable 附加 则额外影响 [KFunctionFinder.paramName]
  *
  * 重载引用参考[KFunctionFinder.attach]
  *

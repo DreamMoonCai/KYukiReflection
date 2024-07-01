@@ -65,7 +65,7 @@ open class KFunctionFinder internal constructor(final override val classSet: KCl
     /**
      * 将此函数相关内容附加到此查找器
      *
-     * 将影响[name]、[returnType]、[param]
+     * 将影响[name]、[returnType]、[param] - 如果使用 attachCallable 附加 则额外影响 [paramName]
      *
      * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
      * @param isUseMember 是否将函数转换为JavaMethod再进行附加 - 即使为false当函数附加错误时依然会尝试JavaMethod - 为true时会导致类型擦除
