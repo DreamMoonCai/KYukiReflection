@@ -120,10 +120,13 @@ inline fun KClass<*>.cacheFunction(descriptor:String? = null,initiate: KFunction
  * @param attachFunction 缓存所使用的描述符将使用[KFunction.name]
  * @param loader 默认不使用 [ClassLoader] ，如果使用 [ClassLoader] 将把涉及的类型，转换为指定 [ClassLoader] 中的 [KClass] 并且会擦除泛型
  * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
- * @param initiate 查找方法体
+ * @param initiate 查找方法体 - 默认使用 [KFunctionFinder.attach] 将 [attachFunction] 进行附加 但不包括 [KFunctionFinder.name]
  * @return [KFunctionFinder.Result]
  */
-inline fun KClass<*>.cacheFunction(attachFunction:KFunction<*>,loader: ClassLoader? = null,isUseMember:Boolean = false,initiate: KFunctionConditions = { attachFunction.attach(loader, isUseMember) }) = cacheFunction(attachFunction.name,initiate)
+inline fun KClass<*>.cacheFunction(attachFunction:KFunction<*>,loader: ClassLoader? = null,isUseMember:Boolean = false,initiate: KFunctionConditions = {
+    attachFunction.attach(loader, isUseMember)
+    name = ""
+}) = cacheFunction(attachFunction.name,initiate)
 
 /**
  * 查找并得到方法签名 - 查询的结果将按照描述符缓存使用
@@ -163,10 +166,13 @@ inline fun KClass<*>.cacheFunctionSignature(descriptor:String? = null,loader: Cl
  * @param attachFunction 缓存所使用的描述符将使用[KFunction.name]
  * @param loader [ClassLoader] 相关涉及的类型所在的 [ClassLoader]
  * @param isUseMember 是否将属性转换为JavaField再进行附加 - 即使为false当属性附加错误时依然会尝试JavaField - 为true时会导致类型擦除
- * @param initiate 查找方法体
+ * @param initiate 查找方法体 - 默认使用 [KFunctionFinder.attach] 将 [attachFunction] 进行附加 但不包括 [KFunctionFinder.name]
  * @return [KFunctionSignatureFinder.Result]
  */
-inline fun KClass<*>.cacheFunctionSignature(attachFunction:KFunction<*>,loader: ClassLoader? = null,isUseMember:Boolean = false,initiate: KFunctionSignatureConditions = { attachFunction.attach(loader,isUseMember) }) = cacheFunctionSignature(attachFunction.name,loader,initiate)
+inline fun KClass<*>.cacheFunctionSignature(attachFunction:KFunction<*>,loader: ClassLoader? = null,isUseMember:Boolean = false,initiate: KFunctionSignatureConditions = {
+    attachFunction.attach(loader,isUseMember)
+    name = ""
+}) = cacheFunctionSignature(attachFunction.name,loader,initiate)
 
 /**
  * 查找并得到构造方法 - 查询的结果将按照描述符缓存使用
