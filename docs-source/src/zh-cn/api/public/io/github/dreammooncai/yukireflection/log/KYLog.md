@@ -2,15 +2,15 @@
 pageClass: code-page
 ---
 
-# YLog <span class="symbol">- object</span>
+# KYLog <span class="symbol">- object</span>
 
 ```kotlin:no-line-numbers
-object YLog
+object KYLog
 ```
 
 **变更记录**
 
-`v1.0.3` `新增`
+`v1.0.0` `新增`
 
 **功能描述**
 
@@ -28,7 +28,7 @@ object Configs
 
 **功能描述**
 
-> 配置 `YLog`。
+> 配置 `KYLog`。
 
 ### tag <span class="symbol">- field</span>
 
@@ -44,7 +44,7 @@ var tag: String
 
 > 这是一个调试日志的全局标识。
 
-默认文案为 `YukiReflection`。
+默认文案为 `KYukiReflection`。
 
 你可以修改为你自己的文案。
 
@@ -62,6 +62,6 @@ var isEnable: Boolean
 
 > 是否启用调试日志的输出功能。
 
-关闭后将会停用 `YukiReflection` 对全部日志的输出。
+关闭后将会停用 `KYukiReflection` 对全部日志的输出。
 
-当 `isEnable` 关闭后 `YukiReflection.Configs.isDebug` 也将同时关闭。
+当 `isEnable` 关闭后 `KYukiReflection.Configs.isDebug` 也将同时关闭。

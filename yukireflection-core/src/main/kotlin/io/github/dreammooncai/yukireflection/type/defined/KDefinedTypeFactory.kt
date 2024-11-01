@@ -60,7 +60,7 @@ internal val UndefinedKotlin get() = ("com.highcapable.yukireflection.type.defin
 val VagueKotlin get() = ("com.highcapable.yukireflection.type.defined.VagueType".toKClassOrNull() ?: kclassOf<VagueClass>()) as KClass<VagueClass>
 
 /**
- * 模糊根的泛型对象
+ * 获取模糊根的泛型对象
  *
  * ```kotlin
  *

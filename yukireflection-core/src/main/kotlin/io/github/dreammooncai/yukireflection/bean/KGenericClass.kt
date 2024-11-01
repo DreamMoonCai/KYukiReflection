@@ -40,7 +40,7 @@ import kotlin.reflect.*
  * @param type 拥有类型声明信息的Kotlin类型 可能包含泛型信息
  * @property ArrayList this存储当前泛型参数数组
  */
-class KGenericClass internal constructor(val type: KType) :List<KTypeProjection> by type.arguments{
+class KGenericClass internal constructor(val type: KType) :List<KTypeProjection> by type.arguments {
 
     /**
      * 是否检查方差
@@ -164,6 +164,21 @@ class KGenericClass internal constructor(val type: KType) :List<KTypeProjection>
     fun argument(index: Int = 0) = runCatching { this[index].type?.kotlin }.getOrNull()
 
     /**
+     * 获得泛型参数数组下标的 [KClass] 实例
+     *
+     * - 在运行时局部变量的泛型会被擦除 - 获取不到时将会返回 null
+     * @param index 数组下标 - 默认 0
+     * @return [KClass]<[T]> or null
+     * @throws IllegalStateException 如果 [KClass] 的类型不为 [T]
+     */
+    @JvmName("argument_Generics")
+    inline fun <reified T> argument(index: Int = 0) =
+        type.arguments[index].type?.kotlin.let { args ->
+            if (args is KClass<*>) args as? KClass<T & Any>? ?: error("Target Class type cannot cast to ${T::class.java}")
+            else null
+        }
+
+    /**
      * 获得泛型参数数组下标的 泛型操作对象
      *
      * 此结果的 [KGenericClass] 不会对泛型类型擦除
@@ -226,21 +241,6 @@ class KGenericClass internal constructor(val type: KType) :List<KTypeProjection>
      * @return [KGenericClass] 新Type的泛型操作对象
      */
     inline fun build(initiate: KTypeBuildConditions = {}) = KTypeBuild(type).apply(initiate).build().get().generic()
-
-    /**
-     * 获得泛型参数数组下标的 [KClass] 实例
-     *
-     * - 在运行时局部变量的泛型会被擦除 - 获取不到时将会返回 null
-     * @param index 数组下标 - 默认 0
-     * @return [KClass]<[T]> or null
-     * @throws IllegalStateException 如果 [KClass] 的类型不为 [T]
-     */
-    @JvmName("argument_Generics")
-    inline fun <reified T> argument(index: Int = 0) =
-        type.arguments[index].type?.kotlin.let { args ->
-            if (args is KClass<*>) args as? KClass<T & Any>? ?: error("Target Class type cannot cast to ${T::class.java}")
-            else null
-        }
 
     /**
      * 自动获取是否检查方差

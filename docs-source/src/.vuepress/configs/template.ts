@@ -18,12 +18,12 @@ const navigationLinks = {
     ],
     publicApi: [
         baseApiPath + 'KYukiReflection',
-        baseApiPath + 'type/android/ComponentTypeFactory',
-        baseApiPath + 'type/android/GraphicsTypeFactory',
-        baseApiPath + 'type/android/ViewTypeFactory',
-        baseApiPath + 'type/java/VariableTypeFactory',
-        baseApiPath + 'type/defined/DefinedTypeFactory',
-        baseApiPath + 'log/YLog',
+        baseApiPath + 'type/android/KComponentTypeFactory',
+        baseApiPath + 'type/android/KGraphicsTypeFactory',
+        baseApiPath + 'type/android/KViewTypeFactory',
+        baseApiPath + 'type/kotlin/KVariableTypeFactory',
+        baseApiPath + 'type/defined/KDefinedTypeFactory',
+        baseApiPath + 'log/KYLog',
         baseApiPath + 'factory/ReflectionFactory',
         baseApiPath + 'finder/members/MethodFinder',
         baseApiPath + 'finder/members/ConstructorFinder',
@@ -39,9 +39,10 @@ const navigationLinks = {
         baseApiPath + 'finder/base/rules/ModifierRules',
         baseApiPath + 'finder/base/rules/NameRules',
         baseApiPath + 'finder/base/rules/ObjectRules',
-        baseApiPath + 'bean/VariousClass',
-        baseApiPath + 'bean/CurrentClass',
-        baseApiPath + 'bean/GenericClass'
+        baseApiPath + 'build/KTypeBuild',
+        baseApiPath + 'bean/KVariousClass',
+        baseApiPath + 'bean/KCurrentClass',
+        baseApiPath + 'bean/KGenericClass'
     ],
     about: [
         '/about/changelog',
