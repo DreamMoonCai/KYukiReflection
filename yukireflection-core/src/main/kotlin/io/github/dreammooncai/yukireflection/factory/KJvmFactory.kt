@@ -1,6 +1,7 @@
 @file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE", "RecursivePropertyAccessor")
 package io.github.dreammooncai.yukireflection.factory
 
+import com.highcapable.yukihookapi.hook.factory.extends
 import io.github.dreammooncai.yukireflection.finder.callable.KConstructorFinder
 import io.github.dreammooncai.yukireflection.finder.signature.KFunctionSignatureFinder
 import io.github.dreammooncai.yukireflection.finder.signature.KPropertySignatureFinder
@@ -38,7 +39,42 @@ inline val Class<*>.top: KDeclarationContainer get() = Reflection.getOrCreateKot
  *
  * @return [Boolean]
  */
-inline val Class<*>.isKotlin: Boolean get() = annotations.any { it.annotationClass.jvmName == Metadata::class.jvmName }
+@Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+inline val Class<*>.isKotlin: Boolean get() = annotations.any { (it as java.lang.annotation.Annotation).annotationType().name == Metadata::class.java.name }
+
+/**
+ * 当前 [Class] 是否是kotlin类且反射是不会造成异常的
+ *
+ * 造成异常的 Kotlin 类同样支持 [KClass.functionSignature]、[KClass.propertySignature] 等使用
+ *
+ * 关于 Java 类参考 [Class.isKotlin]
+ *
+ * @return [Boolean]
+ */
+inline val Class<*>.isKotlinNoError get() = isKotlin && kotlin.isSupportReflection
+
+/**
+ * 检查当前 [Class] 是否是数组或集合同时根据Kotlin情况进行匹配
+ *
+ * @return [Boolean]
+ */
+inline val Class<*>.isArrayOrCollection: Boolean
+    get() {
+        return isArray || when (this) {
+            IntArray::class.java,
+            ByteArray::class.java,
+            ShortArray::class.java,
+            LongArray::class.java,
+            FloatArray::class.java,
+            DoubleArray::class.java,
+            CharArray::class.java,
+            BooleanArray::class.java,
+            Array::class.java,
+            Collection::class.java -> true
+
+            else -> this extends Collection::class.java
+        }
+    }
 
 /**
  * 将 [Constructor] 转换为 [KConstructorFinder.Result.Instance] 可执行类

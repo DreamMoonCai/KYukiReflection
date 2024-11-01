@@ -10,6 +10,7 @@
 package io.github.dreammooncai.yukireflection.factory
 
 import com.highcapable.yukihookapi.YukiHookAPI.Status.Executor.name
+import com.highcapable.yukihookapi.hook.factory.extends
 import io.github.dreammooncai.yukireflection.KYukiReflection
 import io.github.dreammooncai.yukireflection.bean.KCurrentClass
 import io.github.dreammooncai.yukireflection.bean.KGenericClass
@@ -286,6 +287,13 @@ inline fun KProperty<*>.set(thisRef: Any? = null, value: Any?, extensionRef: Any
 operator fun KProperty<*>.set(thisRef: Any? = null, value: Any?) = set(thisRef, value, null, false)
 
 /**
+ * 此 [KClass] 是否支持反射
+ *
+ * @return [Boolean]
+ */
+inline val KClass<*>.isSupportReflection get() = runCatching { sealedSubclasses }.isSuccess
+
+/**
  * 此 属性 [KProperty] 是否为可变属性
  *
  * @return [Boolean]
@@ -294,6 +302,29 @@ inline val KProperty<*>.isVar: Boolean
     get() = when (this) {
         is KMutableProperty -> true
         else -> false
+    }
+
+/**
+ * 检查 [KClass] 是否为数组或集合类型
+ *
+ * @return [Boolean]
+ */
+inline val KClass<*>.isArrayOrCollection: Boolean
+    get() {
+        return this.java.isArray || when (this) {
+            IntArray::class,
+            ByteArray::class,
+            ShortArray::class,
+            LongArray::class,
+            FloatArray::class,
+            DoubleArray::class,
+            CharArray::class,
+            BooleanArray::class,
+            Array::class,
+            Collection::class -> true
+
+            else -> this extends Collection::class
+        }
     }
 
 /**
