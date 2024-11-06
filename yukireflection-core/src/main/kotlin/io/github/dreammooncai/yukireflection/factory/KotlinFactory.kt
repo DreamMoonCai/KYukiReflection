@@ -2,26 +2,18 @@
 
 package io.github.dreammooncai.yukireflection.factory
 
-import io.github.dreammooncai.yukireflection.finder.base.rules.KModifierRules
-import io.github.dreammooncai.yukireflection.finder.base.rules.KNameRules
-import io.github.dreammooncai.yukireflection.finder.base.rules.KObjectRules
 import io.github.dreammooncai.yukireflection.finder.callable.KFunctionFinder
-import io.github.dreammooncai.yukireflection.finder.callable.KPropertyFinder
 import io.github.dreammooncai.yukireflection.finder.signature.support.KPropertySignatureSupport
-import io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool
 import io.github.dreammooncai.yukireflection.type.factory.KFunctionConditions
 import io.github.dreammooncai.yukireflection.type.factory.KFunctionSignatureConditions
 import io.github.dreammooncai.yukireflection.type.factory.KPropertyConditions
 import io.github.dreammooncai.yukireflection.type.kotlin.DeserializedMemberScope_OptimizedImplementationKClass
 import io.github.dreammooncai.yukireflection.type.kotlin.KClassImplKClass
-import io.github.dreammooncai.yukireflection.utils.DexSignUtil
 import java.io.ByteArrayInputStream
 import java.lang.reflect.*
 import kotlin.reflect.*
-import kotlin.jvm.internal.Reflection
 import kotlin.reflect.jvm.*
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
-import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
 import kotlin.reflect.jvm.internal.impl.name.Name
 import kotlin.reflect.jvm.internal.impl.serialization.deserialization.DeserializationContext
 import kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope
@@ -36,7 +28,7 @@ import kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptor
  *
  * @param prefix 需要检测的前缀
  */
-fun String.checkHump(prefix: String) =
+internal fun String.checkHump(prefix: String) =
     startsWith(prefix) && this[prefix.length].isUpperCase()
 
 /**
@@ -49,7 +41,7 @@ fun String.checkHump(prefix: String) =
  *
  * @param prefix 需要删除的前缀
  */
-fun String.removeHump(prefix: String) =
+internal fun String.removeHump(prefix: String) =
     if (checkHump(prefix)) substring(prefix.length).lowercaseOf() else this
 
 /**
@@ -62,7 +54,7 @@ fun String.removeHump(prefix: String) =
  *
  * @param prefix 需要增加的前缀
  */
-fun String.addHump(prefix: String)=
+internal fun String.addHump(prefix: String)=
     if (!checkHump(prefix)) prefix + this.uppercaseOf() else this
 
 /**
@@ -84,44 +76,6 @@ fun String.lowercaseOf(index: Int = 0) =
  */
 fun String.uppercaseOf(index: Int = 0) =
     StringBuffer(this).also { it.setCharAt(index, this[index].uppercaseChar()) }.toString()
-
-/**
- * 通过 [Member] 分析签名构建 [KProperty] 或 [KFunction]
- *
- * 签名分析或许不一定能正常转换 参阅或使用[Member.kotlinCallable]
- */
-inline val Member.kotlin get() = when (this) {
-    is Field -> kotlin
-    is Method -> kotlin
-    is Constructor<*> -> kotlin
-    else -> error("Unsupported member type: $this")
-}
-
-/**
- * 返回与给定 Java [Member] 实例相对应的[KCallable]实例，或者null如果此字段不能由 Kotlin 可执行属性表示（例如，如果它是合成属性）。
- */
-inline val Member.kotlinCallable get() = when (this) {
-    is Field -> kotlinProperty
-    is Method -> kotlinFunction
-    is Constructor<*> -> kotlinFunction
-    else -> error("Unsupported member type: $this")
-}
-
-/**
- * 获取 [Member] 的返回类型
- *
- * [Field] ---> [Field.type]
- *
- * [Method] ---> [Method.returnType]
- *
- * [Constructor] ---> [Member.getDeclaringClass]
- */
-inline val Member.returnType: Class<out Any> get() = when (this) {
-    is Field -> type
-    is Method -> returnType
-    is Constructor<*> -> declaringClass
-    else -> error("Unsupported member type: $this")
-}
 
 // Kotlin reflection -> Java reflection
 
@@ -235,9 +189,9 @@ inline val KCallable<*>.javaSignatureMember: Member? get() = when (this) {
 inline val KClass<*>.memberScope get() = KClassImplKClass.java.declaredMethods.find { it.name.contains("getMemberScope") }?.invoke(this) as? DeserializedMemberScope?
 
 /**
- * 当前 [DeserializedMemberScope] 的虚拟化上下文
+ * 当前 [DeserializedMemberScope] 的序列化上下文
  *
- * 存放 [Metadata] 虚拟化相关信息
+ * 存放 [Metadata] 序列化相关信息
  *
  * @return [DeserializationContext]
  */

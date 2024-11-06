@@ -40,9 +40,9 @@ inline fun KClass<*>.cacheProperty(descriptor:String? = null,initiate: KProperty
     return if (descriptor == null) {
         val finder = KPropertyFinder(classSet = this).apply(initiate)
         val name = finder.name.ifBlank { throw IllegalArgumentException("cacheProperty name is blank") }
-        cache.getOrElse("[${this.name}][$classLoader][property][$name]"){ finder.build() }
+        cache.getOrPut("[${this.name}][$classLoader][property][$name]"){ finder.build() }
     }else{
-        cache.getOrElse("[${this.name}][$classLoader][property][$descriptor]"){ property(initiate) }
+        cache.getOrPut("[${this.name}][$classLoader][property][$descriptor]"){ property(initiate) }
     } as KPropertyFinder.Result
 }
 
@@ -75,9 +75,9 @@ inline fun KClass<*>.cachePropertySignature(descriptor:String? = null,loader: Cl
     return if (descriptor == null) {
         val finder = KPropertySignatureFinder(classSet = this, loader).apply(initiate)
         val name = finder.name.ifBlank { throw IllegalArgumentException("cachePropertySignature name is blank") }
-        cache.getOrElse("[${this.name}][${loader ?: classLoader}][propertySignature][$name]"){ finder.build() }
+        cache.getOrPut("[${this.name}][${loader ?: classLoader}][propertySignature][$name]"){ finder.build() }
     }else{
-        cache.getOrElse("[${this.name}][${loader ?: classLoader}][propertySignature][$descriptor]"){ propertySignature(loader,initiate) }
+        cache.getOrPut("[${this.name}][${loader ?: classLoader}][propertySignature][$descriptor]"){ propertySignature(loader,initiate) }
     } as KPropertySignatureFinder.Result
 }
 
@@ -109,9 +109,9 @@ inline fun KClass<*>.cacheFunction(descriptor:String? = null,initiate: KFunction
     return if (descriptor == null) {
         val finder = KFunctionFinder(classSet = this).apply(initiate)
         val name = finder.name.ifBlank { throw IllegalArgumentException("cacheProperty name is blank") }
-        cache.getOrElse("[${this.name}][$classLoader][function][$name]"){ finder.build() }
+        cache.getOrPut("[${this.name}][$classLoader][function][$name]"){ finder.build() }
     }else{
-        cache.getOrElse("[${this.name}][$classLoader][function][$descriptor]"){ function(initiate) }
+        cache.getOrPut("[${this.name}][$classLoader][function][$descriptor]"){ function(initiate) }
     } as KFunctionFinder.Result
 }
 
@@ -147,9 +147,9 @@ inline fun KClass<*>.cacheFunctionSignature(descriptor:String? = null,loader: Cl
     return if (descriptor == null) {
         val finder = KFunctionSignatureFinder(classSet = this, loader).apply(initiate)
         val name = finder.name.ifBlank { throw IllegalArgumentException("cachePropertySignature name is blank") }
-        cache.getOrElse("[${this.name}][${loader ?: classLoader}][functionSignature][$name]"){ finder.build() }
+        cache.getOrPut("[${this.name}][${loader ?: classLoader}][functionSignature][$name]"){ finder.build() }
     }else{
-        cache.getOrElse("[${this.name}][${loader ?: classLoader}][functionSignature][$descriptor]"){ functionSignature(loader,initiate) }
+        cache.getOrPut("[${this.name}][${loader ?: classLoader}][functionSignature][$descriptor]"){ functionSignature(loader,initiate) }
     } as KFunctionSignatureFinder.Result
 }
 
@@ -181,7 +181,7 @@ inline fun KClass<*>.cacheFunctionSignature(attachFunction:KFunction<*>,loader: 
  * @return [KConstructorFinder.Result]
  */
 inline fun KClass<*>.cacheConstructor(descriptor:String,initiate: KConstructorConditions = {}):KConstructorFinder.Result =
-    cache.getOrElse("[${this.name}][$classLoader][constructor][$descriptor]"){ constructor(initiate) } as KConstructorFinder.Result
+    cache.getOrPut("[${this.name}][$classLoader][constructor][$descriptor]"){ constructor(initiate) } as KConstructorFinder.Result
 
 /**
  * 查找并得到构造方法 - 查询的结果将按照描述符缓存使用

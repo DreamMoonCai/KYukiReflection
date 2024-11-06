@@ -1,7 +1,7 @@
 ---
 next:
   text: Public API
-  link: /zh-cn/api/public/com/DreamMoonCai/KYukiReflection/YukiReflection
+  link: /zh-cn/api/public/com/DreamMoonCai/KYukiReflection/KYukiReflection
 ---
 
 # 文档介绍

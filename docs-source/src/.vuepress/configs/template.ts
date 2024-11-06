@@ -24,6 +24,9 @@ const navigationLinks = {
         baseApiPath + 'type/kotlin/KVariableTypeFactory',
         baseApiPath + 'type/defined/KDefinedTypeFactory',
         baseApiPath + 'log/KYLog',
+        baseApiPath + 'factory/KFunctionAttachFactory',
+        baseApiPath + 'factory/KJvmFactory',
+        baseApiPath + 'factory/KotlinFactory',
         baseApiPath + 'factory/ReflectionFactory',
         baseApiPath + 'finder/members/MethodFinder',
         baseApiPath + 'finder/members/ConstructorFinder',
@@ -40,6 +43,7 @@ const navigationLinks = {
         baseApiPath + 'finder/base/rules/NameRules',
         baseApiPath + 'finder/base/rules/ObjectRules',
         baseApiPath + 'build/KTypeBuild',
+        baseApiPath + 'helper/KYukiHookHelper',
         baseApiPath + 'bean/KVariousClass',
         baseApiPath + 'bean/KCurrentClass',
         baseApiPath + 'bean/KGenericClass'

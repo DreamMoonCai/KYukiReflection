@@ -32,7 +32,7 @@ object KYukiHookHelper {
      * @return [Any] or null
      * @throws IllegalStateException 如果 [Member] 参数个数不正确
      */
-    fun invokeOriginalMember(member: Member?, instance: Any?, args: Array<out Any?>?):Any?{
+    fun invokeOriginalMember(member: Member?, instance: Any?, args: Array<out Any?>?): Any? {
         if(YukiHookHelperKClass == null){
             return null
         }

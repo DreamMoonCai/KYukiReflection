@@ -14,7 +14,7 @@ import kotlin.reflect.KCallable
  *
  * 引用对象创建速度快懒加载只有使用时会耗时加载由此创建的[KCallable]可调用 [KCallable.ref]
  */
-object KReference {
+internal object KReference {
     enum class Flags(val value: Int) {
         NO_FLAGS(0),
         TOP_LEVEL(1),
