@@ -448,6 +448,7 @@ listOf<KClass<*>>(/* 多个 KClass */).findClass {
 ## KCallable 拓展
 
 > ~~这里是 **Class** 字节码成员变量 **Field**、**Method**、**Constructor** 相关的扩展功能。~~
+
 > 这里是 **KClass** 字节码成员变量 **KProperty**、**KFunction**、**Constructor KFunction** 相关的扩展功能。
 
 ::: tip
@@ -1751,7 +1752,7 @@ field {
 
 一些常见需求中查找的方法，都有其对应的封装类型以供使用，格式为 **类型 + KClass**。
 
-以下是 Java 中一些特例类型在 `YukiReflection` 中的封装名称。
+以下是 Java 中一些特例类型在 `KYukiReflection` 中的封装名称。
 
 - `void` → `UnitKType`
 

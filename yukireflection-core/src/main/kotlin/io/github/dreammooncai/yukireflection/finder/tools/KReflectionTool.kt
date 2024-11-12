@@ -583,7 +583,7 @@ internal object KReflectionTool {
      * @throws NoSuchMethodError 如果找不到 [Function]
      */
     internal fun findFunctions(classSet: KClass<*>?, rulesData: KFunctionRulesData) = rulesData.createResult { hasCondition ->
-        if (returnType == UndefinedKotlin) error("Function match type class is not found")
+        if (returnType == UndefinedKotlin) error("Function match returnType class is not found")
         if (classSet == null) return@createResult mutableListOf()
         if (hasCondition.not()) return@createResult classSet.existFunctions?.toList()?.toAccessibleKCallables() ?: mutableListOf()
         paramTypes?.takeIf { it.isNotEmpty() }
@@ -750,7 +750,7 @@ internal object KReflectionTool {
      */
     internal fun findFunctionSignatures(classSet: KClass<*>?, rulesData: KFunctionRulesData, loader: ClassLoader? = null) =
         rulesData.createResult { hasCondition ->
-            if (returnType == UndefinedKotlin) error("Function match type class is not found")
+            if (returnType == UndefinedKotlin) error("Function match returnType class is not found")
             if (classSet == null) return@createResult mutableListOf()
             paramTypes?.takeIf { it.isNotEmpty() }
                 ?.forEachIndexed { p, it -> if (it == UndefinedKotlin) error("Function match paramType[$p] class is not found") }
