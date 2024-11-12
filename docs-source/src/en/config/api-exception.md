@@ -52,9 +52,9 @@ In the search, `param`, `returnType`, `type` only accept `Class`, `String`, `Var
 // Find a method
 method {
     // ✅ Examples of correct usage
-    param(BooleanType, IntType, IntType)
+    param(BooleanKClass, IntKClass, IntKClass)
     // ✅ Examples of correct usage
-    returnType = BooleanType
+    returnType = BooleanKClass
     // ✅ The following scheme is also correct
     returnType = "java.lang.Boolean"
 }
@@ -62,7 +62,7 @@ method {
 // Find a variable
 field {
     // ✅ Examples of correct usage
-    type = BooleanType
+    type = BooleanKClass
 }
 ```
 
@@ -140,7 +140,7 @@ The methods, constructors, and variables that need to be found cannot be found b
 ```kotlin
 TargetClass.method {
     name = "test"
-    param(BooleanType)
+    param(BooleanKClass)
 }
 ```
 
@@ -152,13 +152,13 @@ This is a security exception, please check the conditions you set, use the relev
 
 ::: danger loggerE
 
-The number of VagueType must be at least less than the count of paramTypes
+The number of VagueKotlin must be at least less than the count of paramTypes
 
 :::
 
 **Abnormal**
 
-Incorrect use of `VagueType` in `Method`, `Constructor` lookup conditions.
+Incorrect use of `VagueKotlin` in `Method`, `Constructor` lookup conditions.
 
 > The following example
 
@@ -166,15 +166,15 @@ Incorrect use of `VagueType` in `Method`, `Constructor` lookup conditions.
 TargetClass.method {
     name = "test"
     // <Scenario 1>
-    param(VagueType)
+    param(VagueKotlin)
     // <Scenario 2>
-    param(VagueType, VagueType ...)
+    param(VagueKotlin, VagueKotlin ...)
 }
 ```
 
 **Solution**
 
-`VagueType` cannot be completely filled in method and constructor parameters. If there is such a requirement, please use `paramCount`.
+`VagueKotlin` cannot be completely filled in method and constructor parameters. If there is such a requirement, please use `paramCount`.
 
 ###### exception
 
@@ -244,7 +244,7 @@ The `Class` instance subscripted by the `index` number of `param` was not found 
 method {
     name = "test"
     // Assume that the Class with subscript "No.1" set here does not exist
-    param(StringClass, "com.example.TestClass", BooleanType)
+    param(StringKClass, "com.example.TestClass", BooleanKClass)
 }
 ```
 

@@ -53,7 +53,7 @@ class KPropertyRules internal constructor(private val rulesData: KPropertyRulesD
     /**
      * 设置 [KProperty] 类型
      *
-     * - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[String]、[VariousClass]
+     * - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[String]、[KVariousClass]
      *
      * - 可不填写类型
      * @return [Any] or null
@@ -90,7 +90,7 @@ class KPropertyRules internal constructor(private val rulesData: KPropertyRulesD
      * 使用示例如下 ↓
      *
      * ```kotlin
-     * type { it == StringClass || it.name == "java.lang.String" }
+     * type { it == StringKClass || it.name == "java.lang.String" }
      * ```
      * @param conditions 条件方法体
      */

@@ -57,7 +57,7 @@ fun clearCache(context: Context, versionName: String?, versionCode: Long?)
 
 > 清除当前 `DexClassFinder` 的 `Class` 缓存。
 
-适用于全部通过 [ClassLoader.searchClass](../../../factory/ReflectionFactory#classloader-searchclass-ext-method) 获取的 `DexClassFinder`。
+适用于全部通过 [ClassLoader.searchClass](../../../factory/KReflectionFactory#classloader-searchclass-ext-method) 获取的 `DexClassFinder`。
 
 ## fullName <span class="symbol">- field</span>
 

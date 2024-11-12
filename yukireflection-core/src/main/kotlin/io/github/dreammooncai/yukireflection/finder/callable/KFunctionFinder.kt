@@ -152,7 +152,7 @@ open class KFunctionFinder internal constructor(final override val classSet: KCl
      * 此时就可以简单地写作 ↓
      *
      * ```kotlin
-     * param(StringType, BooleanType, VagueType, IntType)
+     * param(StringKClass, BooleanKClass, VagueKotlin, IntKClass)
      * ```
      *
      * - 无参 [KFunction] 请使用 [emptyParam] 设置查找条件
@@ -175,7 +175,7 @@ open class KFunctionFinder internal constructor(final override val classSet: KCl
      * 使用示例如下 ↓
      *
      * ```kotlin
-     * param { it[1].kotlin == StringClass || it[2].kotlin.name == "java.lang.String" || it[3].name = "size" }
+     * param { it[1].kotlin == StringKClass || it[2].kotlin.name == "java.lang.String" || it[3].name = "size" }
      * ```
      *
      * - 无参 [KFunction] 请使用 [emptyParam] 设置查找条件
@@ -342,7 +342,7 @@ open class KFunctionFinder internal constructor(final override val classSet: KCl
      * 使用示例如下 ↓
      *
      * ```kotlin
-     * returnType { it == StringClass || it.name == "java.lang.String" }
+     * returnType { it == StringKClass || it.name == "java.lang.String" }
      * ```
      *
      * - 存在多个 [KBaseFinder.IndexTypeCondition] 时除了 [order] 只会生效最后一个

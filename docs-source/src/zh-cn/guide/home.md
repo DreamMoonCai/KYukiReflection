@@ -37,7 +37,7 @@
 "android.os.SystemProperties".toKClass()
     .function {
         name = "get"
-        param(StringClass, StringClass)
+        param(StringKClass, StringKClass)
     }.get().call("ro.system.build.fingerprint", "none")
 ```
 

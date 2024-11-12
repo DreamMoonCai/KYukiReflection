@@ -52,9 +52,9 @@ field {
 // 查找一个方法
 method {
     // ✅ 正确的使用方法举例
-    param(BooleanType, IntType, IntType)
+    param(BooleanKClass, IntKClass, IntKClass)
     // ✅ 正确的使用方法举例
-    returnType = BooleanType
+    returnType = BooleanKClass
     // ✅ 以下方案也是正确的
     returnType = "java.lang.Boolean"
 }
@@ -62,7 +62,7 @@ method {
 // 查找一个变量
 field {
     // ✅ 正确的使用方法举例
-    type = BooleanType
+    type = BooleanKClass
 }
 ```
 
@@ -140,7 +140,7 @@ Can't find this Method/Constructor/Field in \[**CLASS**\]: **CONTENT** Generated
 ```kotlin
 TargetClass.method {
     name = "test"
-    param(BooleanType)
+    param(BooleanKClass)
 }
 ```
 
@@ -152,13 +152,13 @@ TargetClass.method {
 
 ::: danger loggerE
 
-The number of VagueType must be at least less than the count of paramTypes
+The number of VagueKotlin must be at least less than the count of paramTypes
 
 :::
 
 **异常原因**
 
-在 `Method`、`Constructor` 查找条件中错误地使用了 `VagueType`。
+在 `Method`、`Constructor` 查找条件中错误地使用了 `VagueKotlin`。
 
 > 示例如下
 
@@ -166,15 +166,15 @@ The number of VagueType must be at least less than the count of paramTypes
 TargetClass.method {
     name = "test"
     // <情景1>
-    param(VagueType)
+    param(VagueKotlin)
     // <情景2>
-    param(VagueType, VagueType ...)
+    param(VagueKotlin, VagueKotlin ...)
 }
 ```
 
 **解决方案**
 
-`VagueType` 不能在方法、构造方法参数中完全填充，若存在这样的需求请使用 `paramCount`。
+`VagueKotlin` 不能在方法、构造方法参数中完全填充，若存在这样的需求请使用 `paramCount`。
 
 ###### exception
 
@@ -244,7 +244,7 @@ Method/Constructor match paramType\[**INDEX**\] class is not found
 method {
     name = "test"
     // 假设这里设置的 1 号下标的 Class 并不存在
-    param(StringClass, "com.example.TestClass", BooleanType)
+    param(StringKClass, "com.example.TestClass", BooleanKClass)
 }
 ```
 

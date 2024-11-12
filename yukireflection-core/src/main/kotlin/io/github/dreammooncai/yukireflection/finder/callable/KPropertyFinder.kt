@@ -170,7 +170,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
      * 使用示例如下 ↓
      *
      * ```kotlin
-     * type { it == StringClass || it.name == "java.lang.String" }
+     * type { it == StringKClass || it.name == "java.lang.String" }
      * ```
      *
      * - 存在多个 [KBaseFinder.IndexTypeCondition] 时除了 [order] 只会生效最后一个

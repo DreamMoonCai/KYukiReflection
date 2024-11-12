@@ -23,7 +23,7 @@
 package io.github.dreammooncai.yukireflection.type.factory
 
 import io.github.dreammooncai.yukireflection.bean.KGenericClass
-import io.github.dreammooncai.yukireflection.build.KTypeBuild
+import io.github.dreammooncai.yukireflection.core.KTypeBuild
 import io.github.dreammooncai.yukireflection.finder.base.rules.KModifierRules
 import io.github.dreammooncai.yukireflection.finder.classes.KClassFinder
 import io.github.dreammooncai.yukireflection.finder.callable.KConstructorFinder

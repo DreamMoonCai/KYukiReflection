@@ -90,13 +90,13 @@ class KConstructorRules internal constructor(private val rulesData: KConstructor
      * 此时就可以简单地写作 ↓
      *
      * ```kotlin
-     * param(StringType, BooleanType, VagueType, IntType)
+     * param(StringKClass, BooleanKClass, VagueKotlin, IntKClass)
      * ```
      *
      * - 无参 Constructor[KFunction] 请使用 [emptyParam] 设置查找条件
      *
      * - 有参 Constructor[KFunction] 必须使用此方法设定参数或使用 [paramCount] 指定个数
-     * @param paramType 参数类型数组 - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[VariousClass]
+     * @param paramType 参数类型数组 - 只能是 [Class]/[KClassifier]/[KClass]/[KTypeParameter]、[KGenericClass]、[KType]、[KParameter]、[KParameter.Kind]、[String]、[KVariousClass]
      */
     fun param(vararg paramType: Any) {
         if (paramType.isEmpty()) error("paramTypes is empty, please use emptyParam() instead")
@@ -110,7 +110,7 @@ class KConstructorRules internal constructor(private val rulesData: KConstructor
      * 使用示例如下 ↓
      *
      * ```kotlin
-     * param { it[1] == StringClass || it[2].name == "java.lang.String" }
+     * param { it[1] == StringKClass || it[2].name == "java.lang.String" }
      * ```
      *
      * - 无参 Constructor[KFunction] 请使用 [emptyParam] 设置查找条件

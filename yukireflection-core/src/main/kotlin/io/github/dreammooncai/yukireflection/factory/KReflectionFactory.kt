@@ -14,7 +14,7 @@ import io.github.dreammooncai.yukireflection.KYukiReflection
 import io.github.dreammooncai.yukireflection.bean.KCurrentClass
 import io.github.dreammooncai.yukireflection.bean.KGenericClass
 import io.github.dreammooncai.yukireflection.bean.KVariousClass
-import io.github.dreammooncai.yukireflection.build.KTypeBuild
+import io.github.dreammooncai.yukireflection.core.KTypeBuild
 import io.github.dreammooncai.yukireflection.finder.base.KBaseFinder
 import io.github.dreammooncai.yukireflection.finder.base.rules.KModifierRules
 import io.github.dreammooncai.yukireflection.finder.callable.KConstructorFinder

@@ -128,7 +128,7 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
      * 此时就可以简单地写作 ↓
      *
      * ```kotlin
-     * param(StringType, BooleanType, VagueType, IntType)
+     * param(StringKClass, BooleanKClass, VagueKotlin, IntKClass)
      * ```
      *
      * - 无参 Constructor [KFunction] 请使用 [emptyParam] 设置查找条件
@@ -151,7 +151,7 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
      * 使用示例如下 ↓
      *
      * ```kotlin
-     * param { it[1] == StringClass || it[2].name == "java.lang.String" }
+     * param { it[1] == StringKClass || it[2].name == "java.lang.String" }
      * ```
      *
      * - 无参 Constructor [KFunction] 请使用 [emptyParam] 设置查找条件

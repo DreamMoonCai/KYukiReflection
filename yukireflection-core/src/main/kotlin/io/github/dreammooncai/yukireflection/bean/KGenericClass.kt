@@ -24,7 +24,7 @@
 
 package io.github.dreammooncai.yukireflection.bean
 
-import io.github.dreammooncai.yukireflection.build.KTypeBuild
+import io.github.dreammooncai.yukireflection.core.KTypeBuild
 import io.github.dreammooncai.yukireflection.factory.generic
 import io.github.dreammooncai.yukireflection.factory.kotlin
 import io.github.dreammooncai.yukireflection.factory.variance

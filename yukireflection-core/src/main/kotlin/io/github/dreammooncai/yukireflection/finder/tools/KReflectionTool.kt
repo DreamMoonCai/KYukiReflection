@@ -1430,7 +1430,7 @@ internal object KReflectionTool {
             (compare == null && original != null) || (compare != null && original == null) || (compare?.size != original?.size) -> false
             else -> {
                 if (compare == null || original == null) return false
-                if (compare.all { it == VagueKotlin }) error("The number of VagueType must be at least less than the count of paramTypes")
+                if (compare.all { it == VagueKotlin }) error("The number of VagueKotlin must be at least less than the count of paramTypes")
                 for (i in compare.indices) return typeEq(
                     compare[i],
                     original[i]

@@ -20,10 +20,10 @@ You can use the **Chrome Translation Plugin** to translate entire pages for refe
 
 > 这是一个内部类型的定义常量类，主要用于反射 API 相关用法的延伸。
 
-## VagueType <span class="symbol">- field</span>
+## VagueKotlin <span class="symbol">- field</span>
 
 ```kotlin:no-line-numbers
-val VagueType: Class<*>
+val VagueKotlin: Class<*>
 ```
 
 **Change Records**

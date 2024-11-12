@@ -112,7 +112,7 @@ instance?.method {
 
 ::: tip
 
-For more functions, please refer to [lazyClass](../public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#lazyclass-method), [lazyClassOrNull](../public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#lazyclassornull-method) methods.
+For more functions, please refer to [lazyClass](../public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#lazyclass-method), [lazyClassOrNull](../public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#lazyclassornull-method) methods.
 
 :::
 
@@ -158,7 +158,7 @@ var isExist = "com.demo.Test".hasClass(customClassLoader)
 
 ::: tip
 
-For more functions, please refer to [String.hasClass](../api/public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#string-hasclass-ext-method) method.
+For more functions, please refer to [String.hasClass](../api/public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#string-hasclass-ext-method) method.
 
 :::
 
@@ -273,13 +273,13 @@ searchClass {
     implements("java.io.Serializable")
     // Specify the type and style of the constructor
     // And the number count that exists in the current class
-    constructor { param(StringClass) }.count(num = 1)
+    constructor { param(StringKClass) }.count(num = 1)
     // Specify the type and style of the variable
     // And the number that exists in the current class count
-    field { type = StringClass }.count(num = 2)
+    field { type = StringKClass }.count(num = 2)
     // Specify the type and style of the variable
     // And the number that exists in the current class count
-    field { type = BooleanType }.count(num = 1)
+    field { type = BooleanKClass }.count(num = 1)
     // Directly specify the number of all variables that exist in the current class count
     field().count(num = 3)
     // If you think the number of variables is indeterminate
@@ -296,15 +296,15 @@ searchClass {
     // Specify the modifier, and the number count in the current class
     method {
         modifiers { isStatic && isPrivate }
-        param(StringClass)
+        param(StringKClass)
         returnType = UnitType
     }.count(num = 1)
     // Specify the type and style of the method
     // Specify the modifier, and the number count in the current class
     method {
         modifiers { isPrivate && isStatic.not() }
-        param(BooleanType, StringClass)
-        returnType = StringClass
+        param(BooleanKClass, StringKClass)
+        returnType = StringKClass
     }.count(num = 1)
     // Specify the type and style of the method
     // Specify the modifier, and the number count in the current class
@@ -314,11 +314,11 @@ searchClass {
         returnType = UnitType
     }.count(num = 1)
     // Specify the type and style of the method
-    // As well as the modifier and VagueType
+    // As well as the modifier and VagueKotlin
     // And the number count that exists in the current class
     method {
         modifiers { isPrivate && isStatic.not() }
-        param(BooleanType, VagueType, VagueType, StringClass)
+        param(BooleanKClass, VagueKotlin, VagueKotlin, StringKClass)
         returnType = UnitType
     }.count(num = 1)
     // Directly specify the number of all methods that exist in the current class count
@@ -340,7 +340,7 @@ searchClass {
 
 The conditional usage of **Field**, **Method**, **Constructor** in the above usage is consistent with the related usage in [Member Extensions](#member-extensions), with only minor differences.
 
-For more functions, please refer to [MemberRules](../api/public/com/DreamMoonCai/KYukiReflection/finder/classes/rules/MemberRules), [FieldRules](../api/public/com/DreamMoonCai/KYukiReflection/finder/classes/rules/FieldRules), [MethodRules](../api/public/com/DreamMoonCai/KYukiReflection/finder/classes/rules/MethodRules), [ConstructorRules](../api/public/com/DreamMoonCai/KYukiReflection/finder/classes/rules/ConstructorRules).
+For more functions, please refer to [KCallableRules](../api/public/io/github/dreammooncai/yukiReflection/finder/classes/rules/KCallableRules), [FieldRules](../api/public/io/github/dreammooncai/yukiReflection/finder/classes/rules/FieldRules), [MethodRules](../api/public/io/github/dreammooncai/yukiReflection/finder/classes/rules/MethodRules), [ConstructorRules](../api/public/io/github/dreammooncai/yukiReflection/finder/classes/rules/ConstructorRules).
 
 :::
 
@@ -460,7 +460,7 @@ searchClass(context, async = true) {
 
 ::: tip
 
-For more functions, please refer to [ClassLoader.searchClass](../api/public/com/DreamMoonCai/KYukiReflection/factory/ReflectionFactory#classloader-searchclass-ext-method) method.
+For more functions, please refer to [ClassLoader.searchClass](../api/public/com/DreamMoonCai/KYukiReflection/factory/KReflectionFactory#classloader-searchclass-ext-method) method.
 
 :::
 
@@ -578,15 +578,15 @@ The above writing can be written as `YukiReflection` as follows.
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "doTask"
-    param(StringClass)
+    param(StringKClass)
 }.get(instance).call("task_name")
 ```
 
 ::: tip
 
-For more features, please refer to [MethodFinder](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/MethodFinder).
+For more features, please refer to [MethodFinder](../api/public/io/github/dreammooncai/yukiReflection/finder/members/MethodFinder).
 
 :::
 
@@ -598,15 +598,15 @@ Similarly, we need to get the `isTaskRunning` field can also be written as follo
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.field {
+Test::class.property {
     name = "isTaskRunning"
-    type = BooleanType
+    type = BooleanKClass
 }.get(instance).any() // Any instantiates an object of any type of Field
 ```
 
 ::: tip
 
-For more features, please refer to [FieldFinder](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/FieldFinder).
+For more features, please refer to [FieldFinder](../api/public/io/github/dreammooncai/yukiReflection/finder/members/FieldFinder).
 
 :::
 
@@ -616,7 +616,7 @@ Maybe you also want to get the current `Class` constructor, the same can be achi
 
 ```kotlin
 Test::class.java.constructor {
-    param(BooleanType)
+    param(BooleanKClass)
 }.get().call(true) // Can create a new instance
 ```
 
@@ -630,7 +630,7 @@ Test::class.java.constructor().get().call() // Create a new instance
 
 ::: tip
 
-For more features, please refer to [ConstructorFinder](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/ConstructorFinder).
+For more features, please refer to [ConstructorFinder](../api/public/io/github/dreammooncai/yukiReflection/finder/members/ConstructorFinder).
 
 :::
 
@@ -644,10 +644,10 @@ Suppose we want to get the `getName` method in `Class`, which can be implemented
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "getName"
     emptyParam()
-    returnType = StringClass
+    returnType = StringKClass
 }.get(instance).string() // Get the result of the method
 ```
 
@@ -659,7 +659,7 @@ Through observation, it is found that there is only one method named `getName` i
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "getName"
     emptyParam()
 }.get(instance).string() // Get the result of the method
@@ -681,7 +681,7 @@ At this point, after determining the uniqueness of the method, you can use `para
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "release"
     // At this point
     // We don't have to determine the specific type of method parameters, just write the number
@@ -691,7 +691,7 @@ Test::class.java.method {
 
 Although the above example can be successfully matched, it is not accurate.
 
-At this time, you can also use `VagueType` to fill in the method parameter type that you do not want to fill in.
+At this time, you can also use `VagueKotlin` to fill in the method parameter type that you do not want to fill in.
 
 > The following example
 
@@ -699,11 +699,11 @@ At this time, you can also use `VagueType` to fill in the method parameter type 
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "release"
-    // Use VagueType to fill in the type you don't want to fill in
+    // Use VagueKotlin to fill in the type you don't want to fill in
     // While ensuring that other types can match
-    param(StringClass, VagueType, BooleanType)
+    param(StringKClass, VagueKotlin, BooleanKClass)
 }.get(instance) // Get this method
 ```
 
@@ -715,11 +715,11 @@ If you are not sure about the type of each parameter, you can create a condition
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
      name = "release"
      // Get the it (Class) method parameter type array instance
      // To only determine the known type and its position
-     param { it[0] == StringClass && it[2] == BooleanType }
+     param { it[0] == StringKClass && it[2] == BooleanKClass }
 }.get(instance) // Get this method
 ```
 
@@ -729,7 +729,7 @@ Use **param { ... }** to create a conditional method body, where the variable **
 
 The condition at the end of the method body needs to return a **Boolean**, which is the final condition judgment result.
 
-For more functions, please refer to [FieldFinder.type](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/FieldFinder#type-method-1), [MethodFinder.param](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/MethodFinder#param-method-1), [MethodFinder.returnType](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/MethodFinder#returntype-method-1), [ConstructorFinder.param](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/ConstructorFinder#param-method-1) method.
+For more functions, please refer to [KPropertyFinder.type](../api/public/io/github/dreammooncai/yukiReflection/finder/members/FieldFinder#type-method-1), [KFunctionFinder.param](../api/public/io/github/dreammooncai/yukiReflection/finder/members/MethodFinder#param-method-1), [KFunctionFinder.returnType](../api/public/io/github/dreammooncai/yukiReflection/finder/members/MethodFinder#returntype-method-1), [KConstructorFinder.param](../api/public/io/github/dreammooncai/yukiReflection/finder/members/ConstructorFinder#param-method-1) method.
 
 :::
 
@@ -745,9 +745,9 @@ Referring to the above find conditions, we only need to add a `superClass` to th
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "doBaseTask"
-    param(StringClass)
+    param(StringKClass)
     // Just add this condition
     superClass()
 }.get(instance).call("task_name")
@@ -765,9 +765,9 @@ Since we now know that the `doBaseTask` method only exists in the super class, t
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "doBaseTask"
-    param(StringClass)
+    param(StringKClass)
     // Add a find condition
     superClass(isOnlySuperClass = true)
 }.get(instance).call("task_name")
@@ -779,7 +779,7 @@ Once `superClass` is set, it will automatically cycle backward to find out wheth
 
 ::: tip
 
-For more functions, please refer to [MethodFinder.superClass](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/MethodFinder#superclass-method), [ConstructorFinder.superClass](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/ConstructorFinder#superclass-method), [FieldFinder.superClass](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/FieldFinder#superclass-method) methods.
+For more functions, please refer to [KFunctionFinder.superClass](../api/public/io/github/dreammooncai/yukiReflection/finder/members/MethodFinder#superclass-method), [KConstructorFinder.superClass](../api/public/io/github/dreammooncai/yukiReflection/finder/members/ConstructorFinder#superclass-method), [KPropertyFinder.superClass](../api/public/io/github/dreammooncai/yukiReflection/finder/members/FieldFinder#superclass-method) methods.
 
 :::
 
@@ -801,12 +801,12 @@ Suppose we want to get the `doTask` method in `Class`, which can be implemented 
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name {
         // Set name is case insensitive
         it.equals("dotask", isIgnoreCase = true)
     }
-    param(StringClass)
+    param(StringKClass)
 }.get(instance).call("task_name")
 ```
 
@@ -818,12 +818,12 @@ Knowing that there is currently only one `doTask` method in `Class`, we can also
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name {
         // Only contains oTas
         it.contains("oTas")
     }
-    param(StringClass)
+    param(StringKClass)
 }.get(instance).call("task_name")
 ```
 
@@ -835,12 +835,12 @@ We can also judge based on the first and last strings.
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name {
         // Contains do at the beginning and Task at the end
         it.startsWith("do") && it.endsWith("Task")
     }
-    param(StringClass)
+    param(StringKClass)
 }.get(instance).call("task_name")
 ```
 
@@ -852,22 +852,22 @@ By observing that this method name contains only letters, we can add a precise s
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name {
         // Start with do, end with Task, just letters
         it.startsWith("do") && it.endsWith("Task") && it.isOnlyLetters()
     }
-    param(StringClass)
+    param(StringKClass)
 }.get(instance).call("task_name")
 ```
 
 ::: tip
 
-Use **name { ... }** to create a conditional method body, where the variable **it** is the string of the current name, and you can freely use it in the extension method of **NameRules** function.
+Use **name { ... }** to create a conditional method body, where the variable **it** is the string of the current name, and you can freely use it in the extension method of **KNameRules** function.
 
 The condition at the end of the method body needs to return a **Boolean**, which is the final condition judgment result.
 
-For more functions, please refer to [FieldFinder.name](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/FieldFinder#name-method-1), [MethodFinder.name](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/MethodFinder#name-method-1) methods and [NameRules](../api/public/com/DreamMoonCai/KYukiReflection/finder/base/rules/NameRules).
+For more functions, please refer to [KPropertyFinder.name](../api/public/io/github/dreammooncai/yukiReflection/finder/members/FieldFinder#name-method-1), [KFunctionFinder.name](../api/public/io/github/dreammooncai/yukiReflection/finder/members/MethodFinder#name-method-1) methods and [KNameRules](../api/public/io/github/dreammooncai/yukiReflection/finder/base/rules/KNameRules).
 
 :::
 
@@ -887,7 +887,7 @@ Suppose this time we want to get all methods in `Class` with the number of metho
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     paramCount(1..3)
 }.all(instance).forEach { instance ->
     // Call and execute each method
@@ -911,7 +911,7 @@ If you want to define the conditions for the range of the number of parameters m
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     paramCount { it < 3 }
 }.all(instance).forEach { instance ->
     // Call and execute each method
@@ -941,7 +941,7 @@ By observing that there are two methods named `b` in `Class`, you can use the fo
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "b"
 }.all(instance).forEach { instance ->
     // Call and execute each method
@@ -957,11 +957,11 @@ The above example can be perfectly matched to the following 2 methods.
 
 ::: tip
 
-Use **paramCount { ... }** to create a conditional method body, where the variable **it** is the integer of the current number of parameters, and you can use it freely in the extension method of **CountRules** function in it.
+Use **paramCount { ... }** to create a conditional method body, where the variable **it** is the integer of the current number of parameters, and you can use it freely in the extension method of **KCountRules** function in it.
 
 The condition at the end of the method body needs to return a **Boolean**, which is the final condition judgment result.
 
-For more functions, please refer to [MethodFinder.paramCount](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/MethodFinder#paramcount-method-2), [ConstructorFinder.paramCount](../api/public/com/DreamMoonCai/KYukiReflection/finder/members/ConstructorFinder#paramcount-method-2) methods and [CountRules](../api/public/com/DreamMoonCai/KYukiReflection/finder/base/rules/CountRules).
+For more functions, please refer to [KFunctionFinder.paramCount](../api/public/io/github/dreammooncai/yukiReflection/finder/members/MethodFinder#paramcount-method-2), [KConstructorFinder.paramCount](../api/public/io/github/dreammooncai/yukiReflection/finder/members/ConstructorFinder#paramcount-method-2) methods and [KCountRules](../api/public/io/github/dreammooncai/yukiReflection/finder/base/rules/KCountRules).
 
 :::
 
@@ -974,9 +974,9 @@ Suppose we want to get the contents of the static field `TAG` this time.
 > The following example
 
 ```kotlin
-Test::class.java.field {
+Test::class.property {
     name = "TAG"
-    type = StringClass
+    type = StringKClass
 }.get().string() // The type of Field is string and can be cast directly
 ```
 
@@ -987,9 +987,9 @@ Just add a filter.
 > The following example
 
 ```kotlin
-Test::class.java.field {
+Test::class.property {
     name = "TAG"
-    type = StringClass
+    type = StringKClass
     // This field to identify the lookup needs to be static
     modifiers { isStatic }
 }.get().string() // The type of Field is string and can be cast directly
@@ -1000,7 +1000,7 @@ We can also call a static method called `init`.
 > The following example
 
 ```kotlin
-Test::class.java.method {
+Test::class.function {
     name = "init"
     emptyParam()
 }.get().call()
@@ -1011,7 +1011,7 @@ Likewise, you can identify it as a static.
 > The following example
 
 ```kotlin
-Test::class.java.method {
+Test::class.function {
     name = "init"
     emptyParam()
     // This method of identity find needs to be static
@@ -1025,7 +1025,7 @@ Use **modifiers { ... }** to create a conditional method body, at which point yo
 
 The condition at the end of the method body needs to return a **Boolean**, which is the final condition judgment result.
 
-For more functions, please refer to [FieldFinder.modifiers](../api/public/com/DreamMoonCai/YukiReflection/finder/members/FieldFinder#modifiers-method), [MethodFinder.modifiers](../api/public/com/DreamMoonCai/YukiReflection/finder/members/MethodFinder#modifiers-method), [ConstructorFinder.modifiers](../api/public/com/DreamMoonCai/YukiReflection/finder/members/ConstructorFinder#modifiers-method) methods and [ModifierRules](../api/public/com/DreamMoonCai/YukiReflection/finder/base/rules/ModifierRules).
+For more functions, please refer to [KPropertyFinder.modifiers](../api/public/io/github/dreammooncai/yukiReflection/finder/callable/KPropertyFinder#modifiers-method), [KFunctionFinder.modifiers](../api/public/io/github/dreammooncai/yukiReflection/finder/callable/MethodFinder#modifiers-method), [KConstructorFinder.modifiers](../api/public/io/github/dreammooncai/yukiReflection/finder/callable/KConstructorFinder#modifiers-method) methods and [KModifierRules](../api/public/io/github/dreammooncai/yukiReflection/finder/base/rules/KModifierRules).
 
 :::
 
@@ -1043,9 +1043,9 @@ The first option is to determine the name and type of the field.
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.field {
+Test::class.property {
     name = "a"
-    type = BooleanType
+    type = BooleanKClass
 }.get(instance).any() // Get a field named a with type Boolean
 ```
 
@@ -1057,8 +1057,8 @@ The second option is to determine where the type of the field is located.
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.field {
-    type(BooleanType).index().first()
+Test::class.property {
+    type(BooleanKClass).index().first()
 }.get(instance).any() // Get the first field of type Boolean
 ```
 
@@ -1076,9 +1076,9 @@ The first option is to determine the method name and method parameters.
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "b"
-    param(StringClass)
+    param(StringKClass)
 }.get(instance).call("test_string") // Get the method whose name is b and whose parameter is [String]
 ```
 
@@ -1090,8 +1090,8 @@ The second option is to determine where the parameters of the method are located
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
-    param(StringClass).index().first()
+Test::class.function {
+    param(StringKClass).index().first()
 }.get(instance).call("test_string") // Get the method whose first method parameter is [String]
 ```
 
@@ -1103,7 +1103,7 @@ Since it is observed that this method is last in `Class`, then we have an altern
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     order().index().last()
 }.get(instance).call("test_string") // Get the last method of the current Class
 ```
@@ -1132,7 +1132,7 @@ instance.current {
     // Execute the doTask method
     method {
         name = "doTask"
-        param(StringClass)
+        param(StringKClass)
     }.call("task_name")
     // Execute the stop method
     method {
@@ -1156,7 +1156,7 @@ instance.current {
     // Execute the doBaseTask method of the parent class
     superClass().method {
         name = "doBaseTask"
-        param(StringClass)
+        param(StringKClass)
     }.call("task_name")
 }
 ```
@@ -1173,7 +1173,7 @@ instance
     .current()
     .method {
         name = "doTask"
-        param(StringClass)
+        param(StringKClass)
     }.call("task_name")
 // Execute the stop method
 instance
@@ -1197,7 +1197,7 @@ val instance = Test()
 instance.current {
     method {
         name = "doTask"
-        param(StringClass)
+        param(StringKClass)
     }.call("task_name")
 }.current()
     .method {
@@ -1224,7 +1224,7 @@ instance.current {
     }.current {
         method {
             name = "doBaseTask"
-            param(StringClass)
+            param(StringKClass)
         }.call("task_name")
     }
     // <Plan 2>
@@ -1233,7 +1233,7 @@ instance.current {
     }.current()
         ?.method {
             name = "doBaseTask"
-            param(StringClass)
+            param(StringKClass)
         }?.call("task_name")
 }
 ```
@@ -1280,10 +1280,10 @@ At this time, we can also use the `buildOf` method to create an instance.
 > The following example
 
 ```kotlin
-"com.demo.Test".toClass().buildOf(true) { param(BooleanType) }?.current {
+"com.demo.Test".toClass().buildOf(true) { param(BooleanKClass) }?.current {
     method {
         name = "doTask"
-        param(StringClass)
+        param(StringKClass)
     }.call("task_name")
 }
 ```
@@ -1296,13 +1296,13 @@ In this case, the constructor of the instance itself is private, but the method 
 
 ```kotlin
 // Assume this Class can be obtained directly
-val test = Test::class.java.buildOf<Test>(true) { param(BooleanType) }
+val test = Test::class.java.buildOf<Test>(true) { param(BooleanKClass) }
 test.doTask("task_name")
 ```
 
 ::: tip
 
-For more functions, please refer to [CurrentClass](../api/public/com/DreamMoonCai/YukiReflection/bean/CurrentClass) and [Class.buildOf](../api/public/com/DreamMoonCai/YukiReflection/factory/ReflectionFactory#class-buildof-ext-method) method.
+For more functions, please refer to [KCurrentClass](../api/public/io/github/dreammooncai/yukiReflection/bean/KCurrentClass) and [Class.buildOf](../api/public/io/github/dreammooncai/yukiReflection/factory/KReflectionFactory#class-buildof-ext-method) method.
 
 :::
 
@@ -1355,19 +1355,19 @@ At this point, you can use `RemedyPlan` to complete your needs.
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "doTask"
     emptyParam()
 }.remedys {
     method {
         name = "doTask"
-        param(StringClass)
+        param(StringKClass)
     }.onFind {
         // Found logic can be implemented here
     }
     method {
         name = "doTask"
-        param(StringClass, IntType)
+        param(StringKClass, IntKClass)
     }.onFind {
         // Found logic can be implemented here
     }
@@ -1390,7 +1390,7 @@ Also, you can continue to use `RemedyPlan` while using [Multiple Find](#multiple
 // Assume this is an instance of this Class
 val instance = Test()
 // Call and execute using YukiReflection
-Test::class.java.method {
+Test::class.function {
     name = "doTask"
     emptyParam()
 }.remedys {
@@ -1413,7 +1413,7 @@ Test::class.java.method {
 
 ::: tip
 
-For more functions, please refer to [MethodFinder.RemedyPlan](../api/public/com/DreamMoonCai/YukiReflection/finder/members/MethodFinder#remedyplan-class), [ConstructorFinder.RemedyPlan](../api/public/com/DreamMoonCai/YukiReflection/finder/members/ConstructorFinder#remedyplan-class), [FieldFinder.RemedyPlan](../api/public/com/DreamMoonCai/YukiReflection/finder/members/FieldFinder#remedyplan-class) .
+For more functions, please refer to [KFunctionFinder.RemedyPlan](../api/public/io/github/dreammooncai/yukiReflection/finder/callable/MethodFinder#remedyplan-class), [KConstructorFinder.RemedyPlan](../api/public/io/github/dreammooncai/yukiReflection/finder/callable/KConstructorFinder#remedyplan-class), [KPropertyFinder.RemedyPlan](../api/public/io/github/dreammooncai/yukiReflection/finder/callable/KPropertyFinder#remedyplan-class) .
 
 :::
 
@@ -1499,7 +1499,7 @@ VariousClass("com.demo.ATest", "com.demo.BTest").getOrNull(customClassLoader)?.m
 
 ::: tip
 
-For more functions, please refer to [VariousClass](../api/public/com/DreamMoonCai/YukiReflection/bean/VariousClass).
+For more functions, please refer to [KVariousClass](../api/public/io/github/dreammooncai/yukiReflection/bean/KVariousClass).
 
 :::
 
@@ -1573,7 +1573,7 @@ TestGeneric::class.java.generic()?.argument()?.method {
 
 ::: tip
 
-For more functions, please refer to [CurrentClass.generic](../api/public/com/DreamMoonCai/YukiReflection/bean/CurrentClass#generic-method), [Class.generic](../api/public/com/DreamMoonCai/YukiReflection/factory/ReflectionFactory#class-generic-ext-method) methods and [GenericClass](../api/public/com/DreamMoonCai/YukiReflection/bean/GenericClass).
+For more functions, please refer to [KCurrentClass.generic](../api/public/io/github/dreammooncai/yukiReflection/bean/KCurrentClass#generic-method), [Class.generic](../api/public/io/github/dreammooncai/yukiReflection/factory/KReflectionFactory#class-generic-ext-method) methods and [KGenericClass](../api/public/io/github/dreammooncai/yukiReflection/bean/KGenericClass).
 
 :::
 
@@ -1590,9 +1590,9 @@ In find conditions you can <u>**only**</u> use `index` function once except `ord
 ```kotlin
 method {
     name = "test"
-    param(BooleanType).index(num = 2)
+    param(BooleanKClass).index(num = 2)
     //  Wrong usage, please keep only one index method
-    returnType(StringClass).index(num = 1)
+    returnType(StringKClass).index(num = 1)
 }
 ```
 
@@ -1603,7 +1603,7 @@ The following find conditions can be used without any problems.
 ```kotlin
 method {
     name = "test"
-    param(BooleanType).index(num = 2)
+    param(BooleanKClass).index(num = 2)
     order().index(num = 1)
 }
 ```
@@ -1634,7 +1634,7 @@ We want to get the `public void foo()` method, which can be written as follows.
 > The following example
 
 ```kotlin
-TestFoo::class.java.method {
+TestFoo::class.function {
     name = "foo"
 }
 ```
@@ -1652,7 +1652,7 @@ The correct usage is as follows.
 > The following example
 
 ```kotlin
-TestFoo::class.java.method {
+TestFoo::class.function {
     name = "foo"
     // ✅ Correct usage, add detailed filter conditions
     emptyParam()
@@ -1717,8 +1717,8 @@ Using `get(...)` or `give()` will only get the first bit in bytecode order.
 > The following example
 
 ```kotlin
-Test::class.java.field().get(...)
-Test::class.java.method().give()
+Test::class.property().get(...)
+Test::class.function().give()
 ```
 
 If you want to get all members, you can use `all(...)` or `giveAll()`
@@ -1726,8 +1726,8 @@ If you want to get all members, you can use `all(...)` or `giveAll()`
 > The following example
 
 ```kotlin
-Test::class.java.field().all(...)
-Test::class.java.method().giveAll()
+Test::class.property().all(...)
+Test::class.function().giveAll()
 ```
 
 ::: tip Compatibility Notes
@@ -1751,7 +1751,7 @@ The following is the wrong way to use it.
 ```kotlin
 field {
     name = "test"
-    type = BooleanType
+    type = BooleanKClass
 }.get().string() //  Wrong usage, must be cast to the bytecode target type
 ```
 
@@ -1762,7 +1762,7 @@ The following is the correct way to use it.
 ```kotlin
 field {
     name = "test"
-    type = BooleanType
+    type = BooleanKClass
 }.get().boolean().toString() // ✅ The correct way to use, get the type and then convert
 ```
 
@@ -1790,17 +1790,17 @@ At this time, the above type can be written in the following form.
 ```kotlin
 field {
     name = "test"
-    type = BooleanType
+    type = BooleanKClass
 }
 ```
 
-The **primitive type keywords** in common Java types have been encapsulated as **Type(Class Name) + Type**, such as `IntType`, `FloatType` (their bytecode types are `int`, ` float`).
+The **primitive type keywords** in common Java types have been encapsulated as **Type(Class Name) + Type**, such as `IntKClass`, `FloatType` (their bytecode types are `int`, ` float`).
 
 Correspondingly, array types also have convenient usage methods, assuming we want to get an array of type `String[]`.
 
 You need to write `java.lang.reflect.Array.newInstance(String::class.java, 0).javaClass` to get this type.
 
-Does it feel very troublesome, at this time we can use the method `ArrayClass(StringClass)` to get this type.
+Does it feel very troublesome, at this time we can use the method `ArrayClass(StringKClass)` to get this type.
 
 At the same time, since `String` is a common type, you can also directly use `StringArrayClass` to get this type.
 
@@ -1836,7 +1836,7 @@ For example, the encapsulation type of **byte[]** is **ByteArrayType** or **Arra
 
 ::: tip
 
-For more types, see [ComponentTypeFactory](../api/public/com/DreamMoonCai/YukiReflection/type/android/ComponentTypeFactory), [GraphicsTypeFactory](../api/public/com/DreamMoonCai/YukiReflection/type/android/GraphicsTypeFactory), [ViewTypeFactory](../api/public/com/DreamMoonCai/YukiReflection/type/android/ViewTypeFactory), [VariableTypeFactory](../api/public/com/DreamMoonCai/YukiReflection/type/java/VariableTypeFactory).
+For more types, see [KComponentTypeFactory](../api/public/io/github/dreammooncai/yukiReflection/type/android/KComponentTypeFactory), [KGraphicsTypeFactory](../api/public/io/github/dreammooncai/yukiReflection/type/android/KGraphicsTypeFactory), [KViewTypeFactory](../api/public/io/github/dreammooncai/yukiReflection/type/android/KViewTypeFactory), [KVariableTypeFactory](../api/public/io/github/dreammooncai/yukiReflection/type/java/KVariableTypeFactory).
 
 :::
 
