@@ -46,7 +46,7 @@ const navigationLinks = {
         baseApiPath + 'finder/base/rules/KModifierRules',
         baseApiPath + 'finder/base/rules/KNameRules',
         baseApiPath + 'finder/base/rules/KObjectRules',
-        baseApiPath + 'build/KTypeBuild',
+        baseApiPath + 'core/KTypeBuild',
         baseApiPath + 'helper/KYukiHookHelper',
         baseApiPath + 'bean/KVariousClass',
         baseApiPath + 'bean/KCurrentClass',
