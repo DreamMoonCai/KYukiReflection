@@ -57,7 +57,6 @@ import kotlin.reflect.jvm.internal.impl.builtins.jvm.JavaToKotlinClassMap
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
 import kotlin.reflect.jvm.internal.impl.name.FqNameUnsafe
-import kotlin.reflect.jvm.internal.impl.name.Name
 
 /**
  * 这是一个对 [KClass]、[KCallable] 查找的工具实现类
@@ -744,7 +743,7 @@ internal object KReflectionTool {
      * 查找任意 [KFunctionSignatureSupport] 或一组 [KFunctionSignatureSupport]
      * @param classSet [KFunctionSignatureSupport] 所在类
      * @param rulesData 规则查找数据
-     * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramClasss] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 方法参数 [KFunctionSignatureSupport.paramClass] 所在的 [ClassLoader]
      * @return [MutableList]<[KFunctionSignatureSupport]>
      * @throws IllegalStateException 如果未设置任何条件或 [KFunctionRulesData.paramTypes] 以及 [KFunctionRulesData.returnType] 目标类不存在
      * @throws NoSuchMethodError 如果找不到 [KFunctionSignatureSupport]

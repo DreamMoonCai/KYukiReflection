@@ -115,7 +115,7 @@ inline fun <reified T> argument(index: Int): KClass<T>?
 ## generic <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun generic(index: Int,initiate: KGenericClass.() -> Unit): KGenericClass
+fun generic(index: Int,initiate: KGenericClassDomain): KGenericClass
 ```
 
 **变更记录**

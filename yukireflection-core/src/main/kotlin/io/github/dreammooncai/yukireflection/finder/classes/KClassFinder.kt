@@ -31,6 +31,7 @@ import io.github.dreammooncai.yukireflection.finder.classes.rules.KConstructorRu
 import io.github.dreammooncai.yukireflection.finder.classes.rules.KFunctionRules
 import io.github.dreammooncai.yukireflection.finder.classes.rules.KPropertyRules
 import io.github.dreammooncai.yukireflection.finder.classes.rules.base.KBaseRules
+import io.github.dreammooncai.yukireflection.finder.classes.rules.result.KCallableRulesResult
 import io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool
 import io.github.dreammooncai.yukireflection.type.factory.KModifierConditions
 import io.github.dreammooncai.yukireflection.type.factory.KNameConditions
@@ -359,28 +360,28 @@ class KClassFinder internal constructor(classSet: Collection<KClass<*>>? = null)
     /**
      * 设置 [KClass] 满足的 [KCallable] 条件
      * @param initiate 条件方法体
-     * @return [KCallableRules]
+     * @return [KCallableRulesResult]
      */
     inline fun callable(initiate: KCallableRules.() -> Unit = {}) = KBaseRules.createCallableRules(this).apply(initiate).build()
 
     /**
      * 设置 [KClass] 满足的 [KProperty] 条件
      * @param initiate 条件方法体
-     * @return [KCallableRules]
+     * @return [KCallableRulesResult]
      */
     inline fun property(initiate: KPropertyRules.() -> Unit = {}) = KBaseRules.createPropertyRules(this).apply(initiate).build()
 
     /**
      * 设置 [KClass] 满足的 [KFunction] 条件
      * @param initiate 条件方法体
-     * @return [KCallableRules]
+     * @return [KCallableRulesResult]
      */
     inline fun function(initiate: KFunctionRules.() -> Unit = {}) = KBaseRules.createFunctionRules(this).apply(initiate).build()
 
     /**
      * 设置 [KClass] 满足的 Constructor[KFunction] 条件
      * @param initiate 查找方法体
-     * @return [KCallableRules]
+     * @return [KCallableRulesResult]
      */
     inline fun constructor(initiate: KConstructorRules.() -> Unit = {}) = KBaseRules.createConstructorRules(this).apply(initiate).build()
 

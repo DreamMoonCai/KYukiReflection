@@ -6,6 +6,7 @@ import io.github.dreammooncai.yukireflection.finder.callable.KConstructorFinder
 import io.github.dreammooncai.yukireflection.finder.signature.KFunctionSignatureFinder
 import io.github.dreammooncai.yukireflection.finder.signature.KPropertySignatureFinder
 import io.github.dreammooncai.yukireflection.utils.DexSignUtil
+import io.github.dreammooncai.yukireflection.utils.factory.lazyDomain
 import java.lang.reflect.*
 import kotlin.Array
 import kotlin.jvm.internal.Reflection
@@ -28,7 +29,9 @@ inline val <T> Class<out T>.kotlinAs get() = this.kotlin as KClass<T & Any>
  *
  * 顶层往往会在类名后增加Kt
  */
-inline val Class<*>.top: KDeclarationContainer get() = Reflection.getOrCreateKotlinPackage(if (this.name.endsWith("Kt")) this else "${name}Kt".toKClass().java)
+val Class<*>.top: KDeclarationContainer by lazyDomain {
+    Reflection.getOrCreateKotlinPackage(if (this.name.endsWith("Kt")) this else "${name}Kt".toKClass().java)
+}
 
 /**
  * 当前 [Class] 是否是kotlin类
@@ -40,7 +43,9 @@ inline val Class<*>.top: KDeclarationContainer get() = Reflection.getOrCreateKot
  * @return [Boolean]
  */
 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-inline val Class<*>.isKotlin: Boolean get() = annotations.any { (it as java.lang.annotation.Annotation).annotationType().name == Metadata::class.java.name }
+val Class<*>.isKotlin: Boolean by lazyDomain {
+    annotations.any { (it as java.lang.annotation.Annotation).annotationType().name == Metadata::class.java.name }
+}
 
 /**
  * 当前 [Class] 是否是kotlin类且反射是不会造成异常的
@@ -51,30 +56,31 @@ inline val Class<*>.isKotlin: Boolean get() = annotations.any { (it as java.lang
  *
  * @return [Boolean]
  */
-inline val Class<*>.isKotlinNoError get() = isKotlin && kotlin.isSupportReflection
+val Class<*>.isKotlinNoError by lazyDomain {
+    isKotlin && kotlin.isSupportReflection
+}
 
 /**
  * 检查当前 [Class] 是否是数组或集合同时根据Kotlin情况进行匹配
  *
  * @return [Boolean]
  */
-inline val Class<*>.isArrayOrCollection: Boolean
-    get() {
-        return isArray || when (this) {
-            IntArray::class.java,
-            ByteArray::class.java,
-            ShortArray::class.java,
-            LongArray::class.java,
-            FloatArray::class.java,
-            DoubleArray::class.java,
-            CharArray::class.java,
-            BooleanArray::class.java,
-            Array::class.java,
-            Collection::class.java -> true
+val Class<*>.isArrayOrCollection: Boolean by lazyDomain {
+    isArray || when (this) {
+        IntArray::class.java,
+        ByteArray::class.java,
+        ShortArray::class.java,
+        LongArray::class.java,
+        FloatArray::class.java,
+        DoubleArray::class.java,
+        CharArray::class.java,
+        BooleanArray::class.java,
+        Array::class.java,
+        Collection::class.java -> true
 
-            else -> this extends Collection::class.java
-        }
+        else -> this extends Collection::class.java
     }
+}
 
 /**
  * 将 [Constructor] 转换为 [KConstructorFinder.Result.Instance] 可执行类
@@ -83,7 +89,7 @@ inline val Class<*>.isArrayOrCollection: Boolean
  *
  * @param isUseMember 是否优先将属性转换Java方式进行get/set
  */
-inline fun Constructor<*>.instanceKotlin(isUseMember: Boolean = false) = kotlin.constructorInstance(isUseMember)
+inline fun Constructor<*>.instanceKotlin(isUseMember: Boolean = false) = kotlin.constructor(isUseMember)
 
 /**
  * 将 [Method] 转换为 [KFunctionSignatureFinder.Result.Instance] 可执行类
@@ -104,9 +110,11 @@ inline fun Field.instance(thisRef: Any? = null) = KPropertySignatureFinder().Res
  *
  * 签名分析或许不一定能正常转换 参阅或使用[Field.kotlinProperty]
  */
-inline val Field.kotlin: KProperty<*> get() = when{
-    Modifier.isStatic(modifiers) -> Reflection.mutableProperty0(KReference.mutablePropertyStatic(this))
-    else -> Reflection.mutableProperty1(KReference.mutableProperty(this))
+val Field.kotlin: KProperty<*> by lazyDomain {
+    when {
+        Modifier.isStatic(modifiers) -> Reflection.mutableProperty0(KReference.mutablePropertyStatic(this))
+        else -> Reflection.mutableProperty1(KReference.mutableProperty(this))
+    }
 }
 
 /**
@@ -114,14 +122,14 @@ inline val Field.kotlin: KProperty<*> get() = when{
  *
  * 签名分析或许不一定能正常转换 参阅或使用[Method.kotlinFunction]
  */
-inline val Method.kotlin: KFunction<*> get() = Reflection.function(KReference.function(this))
+val Method.kotlin: KFunction<*> by lazyDomain { Reflection.function(KReference.function(this)) }
 
 /**
  * 通过 [Constructor] 分析签名构建 [KFunction]
  *
  * 签名分析或许不一定能正常转换 参阅或使用[Constructor.kotlinFunction]
  */
-inline val Constructor<*>.kotlin: KFunction<*> get() = Reflection.function(KReference.function(this))
+val Constructor<*>.kotlin: KFunction<*> by lazyDomain { Reflection.function(KReference.function(this)) }
 
 /**
  * 获取此 [Field] 在 Kotlin 常用的简单签名
@@ -129,7 +137,7 @@ inline val Constructor<*>.kotlin: KFunction<*> get() = Reflection.function(KRefe
  *     如: int abc = * --> "getAbc()I"
  *        val abc = listOf(1, 2, 3) --> "getAbc()Ljava/util/List;"
  */
-val Field.kotlinSimpleSignature get() = name.addHump(if (type.kotlin == Boolean::class) "is" else "get") + "()" + DexSignUtil.getTypeSign(type)
+val Field.kotlinSimpleSignature by lazyDomain { name.addHump(if (type.kotlin == Boolean::class) "is" else "get") + "()" + DexSignUtil.getTypeSign(type) }
 
 /**
  * 获取此 [Method] 在 Kotlin 常用的简单签名
@@ -137,7 +145,7 @@ val Field.kotlinSimpleSignature get() = name.addHump(if (type.kotlin == Boolean:
  *     如: int abc(int a, int b) --> "abc(II)I"
  *        fun abc(a:List<*>) --> "abc(Ljava/util/List;)V"
  */
-val Method.kotlinSimpleSignature get() = name + DexSignUtil.getMethodSign(this)
+val Method.kotlinSimpleSignature by lazyDomain { name + DexSignUtil.getMethodSign(this) }
 
 /**
  * 获取此 [Constructor] 在 Kotlin 常用的简单签名
@@ -145,20 +153,22 @@ val Method.kotlinSimpleSignature get() = name + DexSignUtil.getMethodSign(this)
  *     如: class abc(int a, int b) --> "<init>(II)V"
  *        class abc(a:List<*>) --> "<init>(Ljava/util/List;)V"
  */
-val Constructor<*>.kotlinSimpleSignature get() = name + DexSignUtil.getConstructorSign(this)
+val Constructor<*>.kotlinSimpleSignature by lazyDomain { name + DexSignUtil.getConstructorSign(this) }
 
 /**
  * 获取 Java [Type] 的 Kotlin 类描述符
  *
  * @return [KClass]、[KTypeParameter]
  */
-val Type.classifier:KClassifier get() = when (this) {
-    is Class<*> -> this.kotlin
-    is ParameterizedType -> this.rawType.classifier
-    is GenericArrayType -> this.genericComponentType.classifier
-    is WildcardType -> this.upperBounds.first().classifier
-    is TypeVariable<*> -> this.kotlin
-    else -> error("Unsupported types can't get their Kotlin representation type.")
+val Type.classifier:KClassifier by lazyDomain {
+    when (this) {
+        is Class<*> -> this.kotlin
+        is ParameterizedType -> this.rawType.classifier
+        is GenericArrayType -> this.genericComponentType.classifier
+        is WildcardType -> this.upperBounds.first().classifier
+        is TypeVariable<*> -> this.kotlin
+        else -> error("Unsupported types can't get their Kotlin representation type.")
+    }
 }
 
 /**
@@ -167,7 +177,7 @@ val Type.classifier:KClassifier get() = when (this) {
  * - 此属性不会报错
  * @return [KClass]、[KTypeParameter] or null
  */
-val Type.classifierOrNull get() = runCatching { classifier }.getOrNull()
+val Type.classifierOrNull by lazyDomain { runCatching { classifier }.getOrNull() }
 
 /**
  * 获取 Java [Type] 的 Kotlin [KType]
@@ -180,8 +190,8 @@ val Type.classifierOrNull get() = runCatching { classifier }.getOrNull()
  *
  * 大多数情况下能够转换成功
  */
-val Type.kotlinType:KType get() {
-    return when (this) {
+val Type.kotlinType:KType by lazyDomain {
+    when (this) {
         is Class<*> -> this.classifier.type
         is ParameterizedType -> {
             val rawType = this.classifier
@@ -197,7 +207,7 @@ val Type.kotlinType:KType get() {
                         KTypeProjection.STAR
                 } else KTypeProjection(KVariance.INVARIANT, it.kotlinType)
             }
-            return rawType.createType(arguments)
+            rawType.createType(arguments)
         }
 
         is GenericArrayType -> Array::class.createType(arrayListOf(if (this.genericComponentType is WildcardType) {
@@ -222,12 +232,12 @@ val Type.kotlinType:KType get() {
  * - 此属性不会报错
  * @return [KType] or null
  */
-val Type.kotlinTypeOrNull get() = runCatching { kotlinType }.getOrNull()
+val Type.kotlinTypeOrNull by lazyDomain { runCatching { kotlinType }.getOrNull() }
 
 /**
  * 将Java [Array]<[Type]> 转换为 [Array]<[KType]>
  */
-val Array<Type>.kotlinType get() = map { it.kotlinType }.toTypedArray()
+val Array<Type>.kotlinType by lazyDomain { map { it.kotlinType }.toTypedArray() }
 
 /**
  * 将Java [Array]<[Type]> 转换为 [Array]<[KType]>
@@ -235,12 +245,12 @@ val Array<Type>.kotlinType get() = map { it.kotlinType }.toTypedArray()
  * - 此属性不会报错
  * @return [Array]<[KType]> or null
  */
-val Array<Type>.kotlinTypeOrNull get() = runCatching { kotlinType }.getOrNull()
+val Array<Type>.kotlinTypeOrNull by lazyDomain { runCatching { kotlinType }.getOrNull() }
 
 /**
  * 将Java [Collection]<[Type]> 转换为 [List]<[KType]>
  */
-val Collection<Type>.kotlinType get() = map { it.kotlinType }
+val Collection<Type>.kotlinType by lazyDomain { map { it.kotlinType } }
 
 /**
  * 将Java [Collection]<[Type]> 转换为 [List]<[KType]>
@@ -248,19 +258,19 @@ val Collection<Type>.kotlinType get() = map { it.kotlinType }
  * - 此属性不会报错
  * @return [List]<[KType]> or null
  */
-val Collection<Type>.kotlinTypeOrNull get() = runCatching { kotlinType }.getOrNull()
+val Collection<Type>.kotlinTypeOrNull by lazyDomain { runCatching { kotlinType }.getOrNull() }
 
 /**
  * 将Java [TypeVariable] 转换为 [KTypeParameter]
  */
-val TypeVariable<*>.kotlin:KTypeParameter get() {
-    return object : KTypeParameter {
+val TypeVariable<*>.kotlin:KTypeParameter by lazyDomain {
+    object : KTypeParameter {
         override val isReified: Boolean
             get() = false
         override val name: String
-            get() = this@kotlin.name
+            get() = this@lazyDomain.name
         override val upperBounds: List<KType>
-            get() = this@kotlin.bounds.mapNotNull { it.kotlinType }
+            get() = this@lazyDomain.bounds.mapNotNull { it.kotlinType }
         override val variance: KVariance
             get() = KVariance.INVARIANT
         override fun equals(other: Any?): Boolean =
@@ -292,21 +302,25 @@ var Member.isAccessible:Boolean
  *
  * 签名分析或许不一定能正常转换 参阅或使用[Member.kotlinCallable]
  */
-inline val Member.kotlin get() = when (this) {
-    is Field -> kotlin
-    is Method -> kotlin
-    is Constructor<*> -> kotlin
-    else -> error("Unsupported member type: $this")
+val Member.kotlin by lazyDomain {
+    when (this) {
+        is Field -> kotlin
+        is Method -> kotlin
+        is Constructor<*> -> kotlin
+        else -> error("Unsupported member type: $this")
+    }
 }
 
 /**
  * 返回与给定 Java [Member] 实例相对应的[KCallable]实例，或者null如果此字段不能由 Kotlin 可执行属性表示（例如，如果它是合成属性）。
  */
-inline val Member.kotlinCallable get() = when (this) {
-    is Field -> kotlinProperty
-    is Method -> kotlinFunction
-    is Constructor<*> -> kotlinFunction
-    else -> error("Unsupported member type: $this")
+val Member.kotlinCallable by lazyDomain {
+    when (this) {
+        is Field -> kotlinProperty
+        is Method -> kotlinFunction
+        is Constructor<*> -> kotlinFunction
+        else -> error("Unsupported member type: $this")
+    }
 }
 
 /**
@@ -318,9 +332,11 @@ inline val Member.kotlinCallable get() = when (this) {
  *
  * [Constructor] ---> [Member.getDeclaringClass]
  */
-inline val Member.returnType: Class<out Any> get() = when (this) {
-    is Field -> type
-    is Method -> returnType
-    is Constructor<*> -> declaringClass
-    else -> error("Unsupported member type: $this")
+val Member.returnType: Class<out Any> by lazyDomain {
+    when (this) {
+        is Field -> type
+        is Method -> returnType
+        is Constructor<*> -> declaringClass
+        else -> error("Unsupported member type: $this")
+    }
 }

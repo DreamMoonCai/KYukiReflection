@@ -14,9 +14,9 @@ class CountRules private constructor()
 
 **功能描述**
 
-> 这是一个模糊 `Class`、`Member` 数组 (下标) 个数条件实现类。
+> 这是一个模糊 `KClass`、`KCallable` 数组 (下标) 个数条件实现类。
 
-可对 R8 混淆后的 `Class`、`Member` 进行更加详细的定位。
+可对 R8 混淆后的 `KClass`、`KCallable` 进行更加详细的定位。
 
 ## Int.isZero <span class="symbol">- i-ext-method</span>
 

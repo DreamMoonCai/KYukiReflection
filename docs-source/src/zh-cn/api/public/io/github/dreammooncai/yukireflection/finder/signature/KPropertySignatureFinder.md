@@ -2,10 +2,10 @@
 pageClass: code-page
 ---
 
-# FieldFinder <span class="symbol">- class</span>
+# KPropertySignatureFinder <span class="symbol">- class</span>
 
 ```kotlin:no-line-numbers
-class FieldFinder internal constructor(override val classSet: Class<*>?) : MemberBaseFinder
+open class KPropertySignatureFinder internal constructor(classSet: KClass<*>?,private val loader: ClassLoader?) : KPropertyFinder
 ```
 
 **变更记录**
@@ -14,189 +14,11 @@ class FieldFinder internal constructor(override val classSet: Class<*>?) : Membe
 
 **功能描述**
 
-> `Field` 查找类。
+> 通过 `KProperty` 签名查找 `KPropertySignatureSupport.member` 类
 
-可通过指定类型查找指定 `Field` 或一组 `Field`。
+可通过指定类型查找指定 `KPropertySignatureSupport` 或一组 `KPropertySignatureSupport`。
 
-## name <span class="symbol">- field</span>
-
-```kotlin:no-line-numbers
-var name: String
-```
-
-**变更记录**
-
-`v1.0.0` `添加`
-
-**功能描述**
-
-> 设置 `Field` 名称。
-
-::: danger
-
-若不填写名称则必须存在一个其它条件。
-
-:::
-
-## type <span class="symbol">- field</span>
-
-```kotlin:no-line-numbers
-var type: Any?
-```
-
-**变更记录**
-
-`v1.0.0` `添加`
-
-**功能描述**
-
-> 设置 `Field` 类型。
-
-可不填写类型。
-
-## modifiers <span class="symbol">- method</span>
-
-```kotlin:no-line-numbers
-fun modifiers(conditions: ModifierConditions): IndexTypeCondition
-```
-
-**变更记录**
-
-`v1.0.0` `添加`
-
-**功能描述**
-
-> 设置 `Field` 标识符筛选条件。
-
-可不设置筛选条件。
-
-::: danger
-
-存在多个 **IndexTypeCondition** 时除了 **order** 只会生效最后一个。
-
-:::
-
-## order <span class="symbol">- method</span>
-
-```kotlin:no-line-numbers
-fun order(): IndexTypeCondition
-```
-
-**变更记录**
-
-`v1.0.0` `添加`
-
-**功能描述**
-
-> 顺序筛选字节码的下标。
-
-## name <span class="symbol">- method</span>
-
-```kotlin:no-line-numbers
-fun name(value: String): IndexTypeCondition
-```
-
-**变更记录**
-
-`v1.0.0` `添加`
-
-**功能描述**
-
-> 设置 `Field` 名称。
-
-::: danger
-
-若不填写名称则必须存在一个其它条件。
-
-存在多个 **IndexTypeCondition** 时除了 **order** 只会生效最后一个。
-
-:::
-
-## name <span class="symbol">- method</span>
-
-```kotlin:no-line-numbers
-fun name(conditions: NameConditions): IndexTypeCondition
-```
-
-**变更记录**
-
-`v1.0.0` `添加`
-
-**功能描述**
-
-> 设置 `Field` 名称条件。
-
-::: danger
-
-若不填写名称则必须存在一个其它条件。
-
-存在多个 **IndexTypeCondition** 时除了 **order** 只会生效最后一个。
-
-:::
-
-## type <span class="symbol">- method</span>
-
-```kotlin:no-line-numbers
-fun type(value: Any): IndexTypeCondition
-```
-
-**变更记录**
-
-`v1.0.0` `添加`
-
-**功能描述**
-
-> 设置 `Field` 类型。
-
-可不填写类型。
-
-::: danger
-
-存在多个 **IndexTypeCondition** 时除了 **order** 只会生效最后一个。
-
-:::
-
-## type <span class="symbol">- method</span>
-
-```kotlin:no-line-numbers
-fun type(conditions: ObjectConditions): IndexTypeCondition
-```
-
-**变更记录**
-
-`v1.0.0` `添加`
-
-**功能描述**
-
-> 设置 `Field` 类型条件。
-
-可不填写类型。
-
-::: danger
-
-存在多个 **IndexTypeCondition** 时除了 **order** 只会生效最后一个。
-
-:::
-
-## superClass <span class="symbol">- method</span>
-
-```kotlin:no-line-numbers
-fun superClass(isOnlySuperClass: Boolean)
-```
-
-**变更记录**
-
-`v1.0.0` `添加`
-
-**功能描述**
-
-> 设置在 `classSet` 的所有父类中查找当前 `Field`。
-
-::: warning
-
-若当前 **classSet** 的父类较多可能会耗时，API 会自动循环到父类继承是 **Any** 前的最后一个类。
-
-:::
+此查找器拥有 [KPropertyFinder](../callable/KPropertyFinder#kpropertyfinder-class) 的所有条件筛选器
 
 ## RemedyPlan <span class="symbol">- class</span>
 
@@ -210,12 +32,12 @@ inner class RemedyPlan internal constructor()
 
 **功能描述**
 
-> `Field` 重查找实现类，可累计失败次数直到查找成功。
+> `KPropertySignatureSupport` 重查找实现类，可累计失败次数直到查找成功。
 
-### field <span class="symbol">- method</span>
+### propertySignature <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-inline fun field(initiate: FieldConditions): Result
+inline fun propertySignature(initiate: KFunctionSignatureConditions): Result
 ```
 
 **变更记录**
@@ -224,9 +46,9 @@ inline fun field(initiate: FieldConditions): Result
 
 **功能描述**
 
-> 创建需要重新查找的 `Field`。
+> 创建需要重新查找的 `KPropertySignatureSupport`。
 
-你可以添加多个备选 `Field`，直到成功为止，若最后依然失败，将停止查找并输出错误日志。
+你可以添加多个备选 `KPropertySignatureSupport`，直到成功为止，若最后依然失败，将停止查找并输出错误日志。
 
 ### Result <span class="symbol">- class</span>
 
@@ -245,14 +67,12 @@ inner class Result internal constructor()
 #### onFind <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun onFind(initiate: MutableList<Field>.() -> Unit)
+fun onFind(initiate: MutableList<KPropertySignatureSupport>.() -> Unit)
 ```
 
 **变更记录**
 
 `v1.0.0` `添加`
-
-`v1.0.3` `修改`
 
 `initiate` 类型由 `HashSet` 修改为 `MutableList`
 
@@ -262,12 +82,12 @@ fun onFind(initiate: MutableList<Field>.() -> Unit)
 
 **功能示例**
 
-你可以方便地对重查找的 `Field` 实现 `onFind` 方法。
+你可以方便地对重查找的 `KPropertySignatureSupport` 实现 `onFind` 方法。
 
 > 示例如下
 
 ```kotlin
-field {
+propertySignature {
     // Your code here.
 }.onFind {
     // Your code here.
@@ -286,7 +106,35 @@ inner class Result internal constructor(internal val isNoSuch: Boolean, internal
 
 **功能描述**
 
-> `Field` 查找结果实现类。
+> `KPropertySignatureSupport` 查找结果实现类。
+
+### getter <span class="symbol">- field</span>
+
+```kotlin:no-line-numbers
+val getter: KFunctionSignatureFinder.Result
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 获取属性的 getter 组成的 `KFunctionSignatureSupport` 查找结果实现类
+
+### setter <span class="symbol">- field</span>
+
+```kotlin:no-line-numbers
+val setter: KFunctionSignatureFinder.Result
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 获取属性的 setter 组成的 `KFunctionSignatureSupport` 查找结果实现类
 
 ### result <span class="symbol">- method</span>
 
@@ -309,7 +157,7 @@ inline fun result(initiate: Result.() -> Unit): Result
 > 示例如下
 
 ```kotlin
-field {
+propertySignature {
     // Your code here.
 }.result {
     get(instance).set("something")
@@ -319,14 +167,14 @@ field {
     all(instance)
     give()
     giveAll()
-    onNoSuchField {}
+    onNoSuchProperty {}
 }
 ```
 
 ### get <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun get(instance: Any?): Instance
+fun get(instance: Any?, declaringClass:KClass<*>?, loader: ClassLoader?): Instance
 ```
 
 **变更记录**
@@ -335,28 +183,28 @@ fun get(instance: Any?): Instance
 
 **功能描述**
 
-> 获得 `Field` 实例处理类。
+> 获得 `KFunctionSignatureSupport.member` 实例处理类。
 
-若有多个 `Field` 结果只会返回第一个。
+若有多个 `KFunctionSignatureSupport.member` 结果只会返回第一个。
 
 **功能示例**
 
-你可以轻松地得到 `Field` 的实例以及使用它进行设置实例。
+你可以轻松地得到 `KFunctionSignatureSupport.member` 的实例以及使用它进行设置实例。
 
 > 示例如下
 
 ```kotlin
-field {
+propertySignature {
     // Your code here.
 }.get(instance).set("something")
 ```
 
-如果你取到的是静态 `Field`，可以不需要设置实例。
+如果你取到的是静态 `KFunctionSignatureSupport.member`，可以不需要设置实例。
 
 > 示例如下
 
 ```kotlin
-field {
+propertySignature {
     // Your code here.
 }.get().set("something")
 ```
@@ -371,24 +219,22 @@ fun all(instance: Any?): MutableList<Instance>
 
 `v1.0.0` `添加`
 
-`v1.0.3` `修改`
-
 返回值类型由 `ArrayList` 修改为 `MutableList`
 
 **功能描述**
 
-> 获得 `Field` 实例处理类数组。
+> 获得 `KFunctionSignatureSupport.member` 实例处理类数组。
 
-返回全部查找条件匹配的多个 `Field` 实例结果。
+返回全部查找条件匹配的多个 `KFunctionSignatureSupport.member` 实例结果。
 
 **功能示例**
 
-你可以通过此方法来获得当前条件结果中匹配的全部 `Field`，其 `Field` 所在实例用法与 `get` 相同。
+你可以通过此方法来获得当前条件结果中匹配的全部 `KFunctionSignatureSupport.member`，其 `KFunctionSignatureSupport.member` 所在实例用法与 `get` 相同。
 
 > 示例如下
 
 ```kotlin
-field {
+propertySignature {
     // Your code here.
 }.all(instance).forEach { instance ->
     instance.self
@@ -398,7 +244,7 @@ field {
 ### give <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun give(): Field?
+fun give(): KFunctionSignatureSupport?
 ```
 
 **变更记录**
@@ -407,38 +253,36 @@ fun give(): Field?
 
 **功能描述**
 
-> 得到 `Field` 本身。
+> 得到 `KFunctionSignatureSupport` 本身。
 
-若有多个 Field 结果只会返回第一个。
+若有多个 KFunctionSignatureSupport 结果只会返回第一个。
 
 在查找条件找不到任何结果的时候将返回 `null`。
 
 ### giveAll <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun giveAll(): MutableList<Field>
+fun giveAll(): MutableList<KFunctionSignatureSupport>
 ```
 
 **变更记录**
 
 `v1.0.0` `添加`
 
-`v1.0.3` `修改`
-
 返回值类型由 `HashSet` 修改为 `MutableList`
 
 **功能描述**
 
-> 得到 `Field` 本身数组。
+> 得到 `KFunctionSignatureSupport` 本身数组。
 
-返回全部查找条件匹配的多个 `Field` 实例。
+返回全部查找条件匹配的多个 `KFunctionSignatureSupport` 实例。
 
 在查找条件找不到任何结果的时候将返回空的 `MutableList`。
 
 ### wait <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun wait(instance: Any?, initiate: Instance.() -> Unit)
+fun wait(instance: Any?, declaringClass:KClass<*>?, loader: ClassLoader?, initiate: Instance.() -> Unit)
 ```
 
 **变更记录**
@@ -447,9 +291,9 @@ fun wait(instance: Any?, initiate: Instance.() -> Unit)
 
 **功能描述**
 
-> 获得 `Field` 实例处理类，配合 `RemedyPlan` 使用。
+> 获得 `KFunctionSignatureSupport.member` 实例处理类，配合 `RemedyPlan` 使用。
 
-若有多个 `Field` 结果只会返回第一个。
+若有多个 `KFunctionSignatureSupport.member` 结果只会返回第一个。
 
 ::: danger
 
@@ -462,22 +306,20 @@ fun wait(instance: Any?, initiate: Instance.() -> Unit)
 ### waitAll <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun waitAll(instance: Any?, initiate: MutableList<Instance>.() -> Unit)
+fun waitAll(instance: Any?, declaringClass:KClass<*>?, loader: ClassLoader?, initiate: MutableList<Instance>.() -> Unit)
 ```
 
 **变更记录**
 
 `v1.0.0` `添加`
 
-`v1.0.3` `修改`
-
 `initiate` 类型由 `ArrayList` 修改为 `MutableList`
 
 **功能描述**
 
-> 获得 `Field` 实例处理类数组，配合 `RemedyPlan` 使用。
+> 获得 `KFunctionSignatureSupport.member` 实例处理类数组，配合 `RemedyPlan` 使用。
 
-返回全部查找条件匹配的多个 `Field` 实例结果。
+返回全部查找条件匹配的多个 `KFunctionSignatureSupport.member` 实例结果。
 
 ::: danger
 
@@ -499,33 +341,33 @@ inline fun remedys(initiate: RemedyPlan.() -> Unit): Result
 
 **功能描述**
 
-> 创建 `Field` 重查找功能。
+> 创建 `KFunctionSignatureSupport` 重查找功能。
 
 **功能示例**
 
-当你遇到一种 `Field` 可能存在不同形式的存在时，可以使用 `RemedyPlan` 重新查找它，而没有必要使用 `onNoSuchField` 捕获异常二次查找 `Field`。
+当你遇到一种 `KFunctionSignatureSupport` 可能存在不同形式的存在时，可以使用 `RemedyPlan` 重新查找它，而没有必要使用 `onNoSuchProperty` 捕获异常二次查找 `KFunctionSignatureSupport`。
 
 若第一次查找失败了，你还可以在这里继续添加此方法体直到成功为止。
 
 > 示例如下
 
 ```kotlin
-field {
+propertySignature {
     // Your code here.
 }.remedys {
-    field {
+    propertySignature {
         // Your code here.
     }
-    field {
+    propertySignature {
         // Your code here.
     }
 }
 ```
 
-### onNoSuchField <span class="symbol">- method</span>
+### onNoSuchProperty <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun onNoSuchField(result: (Throwable) -> Unit): Result
+fun onNoSuchProperty(result: (Throwable) -> Unit): Result
 ```
 
 **变更记录**
@@ -534,7 +376,7 @@ fun onNoSuchField(result: (Throwable) -> Unit): Result
 
 **功能描述**
 
-> 监听找不到 `Field` 时。
+> 监听找不到 `KFunctionSignatureSupport` 时。
 
 ### ignored <span class="symbol">- method</span>
 
@@ -552,14 +394,14 @@ fun ignored(): Result
 
 ::: warning
 
-此时若要监听异常结果，你需要手动实现 **onNoSuchField** 方法。
+此时若要监听异常结果，你需要手动实现 **onNoSuchProperty** 方法。
 
 :::
 
 ### Instance <span class="symbol">- class</span>
 
 ```kotlin:no-line-numbers
-inner class Instance internal constructor(private val instance: Any?, private val field: Field?)
+inner class Instance internal constructor(private val instance: Any?, private val member: Member?,private val setter:Method?): BaseInstance
 ```
 
 **变更记录**
@@ -568,16 +410,40 @@ inner class Instance internal constructor(private val instance: Any?, private va
 
 **功能描述**
 
-> `Field` 实例变量处理类。
+> `Field`、`get/set Method` 实例变量处理类。
+
+#### original <span class="symbol">- method</span>
+
+```kotlin:no-line-numbers
+fun original(): Instance
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 标识需要调用当前 `get/set Method` 未经 Hook 的原始 `get/set Method`。
+
+若当前 `get/set Method` 并未 Hook 则会使用原始的 `get/set Method.invoke` 方法调用
+
+::: danger
+
+你只能在 (Xposed) 宿主环境中使用此功能
+
+此方法仅在 Hook Api 下有效
+
+:::
 
 #### current <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun current(ignored: Boolean): CurrentClass?
+fun current(ignored: Boolean): KCurrentClass?
 ```
 
 ```kotlin:no-line-numbers
-inline fun current(ignored: Boolean, initiate: CurrentClass.() -> Unit): Any?
+inline fun current(ignored: Boolean, initiate: KCurrentClass.() -> Unit): Any?
 ```
 
 **变更记录**
@@ -586,7 +452,7 @@ inline fun current(ignored: Boolean, initiate: CurrentClass.() -> Unit): Any?
 
 **功能描述**
 
-> 获得当前 `Field` 自身 `self` 实例的类操作对象 `CurrentClass`。
+> 获得当前 `Field`、`get Method` 自身 `self` 实例的类操作对象 `KCurrentClass`。
 
 #### cast <span class="symbol">- method</span>
 
@@ -600,7 +466,7 @@ fun <T> cast(): T?
 
 **功能描述**
 
-> 得到当前 `Field` 实例。
+> 得到当前 `Field`、`get Method` 实例。
 
 #### byte <span class="symbol">- method</span>
 
@@ -614,7 +480,7 @@ fun byte(): Byte?
 
 **功能描述**
 
-> 得到当前 `Field` Byte 实例。
+> 得到当前 `Field`、`get Method` Byte 实例。
 
 #### int <span class="symbol">- method</span>
 
@@ -628,7 +494,7 @@ fun int(): Int
 
 **功能描述**
 
-> 得到当前 `Field` Int 实例。
+> 得到当前 `Field`、`get Method` Int 实例。
 
 #### long <span class="symbol">- method</span>
 
@@ -642,7 +508,7 @@ fun long(): Long
 
 **功能描述**
 
-> 得到当前 `Field` Long 实例。
+> 得到当前 `Field`、`get Method` Long 实例。
 
 #### short <span class="symbol">- method</span>
 
@@ -655,7 +521,7 @@ fun short(): Short
 
 **功能描述**
 
-> 得到当前 `Field` Short 实例。
+> 得到当前 `Field`、`get Method` Short 实例。
 
 #### double <span class="symbol">- method</span>
 
@@ -669,7 +535,7 @@ fun double(): Double
 
 **功能描述**
 
-> 得到当前 `Field` Double 实例。
+> 得到当前 `Field`、`get Method` Double 实例。
 
 #### float <span class="symbol">- method</span>
 
@@ -682,7 +548,7 @@ fun float(): Float
 
 **功能描述**
 
-> 得到当前 `Field` Float 实例。
+> 得到当前 `Field`、`get Method` Float 实例。
 
 #### string <span class="symbol">- method</span>
 
@@ -696,7 +562,7 @@ fun string(): String
 
 **功能描述**
 
-> 得到当前 `Field` String 实例。
+> 得到当前 `Field`、`get Method` String 实例。
 
 #### char <span class="symbol">- method</span>
 
@@ -710,7 +576,7 @@ fun char(): Char
 
 **功能描述**
 
-> 得到当前 `Field` Char 实例。
+> 得到当前 `Field`、`get Method` Char 实例。
 
 #### boolean <span class="symbol">- method</span>
 
@@ -724,7 +590,7 @@ fun boolean(): Boolean
 
 **功能描述**
 
-> 得到当前 `Field` Boolean 实例。
+> 得到当前 `Field`、`get Method` Boolean 实例。
 
 #### any <span class="symbol">- method</span>
 
@@ -737,7 +603,7 @@ fun any(): Any?
 
 **功能描述**
 
-> 得到当前 `Field` Any 实例。
+> 得到当前 `Field`、`get Method` Any 实例。
 
 #### array <span class="symbol">- method</span>
 
@@ -751,7 +617,7 @@ inline fun <reified T> array(): Array<T>
 
 **功能描述**
 
-> 得到当前 `Field` Array 实例。
+> 得到当前 `Field`、`get Method` Array 实例。
 
 #### list <span class="symbol">- method</span>
 
@@ -765,7 +631,7 @@ inline fun <reified T> list(): List<T>
 
 **功能描述**
 
-> 得到当前 `Field` List 实例。
+> 得到当前 `Field`、`get Method` List 实例。
 
 #### set <span class="symbol">- method</span>
 
@@ -779,7 +645,7 @@ fun set(any: Any?)
 
 **功能描述**
 
-> 设置当前 `Field` 实例。
+> 设置当前 `Field`、`set Method` 实例。
 
 #### setTrue <span class="symbol">- method</span>
 
@@ -792,7 +658,7 @@ fun setTrue()
 
 **功能描述**
 
-> 设置当前 `Field` 实例为 `true`。
+> 设置当前 `Field`、`set Method` 实例为 `true`。
 
 ::: danger
 
@@ -812,7 +678,7 @@ fun setFalse()
 
 **功能描述**
 
-> 设置当前 `Field` 实例为 `false`。
+> 设置当前 `Field`、`set Method` 实例为 `false`。
 
 ::: danger
 
@@ -832,4 +698,4 @@ fun setNull()
 
 **功能描述**
 
-> 设置当前 `Field` 实例为 `null`。
+> 设置当前 `Field`、`set Method` 实例为 `null`。

@@ -29,6 +29,7 @@ import io.github.dreammooncai.yukireflection.factory.generic
 import io.github.dreammooncai.yukireflection.factory.kotlin
 import io.github.dreammooncai.yukireflection.factory.variance
 import io.github.dreammooncai.yukireflection.type.defined.VagueKotlin
+import io.github.dreammooncai.yukireflection.type.factory.KGenericClassDomain
 import io.github.dreammooncai.yukireflection.type.factory.KTypeBuildConditions
 import io.github.dreammooncai.yukireflection.type.kotlin.UnitKClass
 import io.github.dreammooncai.yukireflection.utils.factory.ifFalse
@@ -191,7 +192,7 @@ class KGenericClass internal constructor(val type: KType) :List<KTypeProjection>
      * @param initiate 实例方法体
      * @return [KGenericClass] 进行进行泛型使用
      */
-    fun generic(index: Int = 0,initiate: KGenericClass.() -> Unit = {}) = this[index].type?.generic(initiate) ?: error("The type:$type index:$index arguments:${type.arguments} no further generics")
+    fun generic(index: Int = 0,initiate: KGenericClassDomain = {}) = this[index].type?.generic(initiate) ?: error("The type:$type index:$index arguments:${type.arguments} no further generics")
 
     /**
      * 判断当前 [KGenericClass] 是否包含指定泛型类型 根据[isVariance]测试是否检查方差

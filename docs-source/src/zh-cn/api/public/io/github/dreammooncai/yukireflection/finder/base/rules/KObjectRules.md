@@ -16,4 +16,4 @@ class ObjectRules private constructor(private val instance: Any)
 
 > 这是一个任意对象条件实现类。
 
-可对 R8 混淆后的 `Class`、`Member` 进行更加详细的定位。
+可对 R8 混淆后的 `KClass`、`KCallable` 进行更加详细的定位。

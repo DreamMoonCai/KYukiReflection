@@ -9,6 +9,7 @@ import io.github.dreammooncai.yukireflection.type.factory.KFunctionSignatureCond
 import io.github.dreammooncai.yukireflection.type.factory.KPropertyConditions
 import io.github.dreammooncai.yukireflection.type.kotlin.DeserializedMemberScope_OptimizedImplementationKClass
 import io.github.dreammooncai.yukireflection.type.kotlin.KClassImplKClass
+import io.github.dreammooncai.yukireflection.utils.factory.lazyDomain
 import java.io.ByteArrayInputStream
 import java.lang.reflect.*
 import kotlin.reflect.*
@@ -85,50 +86,54 @@ fun String.uppercaseOf(index: Int = 0) =
  *
  * - 复制自 [KProperty.javaField] 忽略其可能遇到的所有错误，如签名解析失败
  */
-inline val KProperty<*>.javaFieldNoError: Field?
-    get() = runCatching { javaField }.getOrNull()
+val KProperty<*>.javaFieldNoError: Field? by lazyDomain {
+    runCatching { javaField }.getOrNull()
+}
 
 /**
  * 获取属性的Java字段表示方式
  *
  * 没有获取到时使用签名方式获取
  */
-inline val KProperty<*>.javaSignatureField: Field?
-    get() = javaFieldNoError ?: refClass?.let { signature(it).give()?.fieldOrNull?.memberOrNull }
+val KProperty<*>.javaSignatureField: Field? by lazyDomain {
+    javaFieldNoError ?: refClass?.let { signature(it).give()?.fieldOrNull?.memberOrNull }
+}
 
 /**
  * Returns a Java [Method] instance corresponding to the getter of the given property,
- * or `null` if the property has no getter, for example in case of a simple private `val` in a class.
+ * or `null` if the property has no getter, for example in isCase of a simple private `val` in a class.
  *
  * - 复制自 [KProperty.javaGetter] 忽略其可能遇到的所有错误，如签名解析失败
  */
-inline val KProperty<*>.javaGetterNoError: Method?
-    get() = runCatching { javaGetter }.getOrNull()
+val KProperty<*>.javaGetterNoError: Method? by lazyDomain {
+    runCatching { javaGetter }.getOrNull()
+}
 
 /**
  * 获取属性的Java getter表示方式
  *
  * 没有获取到时使用签名方式获取
  */
-inline val KProperty<*>.javaSignatureGetter: Method?
-    get() = javaGetterNoError ?: refClass?.let { signature(it).give()?.getterOrNull?.memberOrNull }
+val KProperty<*>.javaSignatureGetter: Method? by lazyDomain {
+    javaGetterNoError ?: refClass?.let { signature(it).give()?.getterOrNull?.memberOrNull }
+}
 
 /**
  * Returns a Java [Method] instance corresponding to the setter of the given mutable property,
- * or `null` if the property has no setter, for example in case of a simple private `var` in a class.
+ * or `null` if the property has no setter, for example in isCase of a simple private `var` in a class.
  *
  * - 复制自 [KMutableProperty.javaSetter] 忽略其可能遇到的所有错误，如签名解析失败
  */
-inline val KMutableProperty<*>.javaSetterNoError: Method?
-    get() = runCatching { javaSetter }.getOrNull()
+val KMutableProperty<*>.javaSetterNoError: Method? by lazyDomain {
+    runCatching { javaSetter }.getOrNull()
+}
 
 /**
  * 获取属性的Java setter表示方式
  *
  * 没有获取到时使用签名方式获取
  */
-inline val KMutableProperty<*>.javaSignatureSetter: Method?
-    get() = javaSetterNoError ?: refClass?.let { signature(it).give()?.setterOrNull?.memberOrNull }
+val KMutableProperty<*>.javaSignatureSetter: Method? by lazyDomain { javaSetterNoError ?: refClass?.let { signature(it).give()?.setterOrNull?.memberOrNull } }
 
 /**
  * Returns a Java [Method] instance corresponding to the given Kotlin function,
@@ -136,16 +141,14 @@ inline val KMutableProperty<*>.javaSignatureSetter: Method?
  *
  * - 复制自 [KFunction.javaMethod] 忽略其可能遇到的所有错误，如签名解析失败
  */
-inline val KFunction<*>.javaMethodNoError: Method?
-    get() = runCatching { javaMethod }.getOrNull()
+val KFunction<*>.javaMethodNoError: Method? by lazyDomain { runCatching { javaMethod }.getOrNull() }
 
 /**
  * 获取函数的Java 方法表示方式
  *
  * 没有获取到时使用签名方式获取
  */
-inline val KFunction<*>.javaSignatureMethod: Method?
-    get() = javaMethodNoError ?: refClass?.let { signature(it).give()?.memberOrNull }
+val KFunction<*>.javaSignatureMethod: Method? by lazyDomain { javaMethodNoError ?: refClass?.let { signature(it).give()?.memberOrNull } }
 
 /**
  * Returns a Java [Constructor] instance corresponding to the given Kotlin function,
@@ -161,10 +164,12 @@ inline val <T> KFunction<T>.javaConstructorNoError: Constructor<T>?
  *
  * @return [Member] or null
  */
-inline val KCallable<*>.javaMember:Member? get() = when (this) {
-    is KProperty -> javaFieldNoError ?: javaGetterNoError ?: (this as? KMutableProperty<*>?)?.javaSetterNoError
-    is KFunction -> javaMethodNoError ?: javaConstructorNoError
-    else -> null
+val KCallable<*>.javaMember:Member? by lazyDomain {
+    when (this) {
+        is KProperty -> javaFieldNoError ?: javaGetterNoError ?: (this as? KMutableProperty<*>?)?.javaSetterNoError
+        is KFunction -> javaMethodNoError ?: javaConstructorNoError
+        else -> null
+    }
 }
 
 /**
@@ -172,10 +177,12 @@ inline val KCallable<*>.javaMember:Member? get() = when (this) {
  *
  * 没有获取到时使用签名方式获取
  */
-inline val KCallable<*>.javaSignatureMember: Member? get() = when (this) {
-    is KProperty -> javaSignatureField ?: javaSignatureGetter ?: (this as? KMutableProperty<*>?)?.javaSignatureSetter
-    is KFunction -> javaSignatureMethod ?: javaConstructorNoError
-    else -> null
+val KCallable<*>.javaSignatureMember: Member? by lazyDomain {
+    when (this) {
+        is KProperty -> javaSignatureField ?: javaSignatureGetter ?: (this as? KMutableProperty<*>?)?.javaSignatureSetter
+        is KFunction -> javaSignatureMethod ?: javaConstructorNoError
+        else -> null
+    }
 }
 
 
@@ -186,7 +193,7 @@ inline val KCallable<*>.javaSignatureMember: Member? get() = when (this) {
  *
  * @return [DeserializedMemberScope]
  */
-inline val KClass<*>.memberScope get() = KClassImplKClass.java.declaredMethods.find { it.name.contains("getMemberScope") }?.invoke(this) as? DeserializedMemberScope?
+val KClass<*>.memberScope by lazyDomain { KClassImplKClass.java.declaredMethods.find { it.name.contains("getMemberScope") }?.invoke(this) as? DeserializedMemberScope? }
 
 /**
  * 当前 [DeserializedMemberScope] 的序列化上下文
@@ -195,7 +202,7 @@ inline val KClass<*>.memberScope get() = KClassImplKClass.java.declaredMethods.f
  *
  * @return [DeserializationContext]
  */
-inline val DeserializedMemberScope.deserializationContext get() = DeserializedMemberScope::class.property { name = "c" }.get(this).cast<DeserializationContext>()
+val DeserializedMemberScope.deserializationContext by lazyDomain { DeserializedMemberScope::class.property { name = "c" }.get(this).cast<DeserializationContext>() }
 
 /**
  * 当前 [DeserializedMemberScope] 的签名数据存储实现
@@ -206,7 +213,7 @@ inline val DeserializedMemberScope.deserializationContext get() = DeserializedMe
  *
  * @return [OptimizedImplementationSupport]
  */
-inline val DeserializedMemberScope.impl get() = OptimizedImplementationSupport(this, DeserializedMemberScope::class.property { name = "impl" }.get(this).any())
+val DeserializedMemberScope.impl by lazyDomain { OptimizedImplementationSupport(this, DeserializedMemberScope::class.property { name = "impl" }.get(this).any()) }
 
 /**
  * 经过Kotlin 编译器优化生成的 [Metadata] 获取签名数据存储实现

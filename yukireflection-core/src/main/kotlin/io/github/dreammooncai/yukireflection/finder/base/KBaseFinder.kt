@@ -153,7 +153,7 @@ abstract class KBaseFinder {
             }
             val result = arrayListOf<Any>()
             condition.forEach { any ->
-                if (any != null && genericsClasses.any {it.kotlin.isCase(any)}){
+                if (any != null && genericsClasses.any {any.isCase(it.kotlin)}){
                     result += any
                 }
             }

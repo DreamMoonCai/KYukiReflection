@@ -23,7 +23,7 @@ val version = KYukiReflection.VERSION
 
 ::: tip
 
-更多功能请参考 [KYukiReflection](../api/public/com/DreamMoonCai/KYukiReflection/KYukiReflection)。
+更多功能请参考 [KYukiReflection](../api/public/io/github/dreammooncai/yukireflection/KYukiReflection)。
 
 :::
 
@@ -104,6 +104,6 @@ KYukiReflection.configs {
 
 ::: tip
 
-更多功能请参考 [KYukiReflection.configs](../api/public/com/DreamMoonCai/KYukiReflection/KYukiReflection#configs-method) 方法、[KYukiReflection.Configs](../api/public/com/DreamMoonCai/KYukiReflection/KYukiReflection#configs-object)。
+更多功能请参考 [KYukiReflection.configs](../api/public/io/github/dreammooncai/yukireflection/KYukiReflection#configs-method) 方法、[KYukiReflection.Configs](../api/public/io/github/dreammooncai/yukireflection/KYukiReflection#configs-object)。
 
 :::

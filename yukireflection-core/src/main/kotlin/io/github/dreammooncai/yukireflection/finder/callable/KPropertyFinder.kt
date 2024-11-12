@@ -473,7 +473,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
          * @param instance 当前 [KProperty] 所在类的实例对象
          * @param property 当前 [KProperty] 实例对象
          */
-        inner class Instance internal constructor(private var instance: Any?, private val property: KProperty<*>?):BaseInstance {
+        inner class Instance internal constructor(private var instance: Any?, private val property: KProperty<*>?): BaseInstance {
 
             init {
                 if (instance == null){

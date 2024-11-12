@@ -345,6 +345,18 @@ class KModifierRules private constructor(private val instance: Any) {
     val isVar get() = (asKProperty?.isVar ?: false).also { templates.add("<isVar> ($it)") }
 
     /**
+     * [KProperty] 是否是 Kotlin 的 val 属性
+     *
+     * 如下所示 ↓
+     *
+     * val a = 1
+     *
+     * ^^^
+     * @return [Boolean]
+     */
+    val isVal get() = (asKProperty?.isVal ?: false).also { templates.add("<isVar> ($it)") }
+
+    /**
      * [KCallable] 是否是 Kotlin 的 suspend 属性
      *
      * 如下所示 ↓

@@ -38,7 +38,7 @@ val Class<*>.top: KDeclarationContainer
 
 **功能描述**
 
-> 将 `Class` 转换为 *Kt.class 顶级 Kotlin 声明对象
+> 将 `Class` 转换为 *Kt.class 顶级 Kotlin 文件类
 
 ## Class.isKotlin <span class="symbol">- ext-field</span>
 

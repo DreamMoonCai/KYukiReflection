@@ -2,10 +2,10 @@
 pageClass: code-page
 ---
 
-# FieldRules <span class="symbol">- class</span>
+# KPropertyRules <span class="symbol">- class</span>
 
 ```kotlin:no-line-numbers
-class FieldRules internal constructor(private val rulesData: FieldRulesData) : BaseRules
+class KPropertyRules internal constructor(private val rulesData: KPropertyRulesData) : KBaseRules
 ```
 
 **变更记录**
@@ -14,7 +14,7 @@ class FieldRules internal constructor(private val rulesData: FieldRulesData) : B
 
 **功能描述**
 
-> `Field` 查找条件实现类。
+> `KProperty` 查找条件实现类。
 
 ## name <span class="symbol">- field</span>
 
@@ -28,7 +28,7 @@ var name: String
 
 **功能描述**
 
-> 设置 `Field` 名称。
+> 设置 `KProperty` 名称。
 
 ## type <span class="symbol">- field</span>
 
@@ -42,14 +42,14 @@ var type: Any?
 
 **功能描述**
 
-> 设置 `Field` 类型。
+> 设置 `KProperty` 类型。
 
 可不填写类型。
 
 ## modifiers <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun modifiers(conditions: ModifierConditions)
+fun modifiers(conditions: KModifierConditions)
 ```
 
 **变更记录**
@@ -58,14 +58,14 @@ fun modifiers(conditions: ModifierConditions)
 
 **功能描述**
 
-> 设置 `Field` 标识符筛选条件。
+> 设置 `KProperty` 标识符筛选条件。
 
 可不设置筛选条件。
 
 ## name <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun name(conditions: NameConditions)
+fun name(conditions: KNameConditions)
 ```
 
 **变更记录**
@@ -74,12 +74,12 @@ fun name(conditions: NameConditions)
 
 **功能描述**
 
-> 设置 `Field` 名称条件。
+> 设置 `KProperty` 名称条件。
 
 ## type <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun type(conditions: ObjectConditions)
+fun type(conditions: KTypeConditions)
 ```
 
 **变更记录**
@@ -88,6 +88,6 @@ fun type(conditions: ObjectConditions)
 
 **功能描述**
 
-> 设置 `Field` 类型条件。
+> 设置 `KProperty` 类型条件。
 
 可不填写类型。

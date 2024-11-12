@@ -15,7 +15,7 @@ import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
  * 方法签名处理支持组件
  *
  * @property declaringClass [KClass] 方法所在的 [KClass]
- * @property loader [ClassLoader] 方法参数 [paramClasss] 所在的 [ClassLoader]
+ * @property loader [ClassLoader] 方法参数 [paramClass] 所在的 [ClassLoader]
  * @property proto 方法签名
  */
 class KFunctionSignatureSupport internal constructor(private val declaringClass: KClass<*>? = null, private val loader: ClassLoader? = declaringClass?.classLoader, private val proto: KSignatureData){
@@ -58,7 +58,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      *
      * 获取此方法以 [List]<[KType]> 描述的结果
      *
-     * 没有找到泛型类型时为 [getParamClasss]
+     * 没有找到泛型类型时为 [getParamClass]
      *
      * 如需指定 [ClassLoader] 请使用方法方式调用
      */
@@ -69,7 +69,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      *
      * 获取此方法以 [List]<[KType]> 描述的结果
      *
-     * 没有找到泛型类型时为 [getParamClasss]
+     * 没有找到泛型类型时为 [getParamClass]
      *
      * 如需指定 [ClassLoader] 请使用方法方式调用
      *
@@ -82,7 +82,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      *
      * 如需指定 [ClassLoader] 请使用方法方式调用
      */
-    val paramClasss by lazy { getParamClasss() }
+    val paramClass by lazy { getParamClass() }
 
     /**
      * 方法参数类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果
@@ -91,7 +91,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      *
      * - 获取时不会触发异常
      */
-    val paramClasssOrNull by lazy { getParamClasssOrNull() }
+    val paramClassOrNull by lazy { getParamClassOrNull() }
 
     /**
      * 方法返回类型 [KType] 通过 [getMember] 获取泛型返回类型转 [KType]
@@ -154,23 +154,23 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      *
      * 获取此方法以 [List]<[KType]> 描述的结果
      *
-     * 没有找到泛型类型时为 [getParamClasss]
+     * 没有找到泛型类型时为 [getParamClass]
      *
-     * @param loader [ClassLoader] 参数类型 [paramClasss] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 参数类型 [paramClass] 所在的 [ClassLoader]
      * @return [List]<[KType]>
      */
-    fun getParamTypes(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getMember(declaringClass, loader).genericParameterTypes.map { it.kotlinType } }.getOrNull() ?: getParamClasss(loader).map { it.type }
+    fun getParamTypes(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getMember(declaringClass, loader).genericParameterTypes.map { it.kotlinType } }.getOrNull() ?: getParamClass(loader).map { it.type }
 
     /**
      * 方法参数类型 [List]<[KType]> 通过 [getMember] 获取泛型参数类型转 [List]<[KType]>
      *
      * 获取此方法以 [List]<[KType]> 描述的结果
      *
-     * 没有找到泛型类型时为 [getParamClasss]
+     * 没有找到泛型类型时为 [getParamClass]
      *
      * - 获取时不会触发异常
      *
-     * @param loader [ClassLoader] 参数类型 [paramClasss] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 参数类型 [paramClass] 所在的 [ClassLoader]
      * @return [List]<[KType]> or null
      */
     fun getParamTypesOrNull(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getParamTypes(declaringClass, loader) }.getOrNull()
@@ -178,20 +178,20 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
     /**
      * 方法参数类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果
      *
-     * @param loader [ClassLoader] 参数类型 [paramClasss] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 参数类型 [paramClass] 所在的 [ClassLoader]
      * @return [List]<[KClass]>
      */
-    fun getParamClasss(loader: ClassLoader? = null):List<KClass<*>> = DexSignUtil.getParamTypeNames(paramTypesDescriptors).map { it.toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: error("Descriptor: $it, cannot be converted to [KClass].") }
+    fun getParamClass(loader: ClassLoader? = null):List<KClass<*>> = DexSignUtil.getParamTypeNames(paramTypesDescriptors).map { it.toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: error("Descriptor: $it, cannot be converted to [KClass].") }
 
     /**
      * 方法参数类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果
      *
      * - 获取时不会触发异常
      *
-     * @param loader [ClassLoader] 参数类型 [paramClasss] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 参数类型 [paramClass] 所在的 [ClassLoader]
      * @return [List]<[KClass]> or null
      */
-    fun getParamClasssOrNull(loader: ClassLoader? = null):List<KClass<*>>? = runCatching { getParamClasss(loader) }.getOrNull()
+    fun getParamClassOrNull(loader: ClassLoader? = null):List<KClass<*>>? = runCatching { getParamClass(loader) }.getOrNull()
 
     /**
      * 方法返回类型 [KType] 通过 [getMember] 获取泛型返回类型转 [KType]
@@ -201,7 +201,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * 没有找到泛型类型时为 [getReturnClass]
      *
      * @param declaringClass [KClass] 方法所在的 [KClass]
-     * @param loader [ClassLoader] 方法参数 [paramClasss] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 方法参数 [paramClass] 所在的 [ClassLoader]
      * @return [KType]
      */
     fun getReturnType(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getMember(declaringClass, loader).genericReturnType.kotlinType }.getOrNull() ?: getReturnClass(loader).type
@@ -216,7 +216,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * - 获取时不会触发异常
      *
      * @param declaringClass [KClass] 方法所在的 [KClass]
-     * @param loader [ClassLoader] 方法参数 [paramClasss] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 方法参数 [paramClass] 所在的 [ClassLoader]
      * @return [KClass] or null
      */
     fun getReturnTypeOrNull(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getReturnType(declaringClass,loader) }.getOrNull()
@@ -243,10 +243,10 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * 方法成员 [Method] 使用指定 [declaringClass] 描述结果
      *
      * @param declaringClass [KClass] 方法所在的 [KClass]
-     * @param loader [ClassLoader] 方法参数 [paramClasss] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 方法参数 [paramClass] 所在的 [ClassLoader]
      * @return [Method]
      */
-    fun getMember(declaringClass: KClass<*>? = null, loader: ClassLoader? = null): Method = (declaringClass ?: this.declaringClass)?.java?.getDeclaredMethod(name,*getParamClasss(loader ?: this@KFunctionSignatureSupport.loader).map { it.java }.toTypedArray())?.also { it.isAccessible = true } ?: error("If you can't get the member, please check $declaringClass or $paramTypesDescriptors.")
+    fun getMember(declaringClass: KClass<*>? = null, loader: ClassLoader? = null): Method = (declaringClass ?: this.declaringClass)?.java?.getDeclaredMethod(name,*getParamClass(loader ?: this@KFunctionSignatureSupport.loader).map { it.java }.toTypedArray())?.also { it.isAccessible = true } ?: error("If you can't get the member, please check $declaringClass or $paramTypesDescriptors.")
 
     /**
      * 方法成员 [Method] 使用指定 [declaringClass] 描述结果
@@ -254,7 +254,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * - 获取时不会触发异常
      *
      * @param declaringClass [KClass] 方法所在的 [KClass]
-     * @param loader [ClassLoader] 方法参数 [paramClasss] 所在的 [ClassLoader]
+     * @param loader [ClassLoader] 方法参数 [paramClass] 所在的 [ClassLoader]
      * @return [Method] or null
      */
     fun getMemberOrNull(declaringClass: KClass<*>? = null, loader: ClassLoader? = null): Method? = runCatching { getMember(declaringClass,loader) }.getOrNull()

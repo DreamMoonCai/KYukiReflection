@@ -23,6 +23,12 @@
 
 package io.github.dreammooncai.yukireflection.utils.factory
 
+import java.util.AbstractMap
+import java.util.WeakHashMap
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
+
 /**
  * 获取数组内容依次列出的字符串表示
  * @return [String]
@@ -204,3 +210,37 @@ internal object RandomSeed {
         for (i in 1..length) append(RANDOM_LETTERS_NUMBERS[(0..RANDOM_LETTERS_NUMBERS.lastIndex).random()])
     }.toString()
 }
+
+/**
+ * 懒加载含this域的版本
+ *
+ * @param T this类型
+ * @param V 懒加载的值类型
+ * @param isWeak 是否使用弱引用
+ * @property initializer 懒加载执行块
+ */
+internal class LazyDomain<T,V>(private val isWeak:Boolean = true,private val initializer: T.() -> V): ReadOnlyProperty<T,V> {
+    @get:Synchronized
+    private val domain: MutableMap<T, Lazy<V>> = if (isWeak)
+        WeakHashMap()
+    else
+        ConcurrentHashMap()
+
+    override fun getValue(thisRef: T, property: KProperty<*>): V {
+        return synchronized(domain) {
+            domain.getOrPut(thisRef){
+                lazy { thisRef.initializer() }
+            }
+        }.value
+    }
+}
+
+/**
+ * 懒加载含this域的版本
+ *
+ * @param T this类型
+ * @param V 懒加载的值类型
+ * @param isWeak 是否使用弱引用
+ * @param initializer 懒加载执行块
+ */
+internal fun <T,V> lazyDomain(isWeak:Boolean = true,initializer: T.() -> V) = LazyDomain(isWeak,initializer)

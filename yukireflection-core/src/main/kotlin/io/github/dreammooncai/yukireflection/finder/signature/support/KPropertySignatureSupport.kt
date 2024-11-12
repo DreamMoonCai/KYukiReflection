@@ -316,7 +316,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
      * @param loader [ClassLoader] - 属性类型所使用的 [ClassLoader]
      * @return [KClass]
      */
-    fun getReturnClass(loader: ClassLoader? = null) = fieldOrNull?.getReturnClassOrNull(loader) ?: getterOrNull?.getReturnClassOrNull(loader) ?: setterOrNull?.getParamClasssOrNull(loader)?.first() ?: error("This property does not get the return type, please check $hasSignature.")
+    fun getReturnClass(loader: ClassLoader? = null) = fieldOrNull?.getReturnClassOrNull(loader) ?: getterOrNull?.getReturnClassOrNull(loader) ?: setterOrNull?.getParamClassOrNull(loader)?.first() ?: error("This property does not get the return type, please check $hasSignature.")
 
     /**
      * 获取此属性可获取的返回类型 [KClass]

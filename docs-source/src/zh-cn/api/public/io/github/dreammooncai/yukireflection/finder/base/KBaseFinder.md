@@ -14,7 +14,7 @@ abstract class BaseFinder
 
 **功能描述**
 
-> 这是 `Class` 与 `Member` 查找类功能的基本类实现。
+> 这是 `KClass` 与 `KCallable` 查找类功能的基本类实现。
 
 ## BaseFinder.IndexTypeCondition <span class="symbol">- class</span>
 

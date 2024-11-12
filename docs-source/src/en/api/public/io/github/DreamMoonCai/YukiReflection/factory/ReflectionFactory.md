@@ -628,7 +628,7 @@ inline fun <reified T : Any> T.current(ignored: Boolean): CurrentClass
 ```
 
 ```kotlin:no-line-numbers
-inline fun <reified T : Any> T.current(ignored: Boolean, initiate: CurrentClass.() -> Unit): T
+inline fun <reified T : Any> T.current(ignored: Boolean, initiate: KCurrentClass.() -> Unit): T
 ```
 
 **Change Records**

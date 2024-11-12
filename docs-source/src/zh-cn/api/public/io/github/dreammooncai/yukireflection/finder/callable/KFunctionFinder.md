@@ -2,10 +2,10 @@
 pageClass: code-page
 ---
 
-# MethodFinder <span class="symbol">- class</span>
+# KFunctionFinder <span class="symbol">- class</span>
 
 ```kotlin:no-line-numbers
-class MethodFinder internal constructor(override val classSet: Class<*>) : MemberBaseFinder
+open class KFunctionFinder internal constructor(final override val classSet: KClass<*>?) : KCallableBaseFinder
 ```
 
 **变更记录**
@@ -14,9 +14,9 @@ class MethodFinder internal constructor(override val classSet: Class<*>) : Membe
 
 **功能描述**
 
-> `Method` 查找类。
+> `KFunction` 查找类。
 
-可通过指定类型查找指定 `Method` 或一组 `Method`。
+可通过指定类型查找指定 `KFunction` 或一组 `KFunction`。
 
 ## name <span class="symbol">- field</span>
 
@@ -30,7 +30,7 @@ var name: String
 
 **功能描述**
 
-> 设置 `Method` 名称。
+> 设置 `KFunction` 名称。
 
 ::: danger
 
@@ -50,7 +50,7 @@ var paramCount: Int
 
 **功能描述**
 
-> 设置 `Method` 参数个数。
+> 设置 `KFunction` 参数个数。
 
 你可以不使用 `param` 指定参数类型而是仅使用此变量指定参数个数。
 
@@ -68,12 +68,12 @@ var returnType: Any?
 
 **功能描述**
 
-> 设置 `Method` 返回值，可不填写返回值。
+> 设置 `KFunction` 返回值，可不填写返回值。
 
 ## modifiers <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun modifiers(conditions: ModifierConditions): IndexTypeCondition
+fun modifiers(conditions: KModifierConditions): IndexTypeCondition
 ```
 
 **变更记录**
@@ -82,7 +82,7 @@ fun modifiers(conditions: ModifierConditions): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 标识符筛选条件。
+> 设置 `KFunction` 标识符筛选条件。
 
 可不设置筛选条件。
 
@@ -104,7 +104,7 @@ fun emptyParam(): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 空参数、无参数。
+> 设置 `KFunction` 空参数、无参数。
 
 ## param <span class="symbol">- method</span>
 
@@ -118,17 +118,17 @@ fun param(vararg paramType: Any): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 参数。
+> 设置 `KFunction` 参数。
 
 如果同时使用了 `paramCount` 则 `paramType` 的数量必须与 `paramCount` 完全匹配。
 
-如果 `Method` 中存在一些无意义又很长的类型，你可以使用 [VagueKotlin](../../../type/defined/DefinedTypeFactory#vaguetype-field) 来替代它。
+如果 `KFunction` 中存在一些无意义又很长的类型，你可以使用 [VagueKotlin](../../../type/defined/KDefinedTypeFactory#vaguekotlin-field) 来替代它。
 
 ::: danger
 
-无参 **Method** 请使用 **emptyParam** 设置查找条件。
+无参 **KFunction** 请使用 **emptyParam** 设置查找条件。
 
-有参 **Method** 必须使用此方法设定参数或使用 **paramCount** 指定个数。
+有参 **KFunction** 必须使用此方法设定参数或使用 **paramCount** 指定个数。
 
 存在多个 **IndexTypeCondition** 时除了 **order** 只会生效最后一个。
 
@@ -137,7 +137,7 @@ fun param(vararg paramType: Any): IndexTypeCondition
 ## param <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun param(conditions: ObjectsConditions): IndexTypeCondition
+fun param(conditions: KParameterConditions): IndexTypeCondition
 ```
 
 **变更记录**
@@ -150,13 +150,43 @@ fun param(conditions: ObjectsConditions): IndexTypeCondition
 
 ::: danger
 
-无参 **Method** 请使用 **emptyParam** 设置查找条件。
+无参 **KFunction** 请使用 **emptyParam** 设置查找条件。
 
-有参 **Method** 必须使用此方法设定参数或使用 **paramCount** 指定个数。
+有参 **KFunction** 必须使用此方法设定参数或使用 **paramCount** 指定个数。
 
 存在多个 **IndexTypeCondition** 时除了 **order** 只会生效最后一个。
 
 :::
+
+## paramName <span class="symbol">- method</span>
+
+```kotlin:no-line-numbers
+fun paramName(vararg paramName: String): Unit
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 设置 `KFunction` 参数名称。
+
+如果 `KFunction` 中存在一些不太清楚的参数名称，你可以使用 [VagueKotlin](../../../type/defined/KDefinedTypeFactory#vaguekotlin-field).name 或者 空字符串 或者 "null" 来替代它。
+
+## paramName <span class="symbol">- method</span>
+
+```kotlin:no-line-numbers
+fun paramName(conditions: KNamesConditions): Unit
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 设置 `KFunction` 参数名称条件。
 
 ## order <span class="symbol">- method</span>
 
@@ -184,7 +214,7 @@ fun name(value: String): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 名称。
+> 设置 `KFunction` 名称。
 
 ::: danger
 
@@ -197,7 +227,7 @@ fun name(value: String): IndexTypeCondition
 ## name <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun name(conditions: NameConditions): IndexTypeCondition
+fun name(conditions: KNameConditions): IndexTypeCondition
 ```
 
 **变更记录**
@@ -206,7 +236,7 @@ fun name(conditions: NameConditions): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 名称条件。
+> 设置 `KFunction` 名称条件。
 
 ::: danger
 
@@ -228,7 +258,7 @@ fun paramCount(num: Int): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 参数个数。
+> 设置 `KFunction` 参数个数。
 
 你可以不使用 `param` 指定参数类型而是仅使用此方法指定参数个数。
 
@@ -252,7 +282,7 @@ fun paramCount(numRange: IntRange): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 参数个数范围。
+> 设置 `KFunction` 参数个数范围。
 
 你可以不使用 `param` 指定参数类型而是仅使用此方法指定参数个数范围。
 
@@ -265,7 +295,7 @@ fun paramCount(numRange: IntRange): IndexTypeCondition
 ## paramCount <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun paramCount(conditions: CountConditions): IndexTypeCondition
+fun paramCount(conditions: KCountConditions): IndexTypeCondition
 ```
 
 **变更记录**
@@ -274,7 +304,7 @@ fun paramCount(conditions: CountConditions): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 参数个数条件。
+> 设置 `KFunction` 参数个数条件。
 
 你可以不使用 `param` 指定参数类型而是仅使用此方法指定参数个数条件。
 
@@ -296,7 +326,7 @@ fun returnType(value: Any): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 返回值。
+> 设置 `KFunction` 返回值。
 
 可不填写返回值。
 
@@ -309,7 +339,7 @@ fun returnType(value: Any): IndexTypeCondition
 ## returnType <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun returnType(conditions: ObjectConditions): IndexTypeCondition
+fun returnType(conditions: KTypeConditions): IndexTypeCondition
 ```
 
 **变更记录**
@@ -318,7 +348,7 @@ fun returnType(conditions: ObjectConditions): IndexTypeCondition
 
 **功能描述**
 
-> 设置 `Method` 返回值条件。
+> 设置 `KFunction` 返回值条件。
 
 可不填写返回值。
 
@@ -340,7 +370,7 @@ fun superClass(isOnlySuperClass: Boolean)
 
 **功能描述**
 
-> 设置在 `classSet` 的所有父类中查找当前 `Method`。
+> 设置在 `classSet` 的所有父类中查找当前 `KFunction`。
 
 ::: warning
 
@@ -360,12 +390,12 @@ inner class RemedyPlan internal constructor()
 
 **功能描述**
 
-> `Method` 重查找实现类，可累计失败次数直到查找成功。
+> `KFunction` 重查找实现类，可累计失败次数直到查找成功。
 
-### method <span class="symbol">- method</span>
+### function <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-inline fun method(initiate: MethodConditions): Result
+inline fun function(initiate: KFunctionConditions): Result
 ```
 
 **变更记录**
@@ -374,9 +404,9 @@ inline fun method(initiate: MethodConditions): Result
 
 **功能描述**
 
-> 创建需要重新查找的 `Method`。
+> 创建需要重新查找的 `KFunction`。
 
-你可以添加多个备选 `Method`，直到成功为止，若最后依然失败，将停止查找并输出错误日志。
+你可以添加多个备选 `KFunction`，直到成功为止，若最后依然失败，将停止查找并输出错误日志。
 
 ### Result <span class="symbol">- class</span>
 
@@ -395,14 +425,12 @@ inner class Result internal constructor()
 #### onFind <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun onFind(initiate: MutableList<Method>.() -> Unit)
+fun onFind(initiate: MutableList<KFunction>.() -> Unit)
 ```
 
 **变更记录**
 
 `v1.0.0` `添加`
-
-`v1.0.3` `修改`
 
 `initiate` 类型由 `HashSet` 修改为 `MutableList`
 
@@ -412,12 +440,12 @@ fun onFind(initiate: MutableList<Method>.() -> Unit)
 
 **功能示例**
 
-你可以方便地对重查找的 `Method` 实现 `onFind` 方法。
+你可以方便地对重查找的 `KFunction` 实现 `onFind` 方法。
 
 > 示例如下
 
 ```kotlin
-method {
+function {
     // Your code here.
 }.onFind {
     // Your code here.
@@ -436,7 +464,7 @@ inner class Result internal constructor(internal val isNoSuch: Boolean, internal
 
 **功能描述**
 
-> `Method` 查找结果实现类。
+> `KFunction` 查找结果实现类。
 
 ### result <span class="symbol">- method</span>
 
@@ -459,20 +487,20 @@ inline fun result(initiate: Result.() -> Unit): Result
 > 示例如下
 
 ```kotlin
-method {
+function {
     // Your code here.
 }.result {
     get(instance).call()
     all(instance)
     remedys {}
-    onNoSuchMethod {}
+    onNoSuchFunction {}
 }
 ```
 
 ### get <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun get(instance: Any?): Instance
+fun get(instance: Any?, extensionRef:Any?, isUseMember:Boolean): Instance
 ```
 
 **变更记录**
@@ -481,9 +509,9 @@ fun get(instance: Any?): Instance
 
 **功能描述**
 
-> 获得 `Method` 实例处理类。
+> 获得 `KFunction` 实例处理类。
 
-若有多个 `Method` 结果只会返回第一个。
+若有多个 `KFunction` 结果只会返回第一个。
 
 ::: danger
 
@@ -493,22 +521,22 @@ fun get(instance: Any?): Instance
 
 **功能示例**
 
-你可以通过获得方法所在实例来执行 `Method`。
+你可以通过获得方法所在实例来执行 `KFunction`。
 
 > 示例如下
 
 ```kotlin
-method {
+function {
     // Your code here.
 }.get(instance).call()
 ```
 
-若当前为静态方法，你可以不设置实例。
+若当前为静态方法/单例方法，你可以不设置实例。
 
 > 示例如下
 
 ```kotlin
-method {
+function {
     // Your code here.
 }.get().call()
 ```
@@ -516,31 +544,29 @@ method {
 ### all <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun all(instance: Any?): MutableList<Instance>
+fun all(instance: Any?, extensionRef:Any?, isUseMember:Boolean): MutableList<Instance>
 ```
 
 **变更记录**
 
 `v1.0.0` `添加`
 
-`v1.0.3` `修改`
-
 返回值类型由 `ArrayList` 修改为 `MutableList`
 
 **功能描述**
 
-> 获得 `Method` 实例处理类数组。
+> 获得 `KFunction` 实例处理类数组。
 
-返回全部查找条件匹配的多个 `Method` 实例结果。
+返回全部查找条件匹配的多个 `KFunction` 实例结果。
 
 **功能示例**
 
-你可以通过此方法来获得当前条件结果中匹配的全部 `Method`，其方法所在实例用法与 `get` 相同。
+你可以通过此方法来获得当前条件结果中匹配的全部 `KFunction`，其方法所在实例用法与 `get` 相同。
 
 > 示例如下
 
 ```kotlin
-method {
+function {
     // Your code here.
 }.all(instance).forEach { instance ->
     instance.call(...)
@@ -550,7 +576,7 @@ method {
 ### give <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun give(): Method?
+fun give(): KFunction?
 ```
 
 **变更记录**
@@ -559,38 +585,36 @@ fun give(): Method?
 
 **功能描述**
 
-> 得到 `Method` 本身。
+> 得到 `KFunction` 本身。
 
-若有多个 `Method` 结果只会返回第一个。
+若有多个 `KFunction` 结果只会返回第一个。
 
 在查找条件找不到任何结果的时候将返回 `null`。
 
 ### giveAll <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun giveAll(): MutableList<Method>
+fun giveAll(): MutableList<KFunction>
 ```
 
 **变更记录**
 
 `v1.0.0` `添加`
 
-`v1.0.3` `修改`
-
 返回值类型由 `HashSet` 修改为 `MutableList`
 
 **功能描述**
 
-> 得到 `Method` 本身数组。
+> 得到 `KFunction` 本身数组。
 
-返回全部查找条件匹配的多个 `Method` 实例。
+返回全部查找条件匹配的多个 `KFunction` 实例。
 
 在查找条件找不到任何结果的时候将返回空的 `MutableList`。
 
 ### wait <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun wait(instance: Any?, initiate: Instance.() -> Unit)
+fun wait(instance: Any?, extensionRef:Any?, isUseMember:Boolean, initiate: Instance.() -> Unit)
 ```
 
 **变更记录**
@@ -599,9 +623,9 @@ fun wait(instance: Any?, initiate: Instance.() -> Unit)
 
 **功能描述**
 
-> 获得 `Method` 实例处理类，配合 `RemedyPlan` 使用。
+> 获得 `KFunction` 实例处理类，配合 `RemedyPlan` 使用。
 
-若有多个 `Method` 结果只会返回第一个。
+若有多个 `KFunction` 结果只会返回第一个。
 
 ::: danger
 
@@ -614,22 +638,20 @@ fun wait(instance: Any?, initiate: Instance.() -> Unit)
 ### waitAll <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun waitAll(instance: Any?, initiate: MutableList<Instance>.() -> Unit)
+fun waitAll(instance: Any?, extensionRef:Any?, isUseMember:Boolean, initiate: MutableList<Instance>.() -> Unit)
 ```
 
 **变更记录**
 
 `v1.0.0` `添加`
 
-`v1.0.3` `修改`
-
 `initiate` 类型由 `ArrayList` 修改为 `MutableList`
 
 **功能描述**
 
-> 获得 `Method` 实例处理类数组，配合 `RemedyPlan` 使用。
+> 获得 `KFunction` 实例处理类数组，配合 `RemedyPlan` 使用。
 
-返回全部查找条件匹配的多个 `Method` 实例结果。
+返回全部查找条件匹配的多个 `KFunction` 实例结果。
 
 ::: danger
 
@@ -651,33 +673,33 @@ inline fun remedys(initiate: RemedyPlan.() -> Unit): Result
 
 **功能描述**
 
-> 创建 `Method` 重查找功能。
+> 创建 `KFunction` 重查找功能。
 
 **功能示例**
 
-当你遇到一种 `Method` 可能存在不同形式的存在时，可以使用 `RemedyPlan` 重新查找它，而没有必要使用 `onNoSuchMethod` 捕获异常二次查找 `Method`。
+当你遇到一种 `KFunction` 可能存在不同形式的存在时，可以使用 `RemedyPlan` 重新查找它，而没有必要使用 `onNoSuchFunction` 捕获异常二次查找 `KFunction`。
 
 若第一次查找失败了，你还可以在这里继续添加此方法体直到成功为止。
 
 > 示例如下
 
 ```kotlin
-method {
+function {
     // Your code here.
 }.remedys {
-    method {
+    function {
         // Your code here.
     }
-    method {
+    function {
         // Your code here.
     }
 }
 ```
 
-### onNoSuchMethod <span class="symbol">- method</span>
+### onNoSuchFunction <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-inline fun onNoSuchMethod(result: (Throwable) -> Unit): Result
+inline fun onNoSuchFunction(result: (Throwable) -> Unit): Result
 ```
 
 **变更记录**
@@ -686,7 +708,7 @@ inline fun onNoSuchMethod(result: (Throwable) -> Unit): Result
 
 **功能描述**
 
-> 监听找不到 `Method` 时。
+> 监听找不到 `KFunction` 时。
 
 只会返回第一次的错误信息，不会返回 `RemedyPlan` 的错误信息。
 
@@ -706,14 +728,14 @@ fun ignored(): Result
 
 ::: warning
 
-此时若要监听异常结果，你需要手动实现 **onNoSuchMethod** 方法。
+此时若要监听异常结果，你需要手动实现 **onNoSuchFunction** 方法。
 
 :::
 
 ### Instance <span class="symbol">- class</span>
 
 ```kotlin:no-line-numbers
-inner class Instance internal constructor(private val instance: Any?, private val method: Method?)
+inner class Instance internal constructor(private val instance: Any?, private val function: KFunction<*>?):BaseInstance
 ```
 
 **变更记录**
@@ -722,7 +744,67 @@ inner class Instance internal constructor(private val instance: Any?, private va
 
 **功能描述**
 
-> `Method` 实例处理类。
+> `KFunction` 实例处理类。
+
+#### useMember <span class="symbol">- method</span>
+
+```kotlin:no-line-numbers
+fun useMember(use:Boolean): Instance
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 是否将构造函数转换为Java方式构造
+
+为true时实例执行将通过将 Kotlin构造函数 转换为 JavaMember 方式执行
+
+如果目标属性无法用Java方式描述则此设置将会自动忽略
+
+#### receiver <span class="symbol">- method</span>
+
+```kotlin:no-line-numbers
+fun receiver(extensionRef:Any?): Instance
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 修改 `extensionRef` Receiver
+
+当此属性是拓展属性时，你可能需要此方法额外的一个this属性进行设置
+
+#### original <span class="symbol">- method</span>
+
+```kotlin:no-line-numbers
+fun original(): Instance
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 标识需要调用当前 `KFunction` 未经 Hook 的原始 `KFunction`。
+
+若当前 `KFunction` 并未 Hook 则会使用原始的 `KFunction.call` 方法调用
+
+::: danger
+
+此方法在 Hook Api 存在时将固定 `isUseMember` 为 true
+
+你只能在 (Xposed) 宿主环境中使用此功能
+
+此方法仅在 Hook Api 下有效
+
+:::
 
 #### call <span class="symbol">- method</span>
 
@@ -736,7 +818,7 @@ fun call(vararg args: Any?): Any?
 
 **功能描述**
 
-> 执行 `Method`，不指定返回值类型。
+> 执行 `KFunction`，不指定返回值类型。
 
 #### invoke <span class="symbol">- method</span>
 
@@ -750,7 +832,7 @@ fun <T> invoke(vararg args: Any?): T?
 
 **功能描述**
 
-> 执行 `Method`，指定 `T` 返回值类型。
+> 执行 `KFunction`，指定 `T` 返回值类型。
 
 #### byte <span class="symbol">- method</span>
 
@@ -764,7 +846,7 @@ fun byte(vararg args: Any?): Byte?
 
 **功能描述**
 
-> 执行 `Method`，指定 Byte 返回值类型。
+> 执行 `KFunction`，指定 Byte 返回值类型。
 
 #### int <span class="symbol">- method</span>
 
@@ -778,7 +860,7 @@ fun int(vararg args: Any?): Int
 
 **功能描述**
 
-> 执行 `Method`，指定 Int 返回值类型。
+> 执行 `KFunction`，指定 Int 返回值类型。
 
 #### long <span class="symbol">- method</span>
 
@@ -792,7 +874,7 @@ fun long(vararg args: Any?): Long
 
 **功能描述**
 
-> 执行 `Method`，指定 Long 返回值类型。
+> 执行 `KFunction`，指定 Long 返回值类型。
 
 #### short <span class="symbol">- method</span>
 
@@ -806,7 +888,7 @@ fun short(vararg args: Any?): Short
 
 **功能描述**
 
-> 执行 `Method`，指定 Short 返回值类型。
+> 执行 `KFunction`，指定 Short 返回值类型。
 
 #### double <span class="symbol">- method</span>
 
@@ -820,7 +902,7 @@ fun double(vararg args: Any?): Double
 
 **功能描述**
 
-> 执行 `Method`，指定 Double 返回值类型。
+> 执行 `KFunction`，指定 Double 返回值类型。
 
 #### float <span class="symbol">- method</span>
 
@@ -834,7 +916,7 @@ fun float(vararg args: Any?): Float
 
 **功能描述**
 
-> 执行 `Method`，指定 Float 返回值类型。
+> 执行 `KFunction`，指定 Float 返回值类型。
 
 #### string <span class="symbol">- method</span>
 
@@ -848,7 +930,7 @@ fun string(vararg args: Any?): String
 
 **功能描述**
 
-> 执行 `Method`，指定 String 返回值类型。
+> 执行 `KFunction`，指定 String 返回值类型。
 
 #### char <span class="symbol">- method</span>
 
@@ -862,7 +944,7 @@ fun char(vararg args: Any?): Char
 
 **功能描述**
 
-> 执行 `Method`，指定 Char 返回值类型。
+> 执行 `KFunction`，指定 Char 返回值类型。
 
 #### boolean <span class="symbol">- method</span>
 
@@ -876,7 +958,7 @@ fun boolean(vararg args: Any?): Boolean
 
 **功能描述**
 
-> 执行 `Method`，指定 Boolean 返回值类型。
+> 执行 `KFunction`，指定 Boolean 返回值类型。
 
 ### array <span class="symbol">- method</span>
 
@@ -890,7 +972,7 @@ inline fun <reified T> array(vararg args: Any?): Array<T>
 
 **功能描述**
 
-> 执行 `Method`，指定 Array 返回值类型。
+> 执行 `KFunction`，指定 Array 返回值类型。
 
 ### list <span class="symbol">- method</span>
 
@@ -904,4 +986,4 @@ inline fun <reified T> list(vararg args: Any?): List<T>
 
 **功能描述**
 
-> 执行 `Method`，指定 List 返回值类型。
+> 执行 `KFunction`，指定 List 返回值类型。

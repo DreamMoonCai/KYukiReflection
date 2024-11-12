@@ -326,10 +326,10 @@ searchClass {
     // If you think the number of methods is uncertain, you can also use the following custom conditions
     method().count(1..5)
     method().count { it >= 5 }
-    // Directly specify the number of all members existing in the current class count
+    // Directly specify the number of all callable existing in the current class count
     // Members include: Field, Method, Constructor
     member().count(num = 9)
-    // There must be a static modifier in all members, you can add this condition like this
+    // There must be a static modifier in all callable, you can add this condition like this
     member {
         modifiers { isStatic }
     }

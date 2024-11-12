@@ -87,7 +87,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
          * @param initiate 方法体
          * @return [Result] 结果
          */
-        inline fun function(initiate: KPropertySignatureConditions) = Result().apply { remedyPlans.add(KPropertySignatureFinder(classSet).apply(initiate) to this) }
+        inline fun propertySignature(initiate: KPropertySignatureConditions) = Result().apply { remedyPlans.add(KPropertySignatureFinder(classSet).apply(initiate) to this) }
 
         /** 开始重查找 */
         internal fun build() {
@@ -314,14 +314,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
         inner class Instance internal constructor(private val instance: Any?, private val member: Member?,private val setter:Method? = null):BaseInstance {
 
             init {
-                when (member){
-                    is Field -> {
-                        member.isAccessible = true
-                    }
-                    is Method -> {
-                        member.isAccessible = true
-                    }
-                }
+                member?.isAccessible = true
                 setter.also { it?.isAccessible = true }
             }
 

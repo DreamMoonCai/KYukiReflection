@@ -2,10 +2,10 @@
 pageClass: code-page
 ---
 
-# MethodRules <span class="symbol">- class</span>
+# KFunctionRules <span class="symbol">- class</span>
 
 ```kotlin:no-line-numbers
-class MethodRules internal constructor(private val rulesData: MethodRulesData) : BaseRules
+class KFunctionRules internal constructor(private val rulesData: KFunctionRulesData) : KBaseRules
 ```
 
 **变更记录**
@@ -14,7 +14,7 @@ class MethodRules internal constructor(private val rulesData: MethodRulesData) :
 
 **功能描述**
 
-> `Method` 查找条件实现类。
+> `KFunction` 查找条件实现类。
 
 ## name <span class="symbol">- field</span>
 
@@ -28,7 +28,7 @@ var name: String
 
 **功能描述**
 
-> 设置 `Method` 名称。
+> 设置 `KFunction` 名称。
 
 ## paramCount <span class="symbol">- field</span>
 
@@ -42,7 +42,7 @@ var paramCount: Int
 
 **功能描述**
 
-> 设置 `Method` 参数个数。
+> 设置 `KFunction` 参数个数。
 
 你可以不使用 `param` 指定参数类型而是仅使用此变量指定参数个数。
 
@@ -60,14 +60,14 @@ var returnType: Any?
 
 **功能描述**
 
-> 设置 `Method` 返回值。
+> 设置 `KFunction` 返回值。
 
 可不填写返回值。
 
 ## modifiers <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun modifiers(conditions: ModifierConditions)
+fun modifiers(conditions: KModifierConditions)
 ```
 
 **变更记录**
@@ -76,7 +76,7 @@ fun modifiers(conditions: ModifierConditions)
 
 **功能描述**
 
-> 设置 `Method` 标识符筛选条件。
+> 设置 `KFunction` 标识符筛选条件。
 
 可不设置筛选条件。
 
@@ -92,7 +92,7 @@ fun emptyParam()
 
 **功能描述**
 
-> 设置 `Method` 空参数、无参数。
+> 设置 `KFunction` 空参数、无参数。
 
 ## param <span class="symbol">- method</span>
 
@@ -106,11 +106,11 @@ fun param(vararg paramType: Any)
 
 **功能描述**
 
-> 设置 `Method` 参数。
+> 设置 `KFunction` 参数。
 
 如果同时使用了 `paramCount` 则 `paramType` 的数量必须与 `paramCount` 完全匹配。
 
-如果 `Method` 中存在一些无意义又很长的类型，你可以使用 `VagueType` 来替代它。
+如果 `KFunction` 中存在一些无意义又很长的类型，你可以使用 `VagueType` 来替代它。
 
 ::: danger
 
@@ -123,7 +123,7 @@ fun param(vararg paramType: Any)
 ## param <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun param(conditions: ObjectsConditions)
+fun param(conditions: KParameterConditions)
 ```
 
 **变更记录**
@@ -132,7 +132,7 @@ fun param(conditions: ObjectsConditions)
 
 **功能描述**
 
-> 设置 `Method` 参数条件。
+> 设置 `KFunction` 参数条件。
 
 ::: danger
 
@@ -142,10 +142,10 @@ fun param(conditions: ObjectsConditions)
 
 :::
 
-## name <span class="symbol">- method</span>
+## paramName <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun name(conditions: NameConditions)
+fun paramName(vararg paramName: String): Unit
 ```
 
 **变更记录**
@@ -154,7 +154,37 @@ fun name(conditions: NameConditions)
 
 **功能描述**
 
-> 设置 `Method` 名称条件。
+> 设置 `Constructor KFunction` 参数名称。
+
+如果 `Constructor KFunction` 中存在一些不太清楚的参数名称，你可以使用 [VagueKotlin](../../../type/defined/KDefinedTypeFactory#vaguekotlin-field).name 或者 空字符串 或者 "null" 来替代它。
+
+## paramName <span class="symbol">- method</span>
+
+```kotlin:no-line-numbers
+fun paramName(conditions: KNamesConditions): Unit
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 设置 `Constructor KFunction` 参数名称条件。
+
+## name <span class="symbol">- method</span>
+
+```kotlin:no-line-numbers
+fun name(conditions: KNameConditions)
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 设置 `KFunction` 名称条件。
 
 ## paramCount <span class="symbol">- method</span>
 
@@ -168,14 +198,14 @@ fun paramCount(numRange: IntRange)
 
 **功能描述**
 
-> 设置 `Method` 参数个数范围。
+> 设置 `KFunction` 参数个数范围。
 
 你可以不使用 `param` 指定参数类型而是仅使用此方法指定参数个数范围。
 
 ## paramCount <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun paramCount(conditions: CountConditions)
+fun paramCount(conditions: KCountConditions)
 ```
 
 **变更记录**
@@ -184,14 +214,14 @@ fun paramCount(conditions: CountConditions)
 
 **功能描述**
 
-> 设置 `Method` 参数个数条件。
+> 设置 `KFunction` 参数个数条件。
 
 你可以不使用 `param` 指定参数类型而是仅使用此方法指定参数个数条件。
 
 ## returnType <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun returnType(conditions: ObjectConditions)
+fun returnType(conditions: KTypeConditions)
 ```
 
 **变更记录**
@@ -200,6 +230,6 @@ fun returnType(conditions: ObjectConditions)
 
 **功能描述**
 
-> 设置 `Method` 返回值条件。
+> 设置 `KFunction` 返回值条件。
 
 可不填写返回值。

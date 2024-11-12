@@ -22,6 +22,7 @@
  */
 package io.github.dreammooncai.yukireflection.type.factory
 
+import io.github.dreammooncai.yukireflection.bean.KGenericClass
 import io.github.dreammooncai.yukireflection.build.KTypeBuild
 import io.github.dreammooncai.yukireflection.finder.base.rules.KModifierRules
 import io.github.dreammooncai.yukireflection.finder.classes.KClassFinder
@@ -77,3 +78,6 @@ internal typealias KParameterConditions = KObjectRules.(List<KParameter>) -> Boo
 
 /** 定义 [KObjectRules] 方法体类型 */
 internal typealias KNamesConditions = KObjectRules.(List<String?>) -> Boolean
+
+/** 定义 [KGenericClass] 方法体类型 */
+internal typealias KGenericClassDomain = KGenericClass.() -> Unit

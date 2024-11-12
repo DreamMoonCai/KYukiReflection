@@ -2,10 +2,10 @@
 pageClass: code-page
 ---
 
-# MemberRules <span class="symbol">- class</span>
+# KCallableRules <span class="symbol">- class</span>
 
 ```kotlin:no-line-numbers
-class MemberRules internal constructor(private val rulesData: MemberRulesData) : BaseRules
+class KCallableRules internal constructor(private val rulesData: KCallableRulesData) : KBaseRules
 ```
 
 **变更记录**
@@ -14,12 +14,12 @@ class MemberRules internal constructor(private val rulesData: MemberRulesData) :
 
 **功能描述**
 
-> `Member` 查找条件实现类。
+> `KCallable` 查找条件实现类。
 
 ## modifiers <span class="symbol">- method</span>
 
 ```kotlin:no-line-numbers
-fun modifiers(conditions: ModifierConditions)
+fun modifiers(conditions: KModifierConditions)
 ```
 
 **变更记录**
@@ -28,6 +28,6 @@ fun modifiers(conditions: ModifierConditions)
 
 **功能描述**
 
-> 设置 `Member` 标识符筛选条件。
+> 设置 `KCallable` 标识符筛选条件。
 
 可不设置筛选条件。

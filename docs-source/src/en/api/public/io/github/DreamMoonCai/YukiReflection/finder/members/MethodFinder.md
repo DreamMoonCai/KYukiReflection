@@ -410,8 +410,6 @@ fun onFind(initiate: MutableList<Method>.() -> Unit)
 
 `v1.0.0` `first`
 
-`v1.0.3` `修改`
-
 `initiate` 类型由 `HashSet` 修改为 `MutableList`
 
 **Function Illustrate**
@@ -511,7 +509,7 @@ method {
 }.get(instance).call()
 ```
 
-若当前为静态方法，你可以不设置实例。
+若当前为静态方法/单例方法，你可以不设置实例。
 
 > The following example
 
@@ -530,8 +528,6 @@ fun all(instance: Any?): MutableList<Instance>
 **Change Records**
 
 `v1.0.0` `first`
-
-`v1.0.3` `修改`
 
 返回值类型由 `ArrayList` 修改为 `MutableList`
 
@@ -583,8 +579,6 @@ fun giveAll(): MutableList<Method>
 
 `v1.0.0` `first`
 
-`v1.0.3` `修改`
-
 返回值类型由 `HashSet` 修改为 `MutableList`
 
 **Function Illustrate**
@@ -628,8 +622,6 @@ fun waitAll(instance: Any?, initiate: MutableList<Instance>.() -> Unit)
 **Change Records**
 
 `v1.0.0` `first`
-
-`v1.0.3` `修改`
 
 `initiate` 类型由 `ArrayList` 修改为 `MutableList`
 
