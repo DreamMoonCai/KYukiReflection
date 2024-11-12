@@ -15,6 +15,7 @@ const navigationLinks = {
         '/api/home',
         '/api/public/',
         '/api/features'
+        '/api/special'
     ],
     publicApi: [
         baseApiPath + 'KYukiReflection',

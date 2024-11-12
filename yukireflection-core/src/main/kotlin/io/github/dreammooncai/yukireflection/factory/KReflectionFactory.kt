@@ -40,6 +40,7 @@ import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.declaredMembers
+import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.full.valueParameters
@@ -539,6 +540,17 @@ val KClass<*>.interfaces by lazyDomain { superclasses.filter { it.isInterface } 
  * 附带继承(界限)信息
  */
 inline val KClass<*>.generics get() = typeParameters
+
+/**
+ * 当前 [KCallable] 的泛型列表
+ *
+ *     val <L:Int?> Class<L>.test:String -> [L:Int?]
+ *
+ *     fun <in D,L:Int?> test() -> [in D,L:Int?]
+ *
+ * 附带属性/函数(界限)信息
+ */
+inline val KCallable<*>.generics get() = typeParameters
 
 /**
  * 当前 [KClass] 的 [KType] 表示
@@ -1263,12 +1275,20 @@ inline fun KClass<*>.generic(vararg params: Any, initiate: KTypeBuildConditions 
 inline fun KClass<*>.variance(variance: KVariance = KVariance.INVARIANT): KTypeProjection = KTypeProjection(variance, type)
 
 /**
- * 获得当前 [KProperty] 的返回类型中来自尖括号的泛型操作对象
+ * 获得当前 [KCallable] 定义的尖括号的泛型操作对象
  *
  * @param initiate 实例方法体
  * @return [KGenericClass]
  */
-inline fun KProperty<*>.generic(initiate: KGenericClassDomain = {}): KGenericClass = returnType.generic(initiate)
+inline fun KCallable<*>.generics(vararg params: Any,initiate: KTypeBuildConditions = {}): KGenericClass = generics.map { it.type }.generic().build { params.isNotEmpty().ifTrue { param(*params) };initiate() }
+
+/**
+ * 获得当前 [KCallable] 的返回类型中来自尖括号的泛型操作对象
+ *
+ * @param initiate 实例方法体
+ * @return [KGenericClass]
+ */
+inline fun KCallable<*>.generic(initiate: KGenericClassDomain = {}): KGenericClass = returnType.generic(initiate)
 
 /**
  * 获得当前 [KType] 的泛型操作对象

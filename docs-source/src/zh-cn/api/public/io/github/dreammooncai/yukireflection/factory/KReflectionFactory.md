@@ -530,6 +530,20 @@ val KClass<*>.generics: List<KTypeParameter>
 
 > 获取 `KClass` 的泛型列表
 
+## KClass.generics <span class="symbol">- ext-field</span>
+
+```kotlin:no-line-numbers
+val KCallable<*>.generics: List<KTypeParameter>
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 获取 `KCallable` 的泛型列表
+
 ## KClassifier.type <span class="symbol">- ext-field</span>
 
 ```kotlin:no-line-numbers
@@ -1409,10 +1423,10 @@ fun KClass<*>.variance(variance: KVariance): KTypeProjection
 
 > 使用指定方差创建包含方差信息的 `KTypeProjection` 方差实例对象
 
-## KProperty.generic <span class="symbol">- ext-method</span>
+## KCallable.generics <span class="symbol">- ext-method</span>
 
 ```kotlin:no-line-numbers
-fun KProperty<*>.generic(initiate: KGenericClassDomain): KGenericClass
+fun KCallable<*>.generics(vararg params: Any,initiate: KTypeBuildConditions = {}): KGenericClass
 ```
 
 **变更记录**
@@ -1421,7 +1435,21 @@ fun KProperty<*>.generic(initiate: KGenericClassDomain): KGenericClass
 
 **功能描述**
 
-> 获取 `KProperty` 返回类型的泛型操作对象
+> 获取 `KCallable` 定义的尖括号的泛型操作对象
+
+## KCallable.generic <span class="symbol">- ext-method</span>
+
+```kotlin:no-line-numbers
+fun KCallable<*>.generic(initiate: KGenericClassDomain): KGenericClass
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 获取 `KCallable` 返回类型的泛型操作对象
 
 ## KType.generic <span class="symbol">- ext-method</span>
 
