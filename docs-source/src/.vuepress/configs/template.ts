@@ -14,7 +14,7 @@ const navigationLinks = {
     apiDocs: [
         '/api/home',
         '/api/public/',
-        '/api/features'
+        '/api/features',
         '/api/special'
     ],
     publicApi: [
