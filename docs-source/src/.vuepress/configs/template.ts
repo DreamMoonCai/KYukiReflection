@@ -152,6 +152,9 @@ export const navBarItems = {
             }, {
                 text: '功能介绍',
                 link: i18n.string(navigationLinks.apiDocs[2], 'zh-cn')
+            }, {
+                text: '特色功能',
+                link: i18n.string(navigationLinks.apiDocs[3], 'zh-cn')
             }]
         }, {
             text: '关于',
