@@ -141,7 +141,7 @@ class Test{
     fun p(one:List<Double>){}
     fun s(one:List<Short>){}
 }
-//b说混淆的，准确通过类型获取混淆的属性可以像下面这样
+//b是混淆的，准确通过类型获取混淆的属性可以像下面这样
 Test::class.property { type = List::class.generic(String::class) } // 非常简单
 //或者从c和d中准确筛选
 Test::class.property { type = List::class.generic(String::class.variance(KVariance.OUT)) } // 获取d

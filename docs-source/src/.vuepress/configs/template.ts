@@ -115,6 +115,9 @@ export const navBarItems = {
             }, {
                 text: 'Features',
                 link: i18n.string(navigationLinks.apiDocs[2], 'en')
+            }, {
+                text: 'Special',
+                link: i18n.string(navigationLinks.apiDocs[3], 'en')
             }]
         }, {
             text: 'About',
@@ -187,7 +190,7 @@ export const sideBarItems = {
             text: 'Public API' + i18n.space,
             collapsible: true,
             children: i18n.array(navigationLinks.publicApi, 'en')
-        }, i18n.string(navigationLinks.apiDocs[2], 'en')]
+        }, i18n.string(navigationLinks.apiDocs[2], 'en'), i18n.string(navigationLinks.apiDocs[3], 'en')]
     }, {
         text: 'About',
         collapsible: true,
@@ -208,7 +211,7 @@ export const sideBarItems = {
             text: 'Public API' + i18n.space,
             collapsible: true,
             children: i18n.array(navigationLinks.publicApi, 'zh-cn')
-        }, i18n.string(navigationLinks.apiDocs[2], 'zh-cn')]
+        }, i18n.string(navigationLinks.apiDocs[2], 'zh-cn'), i18n.string(navigationLinks.apiDocs[3], 'zh-cn')]
     }, {
         text: '关于',
         collapsible: true,
