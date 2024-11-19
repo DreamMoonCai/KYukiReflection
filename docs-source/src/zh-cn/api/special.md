@@ -82,7 +82,7 @@ Test::class.function { name = "test" }.give()!!.generic().argument(0)//通过giv
 Test::class.function { name = "test" }.give()!!.generics().argument(0)//通过give获得KFunction，generics获取定义参数泛型列表并默认获取上界的类型
 ```
 
-可以看到与 `Kotlin类` 的反射一样获取泛型一样，并无区别，同样支持 `Test::list` 类似的一键引用
+可以看到与 `Kotlin类` 获取泛型一样，并无区别，同样支持类似于 `Test::list` 的一键引用
 
 ### 泛型匹配
 

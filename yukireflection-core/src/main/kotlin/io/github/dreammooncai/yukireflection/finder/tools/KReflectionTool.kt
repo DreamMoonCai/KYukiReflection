@@ -993,7 +993,7 @@ internal object KReflectionTool {
                                     runOrFalse {
                                         it(
                                             KObjectRules.with(t),
-                                            t.valueParameterList.map { nameResolver.getString(t.name) })
+                                            t.valueParameterList.map { nameResolver.getString(it.name) })
                                     }
                                 }.let { hold ->
                                     if (hold) iParamNamesCds++
