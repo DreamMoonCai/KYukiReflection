@@ -1902,12 +1902,12 @@ open class BindingInstanceSupport<T>(
  * 过于复杂的映射规则，您可以尝试手动find查找而不是选择委托绑定
  *
  * @param T 映射属性的值类型
- * @property BindingInstanceSupport.thisRefClass 映射的属性所在的类
  * @param thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[KClass]则使用拓展属性的this，否则为null
  * @param extensionRef 映射属性如果是拓展属性所需的拓展实例
  * @param isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
  * @param isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
  * @param mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+ * @receiver 映射的属性所在的类
  */
 inline fun <T> KClass<*>.bindProperty(
     thisRef: Any? = null,
@@ -1945,12 +1945,12 @@ inline fun <T> KClass<*>.bindProperty(
  * 过于复杂的映射规则，您可以尝试手动find查找而不是选择委托绑定
  *
  * @param T 映射属性的值类型
- * @property BindingInstanceSupport.thisRefClass 映射的属性所在的类
  * @param thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[KClass]则使用拓展属性的this，否则为null
  * @param extensionRef 映射属性如果是拓展属性所需的拓展实例
  * @param isUseMember 是否优先将属性转换Java方式进行get/set 默认不使用
  * @param isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
  * @param mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+ * @receiver 映射的属性所在的类
  */
 inline fun <T> KClass<*>.bindPropertyOrNull(
     thisRef: Any? = null,
@@ -1961,4 +1961,244 @@ inline fun <T> KClass<*>.bindPropertyOrNull(
         this.name = it.name
         this.type = it.returnType
     }
-) = BindingInstanceSupport.Nullable<T>(this, thisRef, extensionRef, isUseMember, isLazy, mappingRules)
+) = BindingInstanceSupport.Nullable<T?>(this, thisRef, extensionRef, isUseMember, isLazy, mappingRules)
+
+/**
+ * 委托绑定到指定类的相同特征的属性
+ *
+ * 假设thisRefClass Test中有以下属性 ↓
+ *
+ * ```kotlin
+ * class Test{
+ *  var test:String? = null
+ * }
+ * ```
+ *
+ * 在你的自定义类中使用以下方式简单映射绑定上 ↓
+ *
+ * ```kotlin
+ * var test:String? by BindingInstanceSignatureSupport.Nullable(Test::class,Test())
+ * test = "hello"
+ * ```
+ *
+ * 这适用于类和实例无法直接在代码中调用时的解决方案
+ *
+ * 通过此方法你可以快速为某个类进行特征映射，当然需要遵循一定的映射规则
+ *
+ * 过于复杂的映射规则，您可以尝试手动find查找而不是选择委托绑定
+ *
+ * @param T 映射属性的值类型
+ * @property thisRefClass 映射的属性所在的类
+ * @property thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[thisRefClass]则使用拓展属性的this，否则为null
+ * @property declaringClass [KClass] 属性所在的 [KClass]
+ * @property loader [ClassLoader] 属性成员 [KPropertySignatureSupport.member] 所在的 [ClassLoader]
+ * @property isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
+ * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+ */
+open class BindingInstanceSignatureSupport<T>(
+    private val thisRefClass: KClass<*>,
+    private var thisRef: Any? = null,
+    private val declaringClass: KClass<*>? = null,
+    private val loader: ClassLoader? = null,
+    private val isLazy: Boolean = true,
+    private val mappingRules: KPropertySignatureFinder.(property: KProperty<*>) -> Unit = {
+        this.name = it.name
+        this.type = it.returnType
+    }
+) {
+    private var lazy: WeakReference<KPropertySignatureFinder.Result>? = null
+
+    /**
+     * 获取非空实例-get
+     * @return T
+     */
+    internal fun nonNullGet(property: KProperty<*>): T {
+        return nullableGet(property) ?: error("The non-null attribute results in an empty error.")
+    }
+
+    /**
+     * 获取可空实例-get
+     * @return T or null
+     */
+    internal fun nullableGet(property: KProperty<*>): T? {
+        return if (isLazy) {
+            if (lazy == null || lazy?.get() == null)
+                lazy = WeakReference(thisRefClass.propertySignature {
+                    mappingRules(property)
+                })
+            lazy?.get()?.get(thisRef, declaringClass, loader)?.cast<T>()
+        } else thisRefClass.propertySignature {
+            mappingRules(property)
+        }.get(thisRef, declaringClass, loader).cast()
+    }
+
+    /**
+     * 获取非空实例-set
+     * @return T
+     */
+    internal fun nonNullSet(property: KProperty<*>, value: T) {
+        return nullableSet(property, value)
+    }
+
+    /**
+     * 获取可空实例-set
+     */
+    internal fun nullableSet(property: KProperty<*>, value: T?) {
+        if (isLazy) {
+            if (lazy == null || lazy?.get() == null)
+                lazy = WeakReference(thisRefClass.propertySignature {
+                    mappingRules(property)
+                })
+            lazy?.get()?.get(thisRef, declaringClass, loader)?.set(value)
+        } else {
+            thisRefClass.propertySignature {
+                mappingRules(property)
+            }.get(thisRef, declaringClass, loader).set(value)
+        }
+    }
+
+    protected fun verifyReferences(thisRef: Any?): BindingInstanceSignatureSupport<T> {
+        if (this.thisRef != null || thisRef == null || thisRef::class notExtends thisRefClass) return this
+        this.thisRef = thisRef
+        return this
+    }
+
+    /**
+     * 非空实例
+     * @param T 映射属性的值类型
+     * @property thisRefClass 映射的属性所在的类
+     * @property thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[thisRefClass]则使用拓展属性的this，否则为null
+     * @property declaringClass [KClass] 属性所在的 [KClass]
+     * @property loader [ClassLoader] 属性成员 [KPropertySignatureSupport.member] 所在的 [ClassLoader]
+     * @property isLazy 是否只加载一次[KPropertySignatureFinder.Result] 默认是 否则每次get/set都将重新查找
+     * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+     */
+    class NonNull<T> internal constructor(
+        private val thisRefClass: KClass<*>,
+        private val thisRef: Any? = null,
+        private val declaringClass: KClass<*>? = null,
+        private val loader: ClassLoader? = null,
+        private val isLazy: Boolean = true,
+        private val mappingRules: KPropertySignatureFinder.(property: KProperty<*>) -> Unit = {
+            this.name = it.name
+            this.type = it.returnType
+        }
+    ) : BindingInstanceSignatureSupport<T>(thisRefClass, thisRef, declaringClass, loader, isLazy, mappingRules) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>) = verifyReferences(thisRef).nonNullGet(property)
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) = verifyReferences(thisRef).nonNullSet(property, value)
+    }
+
+    /**
+     * 可空实例
+     * @param T 映射属性的值类型
+     * @property thisRefClass 映射的属性所在的类
+     * @property thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[thisRefClass]则使用拓展属性的this，否则为null
+     * @property declaringClass [KClass] 属性所在的 [KClass]
+     * @property loader [ClassLoader] 属性成员 [KPropertySignatureSupport.member] 所在的 [ClassLoader]
+     * @property isLazy 是否只加载一次[KPropertySignatureFinder.Result] 默认是 否则每次get/set都将重新查找
+     * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+     */
+    class Nullable<T> internal constructor(
+        private val thisRefClass: KClass<*>,
+        private val thisRef: Any? = null,
+        private val declaringClass: KClass<*>? = null,
+        private val loader: ClassLoader? = null,
+        private val isLazy: Boolean = true,
+        private val mappingRules: KPropertySignatureFinder.(property: KProperty<*>) -> Unit = {
+            this.name = it.name
+            this.type = it.returnType
+        }
+    ) : BindingInstanceSignatureSupport<T?>(thisRefClass, thisRef, declaringClass, loader, isLazy, mappingRules) {
+
+        operator fun getValue(thisRef: Any?, property: KProperty<*>) = verifyReferences(thisRef).nullableGet(property)
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) = verifyReferences(thisRef).nullableSet(property, value)
+    }
+}
+
+/**
+ * 委托绑定到指定类的相同特征的属性 非空实例
+ *
+ * 假设thisRefClass Test中有以下属性 ↓
+ *
+ * ```kotlin
+ * class Test{
+ *  var test:String = "otr"
+ * }
+ * ```
+ *
+ * 在你的自定义类中使用以下方式简单映射绑定上 ↓
+ *
+ * ```kotlin
+ * var test:String by Test::class.bindPropertySignature(Test())
+ * test = "hello"
+ * ```
+ *
+ * 这适用于类和实例无法直接在代码中调用时的解决方案
+ *
+ * 通过此方法你可以快速为某个类进行特征映射，当然需要遵循一定的映射规则
+ *
+ * 过于复杂的映射规则，您可以尝试手动find查找而不是选择委托绑定
+ *
+ * @param T 映射属性的值类型
+ * @param thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[KClass]则使用拓展属性的this，否则为null
+ * @param declaringClass [KClass] 属性所在的 [KClass]
+ * @param loader [ClassLoader] 属性成员 [KPropertySignatureSupport.member] 所在的 [ClassLoader]
+ * @param isLazy 是否只加载一次[KPropertySignatureFinder.Result] 默认是 否则每次get/set都将重新查找
+ * @param mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+ * @receiver 映射的属性所在的类
+ */
+inline fun <T> KClass<*>.bindPropertySignature(
+    thisRef: Any? = null,
+    declaringClass: KClass<*>? = null,
+    loader: ClassLoader? = null,
+    isLazy: Boolean = true,
+    noinline mappingRules: KPropertySignatureFinder.(property: KProperty<*>) -> Unit = {
+        this.name = it.name
+        this.type = it.returnType
+    }
+) = BindingInstanceSignatureSupport.NonNull<T>(this, thisRef, declaringClass, loader, isLazy, mappingRules)
+
+/**
+ * 委托绑定到指定类的相同特征的属性 可空实例
+ *
+ * 假设thisRefClass Test中有以下属性 ↓
+ *
+ * ```kotlin
+ * class Test{
+ *  var test:String? = null
+ * }
+ * ```
+ *
+ * 在你的自定义类中使用以下方式简单映射绑定上 ↓
+ *
+ * ```kotlin
+ * var test:String? by Test::class.bindPropertyOrNull(Test())
+ * test = "hello"
+ * ```
+ *
+ * 这适用于类和实例无法直接在代码中调用时的解决方案
+ *
+ * 通过此方法你可以快速为某个类进行特征映射，当然需要遵循一定的映射规则
+ *
+ * 过于复杂的映射规则，您可以尝试手动find查找而不是选择委托绑定
+ *
+ * @param T 映射属性的值类型
+ * @param thisRef 映射的属性调用时所需的实例 如果为null并且被委托字段的是拓展字段并且拓展的this属于[KClass]则使用拓展属性的this，否则为null
+ * @param declaringClass [KClass] 属性所在的 [KClass]
+ * @param loader [ClassLoader] 属性成员 [KPropertySignatureSupport.member] 所在的 [ClassLoader]
+ * @param isLazy 是否只加载一次[KPropertySignatureFinder.Result] 默认是 否则每次get/set都将重新查找
+ * @param mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
+ * @receiver 映射的属性所在的类
+ */
+inline fun <T> KClass<*>.bindPropertySignatureOrNull(
+    thisRef: Any? = null,
+    declaringClass: KClass<*>? = null,
+    loader: ClassLoader? = null,
+    isLazy: Boolean = true,
+    noinline mappingRules: KPropertySignatureFinder.(property: KProperty<*>) -> Unit = {
+        this.name = it.name
+        this.type = it.returnType
+    }
+) = BindingInstanceSignatureSupport.Nullable<T?>(this, thisRef, declaringClass, loader, isLazy, mappingRules)
+

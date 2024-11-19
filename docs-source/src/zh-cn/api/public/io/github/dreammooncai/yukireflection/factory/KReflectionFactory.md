@@ -1856,7 +1856,7 @@ fun <T> KClass<*>.bindProperty(
     extensionRef: Any?,
     isUseMember: Boolean,
     isLazy: Boolean,
-    noinline mappingRules: KPropertyFinder.(property: KProperty<*>) -> Unit
+    mappingRules: KPropertyFinder.(property: KProperty<*>) -> Unit
 ): BindingInstanceSupport.NonNull<T>
 ```
 ```kotlin:no-line-numbers
@@ -1865,7 +1865,7 @@ fun <T> KClass<*>.bindPropertyOrNull(
     extensionRef: Any?,
     isUseMember: Boolean,
     isLazy: Boolean,
-    noinline mappingRules: KPropertyFinder.(property: KProperty<*>) -> Unit
+    mappingRules: KPropertyFinder.(property: KProperty<*>) -> Unit
 ): BindingInstanceSupport.Nullable<T>
 ```
 
@@ -1877,4 +1877,52 @@ fun <T> KClass<*>.bindPropertyOrNull(
 
 > 与指定 `KProperty` 取得/绑定映射关系
 
+## BindingInstanceSignatureSupport <span class="symbol">- class</span>
 
+```kotlin:no-line-numbers
+open class BindingInstanceSignatureSupport<T>(
+    private val thisRefClass: KClass<*>,
+    private var thisRef: Any?,
+    private val declaringClass: KClass<*>? = null,
+    private val loader: ClassLoader? = null,
+    private val isLazy: Boolean,
+    private val mappingRules: KPropertySignatureFinder.(property: KProperty<*>) -> Unit
+)
+```
+
+**变更记录**
+
+`v1.0.0` `新增`
+
+**功能描述**
+
+> 委托绑定映射 ` KPropertySignature` 实例。
+
+## KClass.bindPropertySignature <span class="symbol">- ext-method</span>
+
+```kotlin:no-line-numbers
+fun <T> KClass<*>.bindPropertySignature(
+    thisRef: Any?,
+    declaringClass: KClass<*>? = null,
+    loader: ClassLoader? = null,
+    isLazy: Boolean,
+    mappingRules: KPropertySignatureFinder.(property: KProperty<*>) -> Unit
+): BindingInstanceSupport.NonNull<T>
+```
+```kotlin:no-line-numbers
+fun <T> KClass<*>.bindPropertySignatureOrNull(
+    thisRef: Any?,
+    declaringClass: KClass<*>? = null,
+    loader: ClassLoader? = null,
+    isLazy: Boolean,
+    mappingRules: KPropertySignatureFinder.(property: KProperty<*>) -> Unit
+): BindingInstanceSupport.Nullable<T>
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 与指定 `KPropertySignature` 取得/绑定映射关系
