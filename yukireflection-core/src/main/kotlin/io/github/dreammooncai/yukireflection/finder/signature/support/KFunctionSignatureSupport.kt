@@ -62,7 +62,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      *
      * 如需指定 [ClassLoader] 请使用方法方式调用
      */
-    val paramTypes by lazy { getParamTypes() }
+    val paramKTypes by lazy { getParamKTypes() }
 
     /**
      * 方法参数类型 [List]<[KType]> 通过 [getMember] 获取泛型参数类型转 [List]<[KType]>
@@ -159,7 +159,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * @param loader [ClassLoader] 参数类型 [paramClass] 所在的 [ClassLoader]
      * @return [List]<[KType]>
      */
-    fun getParamTypes(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getMember(declaringClass, loader).genericParameterTypes.map { it.kotlinType } }.getOrNull() ?: getParamClass(loader).map { it.type }
+    fun getParamKTypes(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getMember(declaringClass, loader).genericParameterTypes.map { it.kotlinType } }.getOrNull() ?: getParamClass(loader).map { it.type }
 
     /**
      * 方法参数类型 [List]<[KType]> 通过 [getMember] 获取泛型参数类型转 [List]<[KType]>
@@ -173,7 +173,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * @param loader [ClassLoader] 参数类型 [paramClass] 所在的 [ClassLoader]
      * @return [List]<[KType]> or null
      */
-    fun getParamTypesOrNull(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getParamTypes(declaringClass, loader) }.getOrNull()
+    fun getParamTypesOrNull(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getParamKTypes(declaringClass, loader) }.getOrNull()
 
     /**
      * 方法参数类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果
@@ -181,7 +181,14 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * @param loader [ClassLoader] 参数类型 [paramClass] 所在的 [ClassLoader]
      * @return [List]<[KClass]>
      */
-    fun getParamClass(loader: ClassLoader? = null):List<KClass<*>> = DexSignUtil.getParamTypeNames(paramTypesDescriptors).map { it.toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: error("Descriptor: $it, cannot be converted to [KClass].") }
+    fun getParamClass(loader: ClassLoader? = null):List<KClass<*>> = DexSignUtil.getParamTypeNames(paramTypesDescriptors).map { it.toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: it.let {
+        val lastIndex = it.lastIndexOf('.')
+        if (lastIndex != -1) {
+            it.substring(0, lastIndex) + '$' + it.substring(lastIndex + 1)
+        } else {
+            it
+        }.toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader)
+    } ?: error("Descriptor: $it, cannot be converted to [KClass].") }
 
     /**
      * 方法参数类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果
@@ -227,7 +234,14 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * @param loader [ClassLoader] 返回类型 [returnClass] 所在的 [ClassLoader]
      * @return [KClass]
      */
-    fun getReturnClass(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(returnTypeDescriptor).toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: error("Descriptor: $returnTypeDescriptor, cannot be converted to [KClass].")
+    fun getReturnClass(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(returnTypeDescriptor).toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader) ?: DexSignUtil.getTypeName(returnTypeDescriptor).let {
+        val lastIndex = it.lastIndexOf('.')
+        if (lastIndex != -1) {
+            it.substring(0, lastIndex) + '$' + it.substring(lastIndex + 1)
+        } else {
+            it
+        }.toKClassOrNull(loader ?: this@KFunctionSignatureSupport.loader)
+    } ?: error("Descriptor: $returnTypeDescriptor, cannot be converted to [KClass].")
 
     /**
      * 方法返回类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果

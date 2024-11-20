@@ -122,7 +122,14 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, p
          * @param loader [ClassLoader] 字段类型 [type] 所在的 [ClassLoader]
          * @return [KClass]
          */
-        fun getReturnClass(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(typeDescriptor).toKClassOrNull(loader ?: this@KPropertySignatureSupport.loader) ?: error("Descriptor: $typeDescriptor, cannot be converted to [KClass].")
+        fun getReturnClass(loader: ClassLoader? = null): KClass<*> = DexSignUtil.getTypeName(typeDescriptor).toKClassOrNull(loader ?: this@KPropertySignatureSupport.loader) ?: DexSignUtil.getTypeName(typeDescriptor).let {
+            val lastIndex = it.lastIndexOf('.')
+            if (lastIndex != -1) {
+                it.substring(0, lastIndex) + '$' + it.substring(lastIndex + 1)
+            } else {
+                it
+            }.toKClassOrNull(loader ?: this@KPropertySignatureSupport.loader)
+        } ?: error("Descriptor: $typeDescriptor, cannot be converted to [KClass].")
 
         /**
          * 字段类型 [KClass] 使用指定 [loader] 描述结果
