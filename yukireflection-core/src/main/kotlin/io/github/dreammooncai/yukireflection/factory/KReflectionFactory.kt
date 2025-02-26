@@ -9,7 +9,6 @@
 
 package io.github.dreammooncai.yukireflection.factory
 
-import com.highcapable.yukihookapi.hook.factory.extends
 import io.github.dreammooncai.yukireflection.KYukiReflection
 import io.github.dreammooncai.yukireflection.bean.KCurrentClass
 import io.github.dreammooncai.yukireflection.bean.KGenericClass
@@ -49,6 +48,7 @@ import kotlin.reflect.jvm.internal.impl.descriptors.ClassDescriptor
 import kotlin.reflect.jvm.internal.impl.descriptors.ClassKind
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
+import kotlin.reflect.jvm.internal.impl.types.KotlinType
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.jvmName
@@ -316,6 +316,20 @@ val KProperty<*>.isVar: Boolean by lazyDomain {
 val KProperty<*>.isVal: Boolean by lazyDomain { !isVar }
 
 /**
+ * 此 属性 [KProperty] 是否为可空类型
+ *
+ * @return [Boolean]
+ */
+val KProperty<*>.isNullable by lazyDomain { returnType.isMarkedNullable }
+
+/**
+ * 此 属性 [KProperty] 是否为非空类型
+ *
+ * @return [Boolean]
+ */
+val KProperty<*>.isNotNull by lazyDomain { !isNullable }
+
+/**
  * 检查 [KClass] 是否为数组或集合类型
  *
  * @return [Boolean]
@@ -559,7 +573,12 @@ inline val KCallable<*>.generics get() = typeParameters
  *
  * 泛型参数信息由星射代替[KTypeProjection.STAR]
  */
-val KClassifier.type by lazyDomain { starProjectedType }
+val KClassifier.type get() = starProjectedType
+
+/**
+ * 当前 [KType] 的 [KotlinType] 表示
+ */
+val KType.kotlinType get() = "kotlin.reflect.jvm.internal.KTypeImpl".toKClass().propertySignature { name = "type"}.getter.get(this).invoke<KotlinType>()
 
 /**
  * 当前 [KClass] 的描述符

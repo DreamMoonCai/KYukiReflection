@@ -1,10 +1,18 @@
-@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE", "RecursivePropertyAccessor")
+@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS", "RecursivePropertyAccessor")
 package io.github.dreammooncai.yukireflection.factory
 
-import com.highcapable.yukihookapi.hook.factory.extends
+import kotlin.reflect.jvm.internal.impl.descriptors.impl.AbstractLazyTypeParameterDescriptor
+import kotlin.reflect.jvm.internal.impl.descriptors.annotations.Annotations.Companion as AnnotationsCompanion
+import kotlin.reflect.jvm.internal.impl.name.Name
+import kotlin.reflect.jvm.internal.impl.types.Variance
+import kotlin.reflect.jvm.internal.impl.descriptors.SourceElement
+import kotlin.reflect.jvm.internal.impl.descriptors.SupertypeLoopChecker
+import kotlin.reflect.jvm.internal.impl.descriptors.ClassifierDescriptor
+import kotlin.reflect.jvm.internal.impl.descriptors.annotations.AnnotationDescriptorImpl
 import io.github.dreammooncai.yukireflection.finder.callable.KConstructorFinder
 import io.github.dreammooncai.yukireflection.finder.signature.KFunctionSignatureFinder
 import io.github.dreammooncai.yukireflection.finder.signature.KPropertySignatureFinder
+import io.github.dreammooncai.yukireflection.type.kotlin.AnyKClass
 import io.github.dreammooncai.yukireflection.utils.DexSignUtil
 import io.github.dreammooncai.yukireflection.utils.factory.lazyDomain
 import java.lang.reflect.*
@@ -13,6 +21,8 @@ import kotlin.jvm.internal.Reflection
 import kotlin.reflect.*
 import kotlin.reflect.full.createType
 import kotlin.reflect.jvm.*
+import kotlin.reflect.jvm.internal.impl.types.KotlinType
+import kotlin.reflect.jvm.internal.impl.types.TypeAttributes.Companion as TypeAttributesCompanion
 
 
 /**
@@ -78,7 +88,21 @@ val Class<*>.isArrayOrCollection: Boolean by lazyDomain {
         Array::class.java,
         Collection::class.java -> true
 
-        else -> this extends Collection::class.java
+        else -> {
+            var isMatched = false
+
+            /**
+             * 查找是否存在父类
+             * @param current 当前 [Class]
+             */
+            fun findSuperClass(current: Class<*>) {
+                if (current == Collection::class.java)
+                    isMatched = true
+                else if (current != Any::class.java) findSuperClass(current.superclass)
+            }
+            findSuperClass(current = this)
+            isMatched
+        }
     }
 }
 
@@ -200,12 +224,12 @@ val Type.kotlinType:KType by lazyDomain {
                     val upperBounds = it.upperBounds.first()
                     val lowerBounds = it.lowerBounds.firstOrNull()
                     if (lowerBounds == null && !(upperBounds is Class<*> && upperBounds.kotlin == Any::class))
-                        KTypeProjection(KVariance.OUT, upperBounds.kotlinType)
+                        runCatching { KTypeProjection(KVariance.OUT, upperBounds.kotlinType) }.getOrElse { KTypeProjection.STAR }
                     else if (lowerBounds != null)
-                        KTypeProjection(KVariance.IN, lowerBounds.kotlinType)
+                        runCatching { KTypeProjection(KVariance.IN, lowerBounds.kotlinType) }.getOrElse { KTypeProjection.STAR }
                     else
                         KTypeProjection.STAR
-                } else KTypeProjection(KVariance.INVARIANT, it.kotlinType)
+                } else runCatching { KTypeProjection(KVariance.INVARIANT, it.kotlinType) }.getOrElse { KTypeProjection.STAR }
             }
             rawType.createType(arguments)
         }
@@ -214,12 +238,12 @@ val Type.kotlinType:KType by lazyDomain {
             val upperBounds = (this.genericComponentType as WildcardType).upperBounds.first()
             val lowerBounds = (this.genericComponentType as WildcardType).lowerBounds.firstOrNull()
             if (lowerBounds == null && !(upperBounds is Class<*> && upperBounds.kotlin == Any::class))
-                KTypeProjection(KVariance.OUT,upperBounds.kotlinType)
+                runCatching { KTypeProjection(KVariance.OUT,upperBounds.kotlinType) }.getOrElse { KTypeProjection.STAR }
             else if (lowerBounds != null)
-                KTypeProjection(KVariance.IN,lowerBounds.kotlinType)
+                runCatching { KTypeProjection(KVariance.IN,lowerBounds.kotlinType) }.getOrElse { KTypeProjection.STAR }
             else
                 KTypeProjection.STAR
-        } else KTypeProjection(KVariance.INVARIANT,this.genericComponentType.kotlinType)))
+        } else runCatching { KTypeProjection(KVariance.INVARIANT,this.genericComponentType.kotlinType) }.getOrElse { KTypeProjection.STAR }))
         is WildcardType -> this.upperBounds.first().kotlinType
         is TypeVariable<*> -> this.kotlin.type
         else -> error("An unsupported type that cannot be converted to a Kotlin representable type.")
@@ -261,25 +285,30 @@ val Collection<Type>.kotlinType by lazyDomain { map { it.kotlinType } }
 val Collection<Type>.kotlinTypeOrNull by lazyDomain { runCatching { kotlinType }.getOrNull() }
 
 /**
+ * 将Java [TypeVariable] 转换为 [ClassifierDescriptor]
+ */
+val TypeVariable<*>.descriptor:ClassifierDescriptor by lazyDomain {
+    val deserializationContext = object{}::class.memberScope?.deserializationContext ?: error("failedToGetDeserializationContext.")
+    object : AbstractLazyTypeParameterDescriptor(deserializationContext.storageManager,deserializationContext.containingDeclaration,AnnotationsCompanion.create((this@lazyDomain as AnnotatedElement).declaredAnnotations.mapNotNull {
+        AnnotationDescriptorImpl(it.annotationClass.type.kotlinType ?: return@mapNotNull null,mapOf(),SourceElement.NO_SOURCE)
+    }),Name.identifier(this.name),Variance.INVARIANT,false,0,SourceElement.NO_SOURCE,SupertypeLoopChecker.EMPTY.INSTANCE) {
+        override fun reportSupertypeLoopError(type: KotlinType) {
+            throw IllegalStateException("There should be no cycles for deserialized type parameters, but found for: $this");
+        }
+
+        override fun resolveUpperBounds(): List<KotlinType?> {
+            return this@lazyDomain.bounds.mapNotNull {
+                it.kotlinType.kotlinType ?: return@mapNotNull null
+            }
+        }
+    }
+}
+
+/**
  * 将Java [TypeVariable] 转换为 [KTypeParameter]
  */
 val TypeVariable<*>.kotlin:KTypeParameter by lazyDomain {
-    object : KTypeParameter {
-        override val isReified: Boolean
-            get() = false
-        override val name: String
-            get() = this@lazyDomain.name
-        override val upperBounds: List<KType>
-            get() = this@lazyDomain.bounds.mapNotNull { it.kotlinType }
-        override val variance: KVariance
-            get() = KVariance.INVARIANT
-        override fun equals(other: Any?): Boolean =
-            other is KTypeParameter && name == other.name && upperBounds == other.upperBounds
-
-        override fun hashCode(): Int {
-            return super.hashCode() + 31
-        }
-    }
+    KTypeParameterJavaImpl(this)
 }
 
 /**

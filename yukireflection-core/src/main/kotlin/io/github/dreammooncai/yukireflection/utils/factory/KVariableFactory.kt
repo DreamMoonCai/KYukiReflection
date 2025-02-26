@@ -219,7 +219,7 @@ internal object RandomSeed {
  * @param isWeak 是否使用弱引用
  * @property initializer 懒加载执行块
  */
-internal class LazyDomain<T,V>(private val isWeak:Boolean = true,private val initializer: T.() -> V): ReadOnlyProperty<T,V> {
+class LazyDomain<T,V>(private val isWeak:Boolean = true,private val initializer: T.() -> V): ReadOnlyProperty<T,V> {
     @get:Synchronized
     private val domain: MutableMap<T, Lazy<V>> = if (isWeak)
         WeakHashMap()
@@ -243,4 +243,4 @@ internal class LazyDomain<T,V>(private val isWeak:Boolean = true,private val ini
  * @param isWeak 是否使用弱引用
  * @param initializer 懒加载执行块
  */
-internal fun <T,V> lazyDomain(isWeak:Boolean = true,initializer: T.() -> V) = LazyDomain(isWeak,initializer)
+fun <T,V> lazyDomain(isWeak:Boolean = true,initializer: T.() -> V) = LazyDomain(isWeak,initializer)

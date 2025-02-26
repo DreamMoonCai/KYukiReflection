@@ -264,6 +264,34 @@ val KProperty<*>.isVal: Boolean
 
 > 检查 `KProperty` 是否支持是由val关键字修饰的
 
+## KProperty.isNullable <span class="symbol">- ext-field</span>
+
+```kotlin:no-line-numbers
+val KProperty<*>.isNullable: Boolean
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 检查 `KProperty` 属性类型是否是可空类型
+
+## KProperty.isNotNull <span class="symbol">- ext-field</span>
+
+```kotlin:no-line-numbers
+val KProperty<*>.isNotNull: Boolean
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 检查 `KProperty` 属性类型是否是非空类型
+
 ## KClass.isArrayOrCollection <span class="symbol">- ext-field</span>
 
 ```kotlin:no-line-numbers
