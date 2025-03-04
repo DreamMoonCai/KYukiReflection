@@ -586,6 +586,20 @@ val KClassifier.type: KType
 
 > 将 `KClassifier` 转换为 `KType`
 
+## KType.kotlinType <span class="symbol">- ext-field</span>
+
+```kotlin:no-line-numbers
+val KType.kotlinType: KotlinType
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 将 `KType` 转换为 `KotlinType`
+
 ## KClass.descriptor <span class="symbol">- ext-field</span>
 
 ```kotlin:no-line-numbers

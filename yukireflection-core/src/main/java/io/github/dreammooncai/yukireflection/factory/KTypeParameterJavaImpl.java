@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import kotlin.jvm.internal.TypeParameterReference;
 import kotlin.reflect.KType;
 import kotlin.reflect.KTypeParameter;
 import kotlin.reflect.KVariance;
@@ -57,6 +58,11 @@ public class KTypeParameterJavaImpl implements KTypeParameter, KClassifierImpl {
     @Override
     public int hashCode() {
         return super.hashCode() + 31;
+    }
+
+    @Override
+    public String toString() {
+        return TypeParameterReference.Companion.toString(this);
     }
 
     @NotNull

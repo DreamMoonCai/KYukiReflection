@@ -17,7 +17,10 @@ import kotlin.reflect.jvm.*
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 import kotlin.reflect.jvm.internal.impl.name.Name
 import kotlin.reflect.jvm.internal.impl.serialization.deserialization.DeserializationContext
+import kotlin.reflect.jvm.internal.impl.load.java.lazy.LazyJavaResolverContext
 import kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope
+import kotlin.reflect.jvm.internal.impl.load.java.lazy.descriptors.LazyJavaScope
+import kotlin.reflect.jvm.internal.impl.descriptors.DeclarationDescriptor
 
 /**
  * 检查前缀是否匹配 并且前缀后的第一个首字母大写
@@ -185,7 +188,6 @@ val KCallable<*>.javaSignatureMember: Member? by lazyDomain {
     }
 }
 
-
 /**
  * 当前 [KClass] 的成员域
  *
@@ -196,6 +198,15 @@ val KCallable<*>.javaSignatureMember: Member? by lazyDomain {
 val KClass<*>.memberScope by lazyDomain { KClassImplKClass.java.declaredMethods.find { it.name.contains("getMemberScope") }?.invoke(this) as? DeserializedMemberScope? }
 
 /**
+ * 当前 [KClass] 属于 Java 类的成员域
+ *
+ * 仅在不含 [Metadata] 时才会存在
+ *
+ * @return [LazyJavaScope]
+ */
+val KClass<*>.memberJavaScope by lazyDomain { KClassImplKClass.java.declaredMethods.find { it.name.contains("getMemberScope") }?.invoke(this) as? LazyJavaScope? }
+
+/**
  * 当前 [DeserializedMemberScope] 的序列化上下文
  *
  * 存放 [Metadata] 序列化相关信息
@@ -203,6 +214,24 @@ val KClass<*>.memberScope by lazyDomain { KClassImplKClass.java.declaredMethods.
  * @return [DeserializationContext]
  */
 val DeserializedMemberScope.deserializationContext by lazyDomain { DeserializedMemberScope::class.property { name = "c" }.get(this).cast<DeserializationContext>() }
+
+/**
+ * 当前 [LazyJavaScope] 的序列化上下文
+ *
+ * 仅在不含 [Metadata] 存在
+ *
+ * @return [LazyJavaResolverContext]
+ */
+val LazyJavaScope.resolverContext by lazyDomain { LazyJavaScope::class.property { name = "c" }.get(this).cast<LazyJavaResolverContext>() }
+
+/**
+ * 当前 [LazyJavaScope] 的所属描述
+ *
+ * 仅在不含 [Metadata] 存在
+ *
+ * @return [DeclarationDescriptor]
+ */
+val LazyJavaScope.ownerDescriptor by lazyDomain { LazyJavaScope::class.function { name = "getOwnerDescriptor" }.get(this).invoke<DeclarationDescriptor>() }
 
 /**
  * 当前 [DeserializedMemberScope] 的签名数据存储实现

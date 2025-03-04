@@ -29,6 +29,7 @@ import io.github.dreammooncai.yukireflection.type.factory.*
 import io.github.dreammooncai.yukireflection.type.kotlin.*
 import io.github.dreammooncai.yukireflection.utils.factory.ifTrue
 import io.github.dreammooncai.yukireflection.utils.factory.lazyDomain
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle.annotations
 import java.lang.ref.WeakReference
 import java.lang.reflect.*
 import kotlin.jvm.internal.CallableReference
@@ -37,18 +38,28 @@ import kotlin.jvm.internal.PropertyReference
 import kotlin.reflect.*
 import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
+import kotlin.reflect.full.createType
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.declaredMembers
 import kotlin.reflect.full.instanceParameter
 import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.full.valueParameters
+import kotlin.reflect.jvm.internal.KClassifierImpl
+import kotlin.reflect.jvm.internal.KTypeImpl
+import kotlin.reflect.jvm.internal.KotlinReflectionInternalError
 import kotlin.reflect.jvm.internal.impl.descriptors.CallableMemberDescriptor
 import kotlin.reflect.jvm.internal.impl.descriptors.ClassDescriptor
 import kotlin.reflect.jvm.internal.impl.descriptors.ClassKind
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
+import kotlin.reflect.jvm.internal.impl.types.TypeAttributes.Companion as TypeAttributesCompanion
 import kotlin.reflect.jvm.internal.impl.types.KotlinType
+import kotlin.reflect.jvm.internal.impl.types.DefaultTypeAttributeTranslator
+import kotlin.reflect.jvm.internal.impl.types.KotlinTypeFactory
+import kotlin.reflect.jvm.internal.impl.types.TypeProjectionImpl
+import kotlin.reflect.jvm.internal.impl.types.Variance
+import kotlin.reflect.jvm.internal.impl.types.StarProjectionImpl
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.jvmName
@@ -572,13 +583,51 @@ inline val KCallable<*>.generics get() = typeParameters
  *     class A<T,in D,L:Int>() -> A<*,*>
  *
  * 泛型参数信息由星射代替[KTypeProjection.STAR]
+ *
+ * 会尝试保留注解信息
  */
-val KClassifier.type get() = starProjectedType
+val KClassifier.type by lazyDomain {
+    val descriptor = (this as? KClassifierImpl)?.descriptor
+        ?: return@lazyDomain createType()
+
+    fun createKotlinType(
+        arguments: List<KTypeProjection> = emptyList()
+    ) :KType {
+        val descriptor = (this as? KClassifierImpl)?.descriptor
+            ?: throw KotlinReflectionInternalError("Cannot create type for an unsupported classifier: $this (${this.javaClass})")
+
+        val typeConstructor = descriptor.typeConstructor
+        val parameters = typeConstructor.parameters
+        if (parameters.size != arguments.size) {
+            throw IllegalArgumentException("Class declares ${parameters.size} type parameters, but ${arguments.size} were provided.")
+        }
+
+        val typeAttributes =
+            if (descriptor.annotations.isEmpty) TypeAttributesCompanion.empty
+            else DefaultTypeAttributeTranslator.INSTANCE.toAttributes(descriptor.annotations,descriptor.typeConstructor,descriptor.containingDeclaration) // TODO: support type annotations
+
+        return KTypeImpl(KotlinTypeFactory.simpleType(typeAttributes, typeConstructor, arguments.mapIndexed { index, typeProjection ->
+            val type = (typeProjection.type as KTypeImpl?)?.type
+            when (typeProjection.variance) {
+                KVariance.INVARIANT -> TypeProjectionImpl(Variance.INVARIANT, type!!)
+                KVariance.IN -> TypeProjectionImpl(Variance.IN_VARIANCE, type!!)
+                KVariance.OUT -> TypeProjectionImpl(Variance.OUT_VARIANCE, type!!)
+                null -> StarProjectionImpl(parameters[index])
+            }
+        }, false))
+    }
+
+    val typeParameters = descriptor.typeConstructor.parameters
+    if (typeParameters.isEmpty())
+        createKotlinType()
+    else
+        createKotlinType(typeParameters.map { KTypeProjection.STAR })
+}
 
 /**
  * 当前 [KType] 的 [KotlinType] 表示
  */
-val KType.kotlinType get() = "kotlin.reflect.jvm.internal.KTypeImpl".toKClass().propertySignature { name = "type"}.getter.get(this).invoke<KotlinType>()
+val KType.kotlinType by lazyDomain { "kotlin.reflect.jvm.internal.KTypeImpl".toKClass().propertySignature { name = "type"}.getter.get(this).invoke<KotlinType>() }
 
 /**
  * 当前 [KClass] 的描述符

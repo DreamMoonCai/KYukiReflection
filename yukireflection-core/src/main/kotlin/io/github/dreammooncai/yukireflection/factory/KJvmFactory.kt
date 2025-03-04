@@ -1,4 +1,4 @@
-@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS", "RecursivePropertyAccessor")
+@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS", "RecursivePropertyAccessor","INVISIBLE_MEMBER","INVISIBLE_REFERENCE")
 package io.github.dreammooncai.yukireflection.factory
 
 import kotlin.reflect.jvm.internal.impl.descriptors.impl.AbstractLazyTypeParameterDescriptor
@@ -15,14 +15,17 @@ import io.github.dreammooncai.yukireflection.finder.signature.KPropertySignature
 import io.github.dreammooncai.yukireflection.type.kotlin.AnyKClass
 import io.github.dreammooncai.yukireflection.utils.DexSignUtil
 import io.github.dreammooncai.yukireflection.utils.factory.lazyDomain
+import jdk.jfr.internal.TypeLibrary.createType
 import java.lang.reflect.*
 import kotlin.Array
 import kotlin.jvm.internal.Reflection
 import kotlin.reflect.*
 import kotlin.reflect.full.createType
+import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.*
+import kotlin.reflect.jvm.internal.KClassifierImpl
 import kotlin.reflect.jvm.internal.impl.types.KotlinType
-import kotlin.reflect.jvm.internal.impl.types.TypeAttributes.Companion as TypeAttributesCompanion
+import kotlin.reflect.jvm.internal.impl.types.*
 
 
 /**
@@ -250,6 +253,8 @@ val Type.kotlinType:KType by lazyDomain {
     }
 }
 
+
+
 /**
  * 获取 Java [Type] 的 Kotlin [KType]
  *
@@ -288,10 +293,11 @@ val Collection<Type>.kotlinTypeOrNull by lazyDomain { runCatching { kotlinType }
  * 将Java [TypeVariable] 转换为 [ClassifierDescriptor]
  */
 val TypeVariable<*>.descriptor:ClassifierDescriptor by lazyDomain {
-    val deserializationContext = object{}::class.memberScope?.deserializationContext ?: error("failedToGetDeserializationContext.")
-    object : AbstractLazyTypeParameterDescriptor(deserializationContext.storageManager,deserializationContext.containingDeclaration,AnnotationsCompanion.create((this@lazyDomain as AnnotatedElement).declaredAnnotations.mapNotNull {
+    val storageManager = runCatching { (genericDeclaration as Class<*>).kotlin.memberScope?.deserializationContext?.storageManager ?: (genericDeclaration as Class<*>).kotlin.memberJavaScope!!.resolverContext!!.storageManager }.getOrElse { error("failedToGetStorageManager.") }
+    val containingDeclaration = runCatching { (genericDeclaration as Class<*>).kotlin.memberScope?.deserializationContext?.containingDeclaration ?: (genericDeclaration as Class<*>).kotlin.memberJavaScope!!.ownerDescriptor!! }.getOrElse { error("failedToGetContainingDeclaration.") }
+    object : AbstractLazyTypeParameterDescriptor(storageManager,containingDeclaration,AnnotationsCompanion.create((this as AnnotatedElement).declaredAnnotations.mapNotNull {
         AnnotationDescriptorImpl(it.annotationClass.type.kotlinType ?: return@mapNotNull null,mapOf(),SourceElement.NO_SOURCE)
-    }),Name.identifier(this.name),Variance.INVARIANT,false,0,SourceElement.NO_SOURCE,SupertypeLoopChecker.EMPTY.INSTANCE) {
+    }),Name.identifier(this.name),Variance.INVARIANT,false,this.genericDeclaration.typeParameters.indexOf(this),SourceElement.NO_SOURCE,SupertypeLoopChecker.EMPTY.INSTANCE) {
         override fun reportSupertypeLoopError(type: KotlinType) {
             throw IllegalStateException("There should be no cycles for deserialized type parameters, but found for: $this");
         }

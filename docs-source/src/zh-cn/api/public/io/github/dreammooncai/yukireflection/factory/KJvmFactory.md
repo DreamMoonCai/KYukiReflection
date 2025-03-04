@@ -286,6 +286,20 @@ val Collection<Type>.kotlinTypeOrNull: List<KType>?
 
 > 将 `JavaType` 转换为 `KType`
 
+## TypeVariable.descriptor <span class="symbol">- ext-field</span>
+
+```kotlin:no-line-numbers
+val TypeVariable<*>.descriptor:ClassifierDescriptor
+```
+
+**变更记录**
+
+`v1.0.0` `添加`
+
+**功能描述**
+
+> 将 `JavaTypeVariable` 转换为 `ClassifierDescriptor`
+
 ## TypeVariable.kotlin <span class="symbol">- ext-field</span>
 
 ```kotlin:no-line-numbers
