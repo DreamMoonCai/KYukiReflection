@@ -17,7 +17,7 @@ import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
  * @property nameResolver 名称解析器
  * @property proto 属性签名
  */
-class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, private val loader: ClassLoader? = declaringClass?.classLoader, private val nameResolver: NameResolver, private val proto: JvmProtoBuf.JvmPropertySignature){
+class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, var loader: ClassLoader? = declaringClass?.classLoader, private val nameResolver: NameResolver, private val proto: JvmProtoBuf.JvmPropertySignature){
 
     /**
      * 字段签名处理支持组件

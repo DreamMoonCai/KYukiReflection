@@ -6,4 +6,4 @@ package io.github.dreammooncai.yukireflection.finder.signature.data
  * @property name 签名关联名
  * @property descriptor 签名信息
  */
-internal data class KSignatureData(val name:String, val descriptor:String)
+internal data class KSignatureData(val name:String, val paramName: List<String>, val descriptor:String)

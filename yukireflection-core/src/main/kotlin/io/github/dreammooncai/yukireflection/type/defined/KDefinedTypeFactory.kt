@@ -24,7 +24,7 @@ package io.github.dreammooncai.yukireflection.type.defined
 
 import io.github.dreammooncai.yukireflection.bean.KGenericClass
 import io.github.dreammooncai.yukireflection.bean.KVariousClass
-import io.github.dreammooncai.yukireflection.factory.kclassOf
+import io.github.dreammooncai.yukireflection.factory.klassOf
 import io.github.dreammooncai.yukireflection.factory.toKClass
 import io.github.dreammooncai.yukireflection.factory.toKClassOrNull
 import io.github.dreammooncai.yukireflection.factory.type
@@ -50,14 +50,14 @@ class VagueClass private constructor()
  * @return [KClass]<[UndefinedClass]>
  */
 @Suppress("UNCHECKED_CAST")
-internal val UndefinedKotlin get() = ("com.highcapable.yukireflection.type.defined.UndefinedType".toKClassOrNull() ?: kclassOf<UndefinedClass>()) as KClass<UndefinedClass>
+internal val UndefinedKotlin get() = ("com.highcapable.yukireflection.type.defined.UndefinedType".toKClassOrNull() ?: klassOf<UndefinedClass>()) as KClass<UndefinedClass>
 
 /**
  * 得到模糊类型
  * @return [KClass]<[VagueClass]>
  */
 @Suppress("UNCHECKED_CAST")
-val VagueKotlin get() = ("com.highcapable.yukireflection.type.defined.VagueKotlin".toKClassOrNull() ?: kclassOf<VagueClass>()) as KClass<VagueClass>
+val VagueKotlin get() = ("com.highcapable.yukireflection.type.defined.VagueKotlin".toKClassOrNull() ?: klassOf<VagueClass>()) as KClass<VagueClass>
 
 /**
  * 获取模糊根的泛型对象

@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
             Button(
                 onClick = {
                     operationState.value =
-                        kclassOf<Main>().buildOf("I am reflection call of new object") { param(StringKClass) }
+                        klassOf<Main>().buildOf("I am reflection call of new object") { param(StringKClass) }
                             ?.currentKotlin()
                             ?.function {
                                 name = "getContent"
@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
             }
             Button(
                 onClick = {
-                    operationState.value = kclassOf<Main>().function {
+                    operationState.value = klassOf<Main>().function {
                         name = "getStaticContent"
                         modifiers { isStatic }
                     }.get().string()
@@ -120,7 +120,7 @@ class MainActivity : AppCompatActivity() {
             }
             Button(
                 onClick = {
-                    kclassOf<Main>().property {
+                    klassOf<Main>().property {
                         name = "staticContent"
                         modifiers { isStatic }
                     }.get().set("I am static! Modified by reflection")

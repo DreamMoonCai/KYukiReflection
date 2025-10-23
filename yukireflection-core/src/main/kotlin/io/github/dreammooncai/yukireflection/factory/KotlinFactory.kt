@@ -319,4 +319,3 @@ inline fun KProperty<*>.signature(declaringClass: KClass<*>? = this.declaringCla
  * @return [KFunctionFinder.Result] or null - 找不到返回null
  */
 inline fun KFunction<*>.signature(declaringClass: KClass<*>? = this.declaringClass,loader: ClassLoader? = declaringClass?.classLoader,isUseMember: Boolean = false, noinline initiate: KFunctionSignatureConditions = { this@signature.attach(loader,isUseMember) }) = declaringClass?.functionSignature(loader,initiate) ?: error("This function does not get the declaring class or the declaring class you specified is empty.")
-

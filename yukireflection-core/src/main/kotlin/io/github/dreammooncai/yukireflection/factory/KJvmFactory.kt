@@ -52,6 +52,8 @@ val Class<*>.top: KDeclarationContainer by lazyDomain {
  * 为false不代表不能使用Kotlin反射，Kotlin反射优先依赖于Metadata注解，没有时依赖JavaClass中所有已知信息
  *
  * 即JavaClass中部分泛型信息Kotlin反射也能获取成功，这些已知信息将通过Kotlin反射自动转换为对应的Kotlin相关引用信息对象
+ * 
+ * JavaClass中使用Kotlin反射可能超出预期如获取的成员会包括父类的成员等
  *
  * @return [Boolean]
  */

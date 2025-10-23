@@ -25,44 +25,33 @@ import io.github.dreammooncai.yukireflection.finder.signature.KPropertySignature
 import io.github.dreammooncai.yukireflection.finder.signature.support.KFunctionSignatureSupport
 import io.github.dreammooncai.yukireflection.finder.signature.support.KPropertySignatureSupport
 import io.github.dreammooncai.yukireflection.finder.tools.KReflectionTool
+import io.github.dreammooncai.yukireflection.log.KYLog
 import io.github.dreammooncai.yukireflection.type.factory.*
 import io.github.dreammooncai.yukireflection.type.kotlin.*
 import io.github.dreammooncai.yukireflection.utils.factory.ifTrue
 import io.github.dreammooncai.yukireflection.utils.factory.lazyDomain
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle.annotations
 import java.lang.ref.WeakReference
-import java.lang.reflect.*
+import java.lang.reflect.Field
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.jvm.internal.CallableReference
 import kotlin.jvm.internal.FunctionReference
 import kotlin.jvm.internal.PropertyReference
 import kotlin.reflect.*
-import kotlin.reflect.full.companionObject
-import kotlin.reflect.full.companionObjectInstance
-import kotlin.reflect.full.createType
-import kotlin.reflect.full.declaredFunctions
-import kotlin.reflect.full.declaredMembers
-import kotlin.reflect.full.instanceParameter
-import kotlin.reflect.full.starProjectedType
-import kotlin.reflect.full.superclasses
-import kotlin.reflect.full.valueParameters
+import kotlin.reflect.full.*
 import kotlin.reflect.jvm.internal.KClassifierImpl
 import kotlin.reflect.jvm.internal.KTypeImpl
 import kotlin.reflect.jvm.internal.KotlinReflectionInternalError
-import kotlin.reflect.jvm.internal.impl.descriptors.CallableMemberDescriptor
-import kotlin.reflect.jvm.internal.impl.descriptors.ClassDescriptor
-import kotlin.reflect.jvm.internal.impl.descriptors.ClassKind
+import kotlin.reflect.jvm.internal.impl.descriptors.*
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
-import kotlin.reflect.jvm.internal.impl.types.TypeAttributes.Companion as TypeAttributesCompanion
-import kotlin.reflect.jvm.internal.impl.types.KotlinType
-import kotlin.reflect.jvm.internal.impl.types.DefaultTypeAttributeTranslator
-import kotlin.reflect.jvm.internal.impl.types.KotlinTypeFactory
-import kotlin.reflect.jvm.internal.impl.types.TypeProjectionImpl
-import kotlin.reflect.jvm.internal.impl.types.Variance
-import kotlin.reflect.jvm.internal.impl.types.StarProjectionImpl
+import kotlin.reflect.jvm.internal.impl.types.*
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.jvmName
+import kotlin.reflect.jvm.internal.impl.types.TypeAttributes.Companion as TypeAttributesCompanion
 
 /**
  * 懒装载 [KClass] 实例
@@ -195,14 +184,14 @@ val KDeclarationContainer.kotlin by lazyDomain {
  * 获取顶层文件或类的所有 [KProperty]
  */
 val KDeclarationContainer.declaredTopPropertys: List<KProperty<*>> by lazyDomain {
-    if (this !is KClass<*>) members.filterIsInstance<KProperty<*>>() else top.declaredTopPropertys
+    if (this !is KClass<*> || !existTop) members.filterIsInstance<KProperty<*>>() else top.declaredTopPropertys
 }
 
 /**
  * 获取顶层文件或类的所有 [KFunction]
  */
 val KDeclarationContainer.declaredTopFunctions: List<KFunction<*>> by lazyDomain {
-    if (this !is KClass<*>) members.filterIsInstance<KFunction<*>>() else top.declaredTopFunctions
+    if (this !is KClass<*> || !existTop) members.filterIsInstance<KFunction<*>>() else top.declaredTopFunctions
 }
 
 /**
@@ -314,6 +303,33 @@ val KClass<*>.isSupportReflection by lazyDomain { runCatching { sealedSubclasses
  */
 val KProperty<*>.isVar: Boolean by lazyDomain {
     when (this) {
+        is KMutableProperty -> true
+        else -> false
+    }
+}
+
+/**
+ * 此 属性 [KProperty] 是否为可变属性
+ *
+ * 契约版本 如果为 True 则自动转换 [KMutableProperty]
+ *
+ * 如下所示 ↓
+ *
+ *     if (property.isVar()) {
+ *         property.set(a) // 自动转换 [KMutableProperty]
+ *     }
+ *
+ * ^^^
+ *
+ * @return [Boolean]
+ */
+@JvmName("isVar_contract")
+@OptIn(ExperimentalContracts::class)
+fun KProperty<*>.isVar(): Boolean {
+    contract {
+        returns(true) implies (this@isVar is KMutableProperty<*>)
+    }
+    return when (this) {
         is KMutableProperty -> true
         else -> false
     }
@@ -1094,7 +1110,7 @@ inline fun <K : KFunction<V>, V> K.toKFunctionOrNull(clazz: KClass<*>? = null, l
  * @return [KClass]<[T]>
  * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
  */
-inline fun <reified T> kclassOf(loader: ClassLoader? = null, initialize: Boolean = false): KClass<T & Any> =
+inline fun <reified T> klassOf(loader: ClassLoader? = null, initialize: Boolean = false): KClass<T & Any> =
     (loader?.let { T::class.java.name.toKClass(loader, initialize) } ?: T::class) as KClass<T & Any>
 
 /**
@@ -1452,19 +1468,98 @@ val KClass<*>.declaredPropertys: Collection<KProperty<*>> by lazyDomain {
 }
 
 /**
- * 获取当前 [KCallable] 是否为扩展方法
+ * 获取当前 [KCallable] 是否为扩展成员
  */
 val KCallable<*>.isExtension by lazyDomain { descriptor?.extensionReceiverParameter != null }
+
+/**
+ * 获取当前 [KCallable] 是否为覆写成员
+ */
+val KCallable<*>.isOverride by lazyDomain { !descriptor?.original?.overriddenDescriptors.isNullOrEmpty() }
+
+/**
+ * 获取当前 [KClass] 是否为内部类
+ */
+val KClass<*>.isInternal by lazyDomain { visibility == KVisibility.INTERNAL }
+
+/**
+ * 获取当前 [KCallable] 是否为内部成员
+ */
+val KCallable<*>.isInternal by lazyDomain { visibility == KVisibility.INTERNAL }
+
+/**
+ * 获取当前 [KClass] 是否为私有类
+ */
+val KClass<*>.isPrivate by lazyDomain { visibility == KVisibility.PRIVATE }
+
+/**
+ * 获取当前 [KCallable] 是否为内部成员
+ */
+val KCallable<*>.isPrivate by lazyDomain { visibility == KVisibility.PRIVATE }
+
+/**
+ * 获取当前 [KClass] 是否为受保护类
+ */
+val KClass<*>.isProtected by lazyDomain { visibility == KVisibility.PROTECTED }
+
+/**
+ * 获取当前 [KCallable] 是否为受保护成员
+ */
+val KCallable<*>.isProtected by lazyDomain { visibility == KVisibility.PROTECTED }
+
+/**
+ * 获取当前 [KClass] 是否为公开类
+ */
+val KClass<*>.isPublic by lazyDomain { visibility == KVisibility.PUBLIC }
+
+/**
+ * 获取当前 [KCallable] 是否为公开成员
+ */
+val KCallable<*>.isPublic by lazyDomain { visibility == KVisibility.PUBLIC }
 
 /**
  * 获取当前 [KCallable] 的描述信息
  */
 val KCallable<*>.descriptor by lazyDomain {
-    KCallableImplKClass.java.getDeclaredMethod("getDescriptor").also { it.isAccessible = true }
-        .invoke(
-            if (this.isCase(KCallableImplKClass)) this else runCatching { ref }.getOrNull()?.impl
-                ?: error("No descriptive implementation found!!!")
-        ) as? CallableMemberDescriptor?
+    runCatching {
+        KCallableImplKClass.java.getDeclaredMethod("getDescriptor").also { it.isAccessible = true }
+            .invoke(
+                if (this.isCase(KCallableImplKClass)) this else runCatching { ref }.getOrNull()?.impl
+                    ?: error("No descriptive implementation found!!!")
+            ) as? CallableMemberDescriptor?
+    }.getOrElse {
+        KYLog.error(it.message.toString(),it)
+        null
+    }
+}
+
+/**
+ * 获取当前 [KProperty] 的描述信息
+ */
+val KProperty<*>.descriptor by lazyDomain {
+    (this as KCallable<*>).descriptor as? PropertyDescriptor?
+}
+
+/**
+ * 获取当前 [KFunction] 的描述信息
+ */
+val KFunction<*>.descriptor by lazyDomain {
+    (this as KCallable<*>).descriptor as? FunctionDescriptor?
+}
+
+/**
+ * 获取当前 Constructor [KFunction] 的描述信息
+ */
+val KFunction<*>.constructorDescriptor by lazyDomain {
+    (this as KCallable<*>).descriptor as? ConstructorDescriptor?
+}
+
+/**
+ * 获取当前类所有方法
+ */
+val KClass<*>.allFunctions: List<KFunction<*>> by lazyDomain {
+    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence()
+        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).asSequence()).toList()
 }
 
 /**
@@ -1472,14 +1567,21 @@ val KCallable<*>.descriptor by lazyDomain {
  * @param isAccessible 是否强制设置成员为可访问类型 - 默认是
  * @param result 回调 - ([Int] 下标,[KFunction] 实例)
  */
-@Suppress("DuplicatedCode")
 inline fun KClass<*>.allFunctions(isAccessible: Boolean = true, result: (index: Int, function: KFunction<*>) -> Unit) =
-    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence()
-        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).asSequence()).forEachIndexed { p, it ->
+    allFunctions.forEachIndexed { p, it ->
         result(
             p,
             it.also { e -> e.isAccessible = isAccessible })
     }
+
+/**
+ * 获取当前类所有方法签名
+ */
+val KClass<*>.allFunctionSignatures: List<KFunctionSignatureSupport> by lazyDomain {
+    val nameResolver = memberScope?.deserializationContext?.nameResolver ?: return@lazyDomain emptyList()
+    val proto = (memberScope?.impl ?: return@lazyDomain emptyList()).functionProtos
+    mutableListOf<ProtoBuf.Function>().also { buf -> proto.values.forEach { buf += it } }.map { KFunctionSignatureSupport(this, null, nameResolver, it) }
+}
 
 /**
  * 遍历当前类中的所有方法签名
@@ -1487,11 +1589,18 @@ inline fun KClass<*>.allFunctions(isAccessible: Boolean = true, result: (index: 
  * @param result 回调 - ([Int] 下标,Constructor [KFunction] 实例)
  */
 inline fun KClass<*>.allFunctionSignatures(loader: ClassLoader? = null, result: (index: Int, function: KFunctionSignatureSupport) -> Unit) {
-    val nameResolver = memberScope?.deserializationContext?.nameResolver ?: return
-    val proto = (memberScope?.impl ?: return).functionProtos
-    mutableListOf<ProtoBuf.Function>().also { buf -> proto.values.forEach { buf += it } }.forEachIndexed { index, function ->
-        result(index, KFunctionSignatureSupport(this, loader, nameResolver, function))
+    allFunctionSignatures.forEachIndexed { index, function ->
+        function.loader = loader
+        result(index, function)
     }
+}
+
+/**
+ * 获取当前类所有构造方法
+ */
+val KClass<*>.allConstructors: List<KFunction<*>> by lazyDomain {
+    (if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredConstructors.asSequence()
+        .mapNotNull { it.kotlin } else constructors.asSequence()).toList()
 }
 
 /**
@@ -1500,12 +1609,19 @@ inline fun KClass<*>.allFunctionSignatures(loader: ClassLoader? = null, result: 
  * @param result 回调 - ([Int] 下标,Constructor [KFunction] 实例)
  */
 inline fun KClass<*>.allConstructors(isAccessible: Boolean = true, result: (index: Int, constructor: KFunction<*>) -> Unit) =
-    (if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredConstructors.asSequence()
-        .mapNotNull { it.kotlin } else constructors.asSequence()).forEachIndexed { p, it ->
+    allConstructors.forEachIndexed { p, it ->
         result(
             p,
             it.also { e -> e.isAccessible = isAccessible })
     }
+
+/**
+ * 获取当前类所有变量
+ */
+val KClass<*>.allPropertys: List<KProperty<*>> by lazyDomain {
+    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence()
+        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence()).toList()
+}
 
 /**
  * 遍历当前类中的所有变量
@@ -1514,12 +1630,20 @@ inline fun KClass<*>.allConstructors(isAccessible: Boolean = true, result: (inde
  */
 @Suppress("DuplicatedCode")
 inline fun KClass<*>.allPropertys(isAccessible: Boolean = true, result: (index: Int, property: KProperty<*>) -> Unit) =
-    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence()
-        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence()).forEachIndexed { p, it ->
+    allPropertys.forEachIndexed { p, it ->
         result(
             p,
             it.also { e -> e.isAccessible = isAccessible })
     }
+
+/**
+ * 获取当前类所有变量签名
+ */
+val KClass<*>.allPropertySignatures: List<KPropertySignatureSupport> by lazyDomain {
+    val nameResolver = memberScope?.deserializationContext?.nameResolver ?: return@lazyDomain emptyList()
+    val protos = (memberScope?.impl ?: return@lazyDomain emptyList()).propertyProtos
+    mutableListOf<ProtoBuf.Property>().also { buf -> protos.values.forEach { buf += it } }.map { KPropertySignatureSupport(this, null, nameResolver, it.getExtension(JvmProtoBuf.propertySignature)) }
+}
 
 /**
  * 遍历当前类中的所有变量签名
@@ -1527,10 +1651,9 @@ inline fun KClass<*>.allPropertys(isAccessible: Boolean = true, result: (index: 
  * @param result 回调 - ([Int] 下标,[KProperty] 实例)
  */
 inline fun KClass<*>.allPropertySignatures(loader: ClassLoader? = null, result: (index: Int, property: KPropertySignatureSupport) -> Unit) {
-    val nameResolver = memberScope?.deserializationContext?.nameResolver ?: return
-    val protos = (memberScope?.impl ?: return).propertyProtos
-    mutableListOf<ProtoBuf.Property>().also { buf -> protos.values.forEach { buf += it } }.forEachIndexed { index, property ->
-        result(index, KPropertySignatureSupport(this, loader, nameResolver, property.getExtension(JvmProtoBuf.propertySignature)))
+    allPropertySignatures.forEachIndexed { index, property ->
+        property.loader = loader
+        result(index, property)
     }
 }
 

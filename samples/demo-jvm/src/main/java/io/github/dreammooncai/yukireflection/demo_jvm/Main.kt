@@ -75,7 +75,7 @@ fun MainLayout() {
         Button(
             onClick = {
                 operationState.value =
-                    kclassOf<Main>().buildOf("I am reflection call of new object") { param(StringKClass) }
+                    klassOf<Main>().buildOf("I am reflection call of new object") { param(StringKClass) }
                         ?.currentKotlin()
                         ?.function {
                             name = "getContent"
@@ -94,7 +94,7 @@ fun MainLayout() {
         }
         Button(
             onClick = {
-                operationState.value = kclassOf<Main>().function {
+                operationState.value = klassOf<Main>().function {
                     name = "getStaticContent"
                     modifiers { isStatic }
                 }.get().string()

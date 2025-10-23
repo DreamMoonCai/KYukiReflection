@@ -18,12 +18,12 @@ import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
  * @property loader [ClassLoader] 方法参数 [paramClass] 所在的 [ClassLoader]
  * @property proto 方法签名
  */
-class KFunctionSignatureSupport internal constructor(private val declaringClass: KClass<*>? = null, private val loader: ClassLoader? = declaringClass?.classLoader, private val proto: KSignatureData){
+class KFunctionSignatureSupport internal constructor(private val declaringClass: KClass<*>? = null, var loader: ClassLoader? = declaringClass?.classLoader, private val proto: KSignatureData){
     constructor(declaringClass: KClass<*>? = null, loader: ClassLoader? = declaringClass?.classLoader, nameResolver: NameResolver, proto: JvmProtoBuf.JvmMethodSignature):this(declaringClass,loader,
-        KSignatureData(nameResolver.getString(proto.name),nameResolver.getString(proto.desc))
+        KSignatureData(nameResolver.getString(proto.name),listOf(),nameResolver.getString(proto.desc))
     )
     constructor(declaringClass: KClass<*>? = null, loader: ClassLoader? = declaringClass?.classLoader, nameResolver: NameResolver, proto: ProtoBuf.Function):
-      this(declaringClass,loader, KSignatureData(nameResolver.getString(proto.name),when {proto.valueParameterList.isNotEmpty() -> {
+      this(declaringClass,loader, KSignatureData(nameResolver.getString(proto.name),proto.valueParameterList.map { nameResolver.getString(it.name) },when {proto.valueParameterList.isNotEmpty() -> {
           val paramTypes = proto.valueParameterList.map {
               "L${nameResolver.getString(it.type.className)};"
           }
@@ -62,7 +62,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      *
      * 如需指定 [ClassLoader] 请使用方法方式调用
      */
-    val paramKTypes by lazy { getParamKTypes() }
+    val paramTypes by lazy { getParamTypes() }
 
     /**
      * 方法参数类型 [List]<[KType]> 通过 [getMember] 获取泛型参数类型转 [List]<[KType]>
@@ -92,6 +92,11 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * - 获取时不会触发异常
      */
     val paramClassOrNull by lazy { getParamClassOrNull() }
+
+    /**
+     * 方法参数名 如果此函数不是 Kotlin 函数则为空
+     */
+    val paramName = proto.paramName
 
     /**
      * 方法返回类型 [KType] 通过 [getMember] 获取泛型返回类型转 [KType]
@@ -159,7 +164,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * @param loader [ClassLoader] 参数类型 [paramClass] 所在的 [ClassLoader]
      * @return [List]<[KType]>
      */
-    fun getParamKTypes(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getMember(declaringClass, loader).genericParameterTypes.map { it.kotlinType } }.getOrNull() ?: getParamClass(loader).map { it.type }
+    fun getParamTypes(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getMember(declaringClass, loader).genericParameterTypes.map { it.kotlinType } }.getOrNull() ?: getParamClass(loader).map { it.type }
 
     /**
      * 方法参数类型 [List]<[KType]> 通过 [getMember] 获取泛型参数类型转 [List]<[KType]>
@@ -173,7 +178,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
      * @param loader [ClassLoader] 参数类型 [paramClass] 所在的 [ClassLoader]
      * @return [List]<[KType]> or null
      */
-    fun getParamTypesOrNull(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getParamKTypes(declaringClass, loader) }.getOrNull()
+    fun getParamTypesOrNull(declaringClass: KClass<*>? = null, loader: ClassLoader? = null) = runCatching { getParamTypes(declaringClass, loader) }.getOrNull()
 
     /**
      * 方法参数类型 [KClass] 使用创建此描述符对象的根源 [declaringClass] 的 [ClassLoader] 描述结果

@@ -70,7 +70,7 @@ internal object KReflectionTool {
      * 当前工具类的 [ClassLoader]
      * @return [ClassLoader]
      */
-    private val currentClassLoader get() = kclassOf<KYukiReflection>().classLoader
+    private val currentClassLoader get() = klassOf<KYukiReflection>().classLoader
 
     /**
      * 内存缓存实例实现
