@@ -11,10 +11,9 @@ import kotlin.jvm.internal.TypeParameterReference;
 import kotlin.reflect.KType;
 import kotlin.reflect.KTypeParameter;
 import kotlin.reflect.KVariance;
-import kotlin.reflect.jvm.internal.KClassifierImpl;
 import kotlin.reflect.jvm.internal.impl.descriptors.ClassifierDescriptor;
 
-public class KTypeParameterJavaImpl implements KTypeParameter, KClassifierImpl {
+public class KTypeParameterJavaImpl implements KTypeParameter {
     TypeVariable<?> typeVariable;
 
     public KTypeParameterJavaImpl(TypeVariable<?> typeVariable) {
@@ -66,7 +65,6 @@ public class KTypeParameterJavaImpl implements KTypeParameter, KClassifierImpl {
     }
 
     @NotNull
-    @Override
     public ClassifierDescriptor getDescriptor() {
         return KJvmFactoryKt.getDescriptor(typeVariable);
     }

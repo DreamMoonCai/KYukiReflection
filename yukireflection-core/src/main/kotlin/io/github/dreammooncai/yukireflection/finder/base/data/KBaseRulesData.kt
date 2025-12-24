@@ -108,10 +108,10 @@ internal abstract class KBaseRulesData internal constructor(
      *
      * @return [String]
      */
-    internal fun Array<out Any>?.typeOfString() =
+    internal fun Array<out Any>?.typeOfString(): String =
         StringBuilder("(").also { sb ->
             var isFirst = true
-            if (this == null || isEmpty()) return "()"
+            if (isNullOrEmpty()) return "()"
             forEach {
                 if (isFirst) isFirst = false else sb.append(", ")
                 when(val type = it.checkSupportedTypes()!!){

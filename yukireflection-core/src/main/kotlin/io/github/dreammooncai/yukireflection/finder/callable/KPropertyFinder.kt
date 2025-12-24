@@ -555,7 +555,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
                     val getter = property?.javaGetterNoError
                     if (getter != null){
                         getter.isAccessible = true
-                        return if (property?.isExtension == true)
+                        return if (property.isExtension)
                             getter.invoke(instance,extensionRef)
                         else
                             getter.invoke(instance)

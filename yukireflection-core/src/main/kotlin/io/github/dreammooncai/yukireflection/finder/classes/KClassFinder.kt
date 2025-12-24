@@ -362,28 +362,28 @@ class KClassFinder internal constructor(classSet: Collection<KClass<*>>? = null)
      * @param initiate 条件方法体
      * @return [KCallableRulesResult]
      */
-    inline fun callable(initiate: KCallableRules.() -> Unit = {}) = KBaseRules.createCallableRules(this).apply(initiate).build()
+    fun callable(initiate: KCallableRules.() -> Unit = {}) = KBaseRules.createCallableRules(this).apply(initiate).build()
 
     /**
      * 设置 [KClass] 满足的 [KProperty] 条件
      * @param initiate 条件方法体
      * @return [KCallableRulesResult]
      */
-    inline fun property(initiate: KPropertyRules.() -> Unit = {}) = KBaseRules.createPropertyRules(this).apply(initiate).build()
+    fun property(initiate: KPropertyRules.() -> Unit = {}) = KBaseRules.createPropertyRules(this).apply(initiate).build()
 
     /**
      * 设置 [KClass] 满足的 [KFunction] 条件
      * @param initiate 条件方法体
      * @return [KCallableRulesResult]
      */
-    inline fun function(initiate: KFunctionRules.() -> Unit = {}) = KBaseRules.createFunctionRules(this).apply(initiate).build()
+    fun function(initiate: KFunctionRules.() -> Unit = {}) = KBaseRules.createFunctionRules(this).apply(initiate).build()
 
     /**
      * 设置 [KClass] 满足的 Constructor[KFunction] 条件
      * @param initiate 查找方法体
      * @return [KCallableRulesResult]
      */
-    inline fun constructor(initiate: KConstructorRules.() -> Unit = {}) = KBaseRules.createConstructorRules(this).apply(initiate).build()
+    fun constructor(initiate: KConstructorRules.() -> Unit = {}) = KBaseRules.createConstructorRules(this).apply(initiate).build()
 
     /**
      * 得到 [KClass] 或一组 [KClass]

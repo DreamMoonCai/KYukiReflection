@@ -26,19 +26,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
-        freeCompilerArgs = listOf(
-            "-Xno-param-assertions",
-            "-Xno-call-assertions",
-            "-Xno-receiver-assertions"
-        )
-    }
     buildFeatures {
         buildConfig = true
         compose = true
     }
     lint { checkReleaseBuilds = false }
+}
+
+
+kotlin {
+    jvmToolchain(21)
 }
 
 dependencies {

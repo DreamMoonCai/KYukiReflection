@@ -101,7 +101,7 @@ internal class KClassRulesData internal constructor(
      * @param instance 当前 [KClass] 实例
      * @return [String]
      */
-    internal fun classSingleName(instance: KClass<*>) = instance.simpleNameOrJvm.takeIf { it.isNotBlank() == true }
+    internal fun classSingleName(instance: KClass<*>) = instance.simpleNameOrJvm.takeIf { it.isNotBlank() }
         ?: instance.enclosingClass?.let { it.simpleNameOrJvm + instance.name.replace(it.name, newValue = "") } ?: ""
 
     /**

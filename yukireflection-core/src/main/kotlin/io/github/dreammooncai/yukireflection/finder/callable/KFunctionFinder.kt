@@ -391,7 +391,7 @@ open class KFunctionFinder internal constructor(final override val classSet: KCl
         }
     }
 
-    override fun build():BaseResult = runCatching {
+    override fun build(): BaseResult = runCatching {
         internalBuild()
         Result()
     }.getOrElse {

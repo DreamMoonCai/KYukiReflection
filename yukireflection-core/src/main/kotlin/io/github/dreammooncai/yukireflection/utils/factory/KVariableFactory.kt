@@ -219,19 +219,18 @@ internal object RandomSeed {
  * @param isWeak 是否使用弱引用
  * @property initializer 懒加载执行块
  */
-class LazyDomain<T,V>(private val isWeak:Boolean = true,private val initializer: T.() -> V): ReadOnlyProperty<T,V> {
-    @get:Synchronized
-    private val domain: MutableMap<T, Lazy<V>> = if (isWeak)
-        WeakHashMap()
-    else
-        ConcurrentHashMap()
+class LazyDomain<T, V>(
+    private val isWeak: Boolean = true,
+    private val initializer: T.() -> V
+) : ReadOnlyProperty<T, V> {
+
+    private val domain: MutableMap<T, V> =
+        if (isWeak) WeakHashMap() else ConcurrentHashMap()
 
     override fun getValue(thisRef: T, property: KProperty<*>): V {
-        return synchronized(domain) {
-            domain.getOrPut(thisRef){
-                lazy { thisRef.initializer() }
-            }
-        }.value
+        return if (!isWeak) domain.getOrPut(thisRef) { thisRef.initializer() } else synchronized(this) {
+            domain.getOrPut(thisRef) { thisRef.initializer() }
+        }
     }
 }
 

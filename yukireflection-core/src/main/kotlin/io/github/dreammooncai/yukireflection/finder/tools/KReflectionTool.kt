@@ -95,6 +95,39 @@ internal object KReflectionTool {
     }.getOrNull() ?: false
 
     /**
+     * 使用 [KClass] 类名字符串获取 [Class] 的带$的内部类名称
+     * @param name [Class] 完整名称
+     * @return [String]
+     */
+    internal fun String.withDollar(): String {
+        val parts = this.split(".")
+        if (parts.size <= 1) return this
+
+        val stable = mutableListOf<String>()
+        val nested = mutableListOf<String>()
+
+        // 从右往左扫描
+        for (i in parts.indices.reversed()) {
+            val part = parts[i]
+            if (part.firstOrNull()?.isUpperCase() == true) {
+                nested.add(part)
+            } else {
+                // 遇到非大写开头，停止，并把该片段和前面的作为 package/class
+                stable.addAll(parts.subList(0, i + 1))
+                break
+            }
+        }
+
+        return if (nested.isEmpty()) {
+            this
+        } else {
+            val stablePart = stable.joinToString(".")
+            val nestedPart = nested.asReversed().joinToString("$")
+            if (stablePart.isEmpty()) nestedPart else "$stablePart.$nestedPart"
+        }
+    }
+
+    /**
      * 使用字符串类名获取 [KClass]
      * @param name [KClass] 完整名称
      * @param loader [KClass] 所在的 [ClassLoader]
@@ -113,15 +146,15 @@ internal object KReflectionTool {
          * @param loader [Class] 所在的 [ClassLoader] - 默认为 [currentClassLoader]
          * @return [Class]
          */
-        fun classForName(jvmName: String, initialize: Boolean, loader: ClassLoader? = KReflectionTool.currentClassLoader) =
-            Class.forName(jvmName, initialize, loader)
+        fun classForName(jvmName: String, initialize: Boolean, loader: ClassLoader? = currentClassLoader) =
+            runCatching { Class.forName(jvmName, initialize, loader) }.getOrElse { Class.forName(jvmName.withDollar(), initialize, loader) }
 
         /**
          * 使用默认方式和 [ClassLoader] 装载 [Class]
          * @return [Class] or null
          */
-        fun loadWithDefaultClassLoader() = if (initialize.not()) loader?.loadClass(jvmName) else classForName(jvmName, initialize, loader)
-        return KReflectionTool.MemoryCache.classData[uniqueCode] ?: runCatching {
+        fun loadWithDefaultClassLoader() = if (initialize.not()) runCatching { loader?.loadClass(jvmName) }.getOrElse { loader?.loadClass(jvmName.withDollar()) } else classForName(jvmName, initialize, loader)
+        return MemoryCache.classData[uniqueCode] ?: runCatching {
             if (jvmName.endsWith("[]")) {
                 val clazz = KReflectionTool.findClassByName(
                     jvmName.substring(
@@ -129,7 +162,7 @@ internal object KReflectionTool {
                         jvmName.length - 2
                     ), loader, initialize
                 )
-                return ArrayClass(clazz).also { KReflectionTool.MemoryCache.classData[uniqueCode] = it }
+                return ArrayClass(clazz).also { MemoryCache.classData[uniqueCode] = it }
             }
             if (jvmName.startsWith("[")) {
                 return KReflectionTool.findClassByName(
@@ -150,10 +183,10 @@ internal object KReflectionTool {
                 "void" -> UnitKClass.java
                 else -> null
             }
-            if (baseType != null) return baseType.kotlin.also { KReflectionTool.MemoryCache.classData[uniqueCode] = it }
-            (loadWithDefaultClassLoader() ?: classForName(jvmName, initialize)).kotlin.also { KReflectionTool.MemoryCache.classData[uniqueCode] = it }
-        }.getOrNull() ?: throw KReflectionTool.createException(
-            loader ?: KReflectionTool.currentClassLoader,
+            if (baseType != null) return baseType.kotlin.also { MemoryCache.classData[uniqueCode] = it }
+            (loadWithDefaultClassLoader() ?: classForName(jvmName, initialize)).kotlin.also { MemoryCache.classData[uniqueCode] = it }
+        }.getOrNull() ?: throw createException(
+            loader ?: currentClassLoader,
             name = KBaseFinder.TAG_CLASS,
             "name:[$jvmName]"
         )
@@ -192,7 +225,7 @@ internal object KReflectionTool {
                     singleNameConditions?.also { classSingleName(instance).also { n -> runCatching { and(it(n.cast(), n)) } } }
                     modifiers?.also { runCatching { and(it(instance.cast())) } }
                     annotationClass.takeIf { it.isNotEmpty() }
-                        ?.also { and(instance.annotations.isNotEmpty() && instance.annotations.any { e -> it.contains(e.annotationClass.qualifiedName) }) }
+                        ?.also { and(instance.annotations.isNotEmpty() && instance.annotations.any { e -> it.contains(e.annotationClass.name) }) }
                     extendsClass.takeIf { it.isNotEmpty() }?.also { and(instance.hasExtends && it.contains(instance.superclass.name)) }
                     implementsClass.takeIf { it.isNotEmpty() }
                         ?.also { and(instance.interfaces.isNotEmpty() && instance.interfaces.any { e -> it.contains(e.name) }) }
@@ -1180,17 +1213,9 @@ internal object KReflectionTool {
     private val KClass<*>.existCallables
         get() = runCatching {
             sequence {
-                if (KYukiReflection.Configs.isUseJvmObtainCallables) {
-                    yieldAll(
-                        ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence().mapNotNull { it.kotlin })
-                    yieldAll(
-                        ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence().mapNotNull { it.kotlin })
-                    yieldAll(java.declaredConstructors.asSequence().mapNotNull { it.kotlin })
-                } else {
-                    yieldAll(((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence())
-                    yieldAll(((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).toList())
-                    yieldAll(constructors.toList())
-                }
+                yieldAll(allPropertys)
+                yieldAll(allFunctions)
+                yieldAll(allConstructors)
             }
         }.onFailure {
             KYLog.warn(msg = "Failed to get the declared KCallables in [$this] because got an exception", e = it)
@@ -1202,9 +1227,7 @@ internal object KReflectionTool {
      */
     private val KClass<*>.existPropertys
         get() = runCatching {
-            if (KYukiReflection.Configs.isUseJvmObtainCallables)
-                ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence().mapNotNull { it.kotlin }
-            else ((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence()
+            sequence { allPropertys.forEach { yield(it) } }
         }.onFailure {
             KYLog.warn(msg = "Failed to get the declared Propertys in [$this] because got an exception", e = it)
         }.getOrNull()
@@ -1232,9 +1255,7 @@ internal object KReflectionTool {
      */
     private val KClass<*>.existFunctions
         get() = runCatching {
-            if (KYukiReflection.Configs.isUseJvmObtainCallables)
-                ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence().mapNotNull { it.kotlin } else
-                ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).asSequence()
+            allFunctions.asSequence()
         }.onFailure {
             KYLog.warn(msg = "Failed to get the declared Functions in [$this] because got an exception", e = it)
         }.getOrNull()
@@ -1259,8 +1280,7 @@ internal object KReflectionTool {
      */
     private val KClass<*>.existConstructors
         get() = runCatching {
-            if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredConstructors.asSequence()
-                .mapNotNull { it.kotlin } else constructors.asSequence()
+            allConstructors.asSequence()
         }.onFailure {
             KYLog.warn(msg = "Failed to get the declared Constructors in [$this] because got an exception", e = it)
         }.getOrNull()

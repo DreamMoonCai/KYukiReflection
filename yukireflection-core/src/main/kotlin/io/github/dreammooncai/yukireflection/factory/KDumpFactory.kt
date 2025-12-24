@@ -106,7 +106,7 @@ inline fun KProperty<*>.dump(): String = runCatching {
         append("JvmName:${javaSignatureField?.name ?: "<anonymous>"}")
         append(",")
         append("JvmGetter:${javaSignatureGetter?.name ?: "<anonymous>"}")
-        if (isVar()) {
+        if (isVar) {
             append(",")
             append("JvmSetter:${javaSignatureSetter?.name ?: "<anonymous>"}")
         }

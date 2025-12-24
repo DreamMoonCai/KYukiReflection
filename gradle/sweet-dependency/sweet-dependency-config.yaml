@@ -19,7 +19,7 @@ repositories:
 plugins:
   org.jetbrains.kotlin.jvm:
     alias: kotlin-jvm
-    version: 2.2.21
+    version: 2.3.0
   org.jetbrains.kotlin.android:
     alias: kotlin-android
     version-ref: kotlin-jvm

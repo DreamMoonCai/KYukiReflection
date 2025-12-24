@@ -15,10 +15,7 @@ kotlin {
     jvmToolchain(21)
     compilerOptions {
         freeCompilerArgs = listOf(
-            "-Xno-param-assertions",
-            "-Xno-call-assertions",
-            "-Xno-receiver-assertions",
-            "-Xcontext-receivers",
+            "-Xallow-contracts-on-more-functions"
         )
     }
 }

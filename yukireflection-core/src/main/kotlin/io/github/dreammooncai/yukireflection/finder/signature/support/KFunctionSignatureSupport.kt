@@ -1,4 +1,4 @@
-@file:Suppress("UnusedImport", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS")
+@file:Suppress("UnusedImport", "MISSING_DEPENDENCY_SUPERCLASS")
 package io.github.dreammooncai.yukireflection.finder.signature.support
 
 import io.github.dreammooncai.yukireflection.factory.*
@@ -281,7 +281,7 @@ class KFunctionSignatureSupport internal constructor(private val declaringClass:
     /**
      * 验证签名是否正确存在
      */
-    val hasSignature by lazy { (declaringClass?.name?.let { it != DexSignUtil.getTypeName("L$name;") } ?: false) && descriptor.startsWith("(") }
+    val hasSignature by lazy { (declaringClass?.nameWithDollar?.let { it != DexSignUtil.getTypeName("L$name;") } ?: false) && descriptor.startsWith("(") }
 
     override fun toString(): String {
         return if (!hasSignature)

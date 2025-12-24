@@ -34,16 +34,13 @@ import java.lang.ref.WeakReference
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
+import kotlin.reflect.jvm.internal.DescriptorKCallable
 import kotlin.jvm.internal.CallableReference
 import kotlin.jvm.internal.FunctionReference
 import kotlin.jvm.internal.PropertyReference
 import kotlin.reflect.*
 import kotlin.reflect.full.*
-import kotlin.reflect.jvm.internal.KClassifierImpl
-import kotlin.reflect.jvm.internal.KTypeImpl
-import kotlin.reflect.jvm.internal.KotlinReflectionInternalError
+import kotlin.reflect.jvm.internal.types.DescriptorKType
 import kotlin.reflect.jvm.internal.impl.descriptors.*
 import kotlin.reflect.jvm.internal.impl.metadata.ProtoBuf
 import kotlin.reflect.jvm.internal.impl.metadata.jvm.JvmProtoBuf
@@ -202,6 +199,32 @@ val KDeclarationContainer.declaredTopFunctions: List<KFunction<*>> by lazyDomain
 val KParameter.kotlin by lazyDomain { this.type.jvmErasure }
 
 /**
+ * 检查此[KParameter]是否是实例参数
+ *
+ */
+val KParameter.isInstance get() = kind == KParameter.Kind.INSTANCE
+
+/**
+ * 检查此[KParameter]是否是值参数
+ *
+ */
+val KParameter.isValue get() = kind == KParameter.Kind.VALUE
+
+/**
+ * 检查此[KParameter]是否是扩展参数
+ *
+ */
+val KParameter.isExtension get() = kind == KParameter.Kind.EXTENSION_RECEIVER
+
+/**
+ * 检查此[KParameter]是否是上下文参数
+ *
+ */
+val KParameter.isContext by lazyDomain {
+    !isInstance && !isValue && !isExtension
+}
+
+/**
  * 将 [KParameter] 转换为 [KClass]
  *
  * @return Collection [KClass]
@@ -218,20 +241,20 @@ val Collection<KParameter>.kotlin by lazyDomain { this.map { it.type.jvmErasure 
 val Collection<KParameter>.type by lazyDomain { this.map { it.type }.toTypedArray() }
 
 /**
- * 将 [KProperty] 转换为 [KMutableProperty]
+ * 将 [KFunction] 转换为 [KProperty]
  *
- * @return [KMutableProperty]
+ * @return [KProperty] or null
  */
-val KProperty<*>?.toMutable by lazyDomain { toMutableOrNull ?: error("The conversion failed, which is not a mutable property.") }
+val KFunction<*>.toProperty by lazyDomain { toPropertyOrNull ?: error("The conversion failed, which is not a property.") }
 
 /**
- * 将 [KProperty] 转换为 [KMutableProperty]
+ * 将 [KFunction] 转换为 [KProperty]
  *
- * 如果无法转换则返回 Null
- *
- * @return [KMutableProperty] or null
+ * @return [KProperty] or null
  */
-val KProperty<*>?.toMutableOrNull by lazyDomain { this as? KMutableProperty }
+val KFunction<*>.toPropertyOrNull by lazyDomain {
+    if (isGetter || isSetter) property else null
+}
 
 /**
  * 为当前属性设置值
@@ -290,50 +313,65 @@ inline fun KProperty<*>.set(thisRef: Any? = null, value: Any?, extensionRef: Any
 operator fun KProperty<*>.set(thisRef: Any? = null, value: Any?) = set(thisRef, value, null, false)
 
 /**
+ * 获取当前属性的值
+ *
+ * - isUseMember 开启时优先 Field > GetterMethod > [KProperty.call]
+ *
+ * - isUseMember 默认情况下只使用 [KProperty.call]
+ *
+ * @param thisRef 此属性的this实例对象
+ * @param extensionRef 拓展属性的this对象
+ * @param isUseMember 是否优先将属性转换Java方式进行get
+ * @return 属性值
+ */
+inline fun KProperty<*>.get(thisRef: Any? = null, extensionRef: Any? = null, isUseMember: Boolean = false):Any? {
+    if (isUseMember) {
+        val field = javaFieldNoError
+        if (field != null) {
+            field.isAccessible = true
+            return field[thisRef]
+        }
+        val getter = toMutableOrNull?.javaGetterNoError
+        if (getter != null) {
+            getter.isAccessible = true
+            return if (isExtension)
+                getter.invoke(thisRef, extensionRef)
+            else
+                getter.invoke(thisRef)
+        }
+    }
+    val getter = getter
+    return if (isExtension) {
+        if (thisRef == null) {
+            getter.call(extensionRef)
+        } else
+            getter.call(thisRef, extensionRef)
+    } else {
+        if (thisRef == null)
+            getter.call()
+        else
+            getter.call(thisRef)
+    }
+}
+
+/**
+ * 获取当前属性的值
+ *
+ * 快捷方式下拓展this为null
+ *
+ * @see [get]
+ *
+ * @param thisRef 此属性的this实例对象
+ * @return 属性值
+ */
+operator fun KProperty<*>.get(thisRef: Any? = null) = get(thisRef, null, false)
+
+/**
  * 此 [KClass] 是否支持反射
  *
  * @return [Boolean]
  */
 val KClass<*>.isSupportReflection by lazyDomain { runCatching { sealedSubclasses }.isSuccess }
-
-/**
- * 此 属性 [KProperty] 是否为可变属性
- *
- * @return [Boolean]
- */
-val KProperty<*>.isVar: Boolean by lazyDomain {
-    when (this) {
-        is KMutableProperty -> true
-        else -> false
-    }
-}
-
-/**
- * 此 属性 [KProperty] 是否为可变属性
- *
- * 契约版本 如果为 True 则自动转换 [KMutableProperty]
- *
- * 如下所示 ↓
- *
- *     if (property.isVar()) {
- *         property.set(a) // 自动转换 [KMutableProperty]
- *     }
- *
- * ^^^
- *
- * @return [Boolean]
- */
-@JvmName("isVar_contract")
-@OptIn(ExperimentalContracts::class)
-fun KProperty<*>.isVar(): Boolean {
-    contract {
-        returns(true) implies (this@isVar is KMutableProperty<*>)
-    }
-    return when (this) {
-        is KMutableProperty -> true
-        else -> false
-    }
-}
 
 /**
  * 此 属性 [KProperty] 是否为可变属性
@@ -400,7 +438,7 @@ val KCallable<*>.declaringClass by lazyDomain {
  */
 val KCallable<*>.modifiers by lazyDomain {
     when (this) {
-        is KProperty -> javaFieldNoError?.modifiers ?: javaGetterNoError?.modifiers ?: (this as? KMutableProperty<*>?)?.javaSetterNoError?.modifiers
+        is KProperty ->  javaGetterNoError?.modifiers ?: (this as? KMutableProperty<*>?)?.javaSetterNoError?.modifiers ?: javaFieldNoError?.modifiers
         is KFunction -> javaMethodNoError?.modifiers ?: javaConstructorNoError?.modifiers
         else -> null
     }
@@ -442,22 +480,6 @@ inline val <V> KCallable<V>.returnClass: KClass<V & Any>
     } as KClass<V & Any>
 
 /**
- * 获取属性/函数 [KCallable] 的kotlin具体引用信息
- *
- * 引用信息往往存在于自动生成的Kotlin类中
- *
- *     如: String::substring.apply { -- code -- }.ref // 其::的行为将在编译时为使用String::substring所在的类创建CallableReference的引用类 其包含类信息和方法签名信息等
- *
- *         String::class.function { name = "substring" }.give().ref // error:指定从KClass获取的函数并不会通过CallableReference创建并获取
- *
- * [CallableReference] 的存在为了让引用反射获取基础信息能加载更快，通过KClass获取会慢上几分，但一旦涉及复杂反射他们速度将持平
- *
- * @return [CallableReference]
- */
-inline val KCallable<*>.ref
-    get() = this as CallableReference
-
-/**
  * 参阅 [ref] 通过其引用信息获取 [KClass]
  */
 val KCallable<*>.refClass by lazyDomain {
@@ -484,20 +506,20 @@ inline val <T, K : KCallable<T>> K.refImpl
 val CallableReference.impl: KCallable<*>? by lazyDomain {
     when (this) {
         is FunctionReference -> {
-            for (callable in (owner.kotlin.declaredFunctions + if (owner.kotlin.existTop) owner.declaredTopFunctions else arrayListOf())) {
+            for (callable in owner.kotlin.allFunctions) {
                 if (callable.name == this.name && callable.javaMethodNoError == this.javaMethodNoError) return@lazyDomain callable
             }
-            for (callable in (owner.kotlin.declaredFunctions + if (owner.kotlin.existTop) owner.declaredTopFunctions else arrayListOf())) {
+            for (callable in owner.kotlin.allFunctions) {
                 if (callable.name != this.name && callable.javaMethodNoError == this.javaMethodNoError) return@lazyDomain callable
             }
             null
         }
 
         is PropertyReference -> {
-            for (callable in (owner.kotlin.declaredPropertys + if (owner.kotlin.existTop) owner.declaredTopPropertys else arrayListOf())) {
+            for (callable in owner.kotlin.allPropertys) {
                 if (callable.name == this.name && callable.javaFieldNoError == this.javaFieldNoError) return@lazyDomain callable
             }
-            for (callable in (owner.kotlin.declaredPropertys + if (owner.kotlin.existTop) owner.declaredTopPropertys else arrayListOf())) {
+            for (callable in owner.kotlin.allPropertys) {
                 if (callable.name != this.name && callable.javaFieldNoError == this.javaFieldNoError) return@lazyDomain callable
             }
             null
@@ -555,7 +577,14 @@ val KClass<*>.isAnonymous by lazyDomain { this.java.isAnonymousClass }
  *
  * @return [String]
  */
-val KClass<*>.name: String by lazyDomain { this.qualifiedName ?: this.jvmName }
+val KClass<*>.name: String by lazyDomain { this.qualifiedName ?: this.jvmName.replace("$", ".") }
+
+/**
+ * 当前 [KClass] 的完整类名以$分隔子类方式
+ *
+ * @return [String]
+ */
+val KClass<*>.nameWithDollar: String by lazyDomain { this.jvmName }
 
 /**
  * 当前 [KClass] 是否有继承关系 - 父类是 [Any] 将被认为没有继承关系
@@ -603,15 +632,16 @@ inline val KCallable<*>.generics get() = typeParameters
  * 会尝试保留注解信息
  */
 val KClassifier.type by lazyDomain {
-    val descriptor = (this as? KClassifierImpl)?.descriptor
-        ?: return@lazyDomain createType()
+    val descriptor = when (this) {
+        is kotlin.reflect.jvm.internal.KClassImpl<*> -> descriptor
+        is kotlin.reflect.jvm.internal.KTypeParameterImpl -> descriptor
+        is KTypeParameterJavaImpl -> descriptor
+        else -> null
+    } ?: return@lazyDomain createType()
 
     fun createKotlinType(
         arguments: List<KTypeProjection> = emptyList()
     ) :KType {
-        val descriptor = (this as? KClassifierImpl)?.descriptor
-            ?: throw KotlinReflectionInternalError("Cannot create type for an unsupported classifier: $this (${this.javaClass})")
-
         val typeConstructor = descriptor.typeConstructor
         val parameters = typeConstructor.parameters
         if (parameters.size != arguments.size) {
@@ -620,14 +650,14 @@ val KClassifier.type by lazyDomain {
 
         val typeAttributes =
             if (descriptor.annotations.isEmpty) TypeAttributesCompanion.empty
-            else DefaultTypeAttributeTranslator.INSTANCE.toAttributes(descriptor.annotations,descriptor.typeConstructor,descriptor.containingDeclaration) // TODO: support type annotations
+            else DefaultTypeAttributeTranslator.INSTANCE.toAttributes(descriptor.annotations,descriptor.typeConstructor,descriptor.containingDeclaration)
 
-        return KTypeImpl(KotlinTypeFactory.simpleType(typeAttributes, typeConstructor, arguments.mapIndexed { index, typeProjection ->
-            val type = (typeProjection.type as KTypeImpl?)?.type
-            when (typeProjection.variance) {
-                KVariance.INVARIANT -> TypeProjectionImpl(Variance.INVARIANT, type!!)
-                KVariance.IN -> TypeProjectionImpl(Variance.IN_VARIANCE, type!!)
-                KVariance.OUT -> TypeProjectionImpl(Variance.OUT_VARIANCE, type!!)
+        return DescriptorKType(KotlinTypeFactory.simpleType(typeAttributes, typeConstructor, arguments.mapIndexed { index, typeProjection ->
+            val type = typeProjection.type?.kotlinType
+            if (type == null) StarProjectionImpl(parameters[index]) else when (typeProjection.variance) {
+                KVariance.INVARIANT -> TypeProjectionImpl(Variance.INVARIANT, type)
+                KVariance.IN -> TypeProjectionImpl(Variance.IN_VARIANCE, type)
+                KVariance.OUT -> TypeProjectionImpl(Variance.OUT_VARIANCE, type)
                 null -> StarProjectionImpl(parameters[index])
             }
         }, false))
@@ -643,17 +673,24 @@ val KClassifier.type by lazyDomain {
 /**
  * 当前 [KType] 的 [KotlinType] 表示
  */
-val KType.kotlinType by lazyDomain { "kotlin.reflect.jvm.internal.KTypeImpl".toKClass().propertySignature { name = "type"}.getter.get(this).invoke<KotlinType>() }
+val KType.kotlinType by lazyDomain {
+    (this as? DescriptorKType)?.type
+}
 
 /**
  * 当前 [KClass] 的描述符
  */
-val KClass<*>.descriptor by lazyDomain { (this as kotlin.reflect.jvm.internal.KClassifierImpl).descriptor as ClassDescriptor }
+val KClass<*>.descriptor:ClassDescriptor by lazyDomain { (this as kotlin.reflect.jvm.internal.KClassImpl<*>).descriptor }
 
 /**
  * 当前 [KClass] 是否是 object 类
  */
 val KClass<*>.isObject by lazyDomain { descriptor.kind == ClassKind.OBJECT }
+
+/**
+ * 当前 [KCallable] 是否是静态成员或不需要this实例
+ */
+val KCallable<*>.isStaticOrNotInstance: Boolean by lazyDomain { hasModifiers { isStatic } || instanceParameter == null }
 
 /**
  * 根据当前 [KClass] 获取其单例实例
@@ -683,8 +720,8 @@ val KClass<*>.isObject by lazyDomain { descriptor.kind == ClassKind.OBJECT }
 inline val <T : Any> KClass<T>.singletonInstance
     get() = let {
         runCatching { if (isCompanion) enclosingClass?.companionSingletonInstance as T else objectInstance }.getOrNull() ?:
-        java.declaredMethods.find { method -> method.returnType == it.java && method.parameterTypes.isEmpty() && Modifier.isStatic(method.modifiers) }?.instance()?.invoke<T>() ?:
-        java.declaredFields.find { field -> field.type == it.java && Modifier.isStatic(field.modifiers) }?.instance()?.cast<T>()
+        java.declaredMethods.find { method -> method.returnType == it.java && method.parameterTypes.isEmpty() && Modifier.isStatic(method.modifiers) }?.instance()?.invoke() ?:
+        java.declaredFields.find { field -> field.type == it.java && Modifier.isStatic(field.modifiers) }?.instance()?.cast()
     }
 
 /**
@@ -752,6 +789,65 @@ inline fun KClass<*>.toJavaPrimitiveType() = when (this) {
 }
 
 /**
+ * 当前 [KFunction] 的属性名
+ *
+ * 获取属性名时将自动将 getter 或 setter 转换为属性名
+ *
+ * 获取属性名时将自动转换为 isXxx
+ *
+ * 获取属性名时将自动转换为 setXxx
+ *
+ * 获取属性名时将自动转换为 getXxx
+ *
+ * @return [String]
+ */
+val KFunction<*>.propertyName: String
+    get() {
+        val raw = this.name
+        val params = valueParameters
+        val isBoolean = (params.isEmpty() && this.returnType.classifier == Boolean::class) || (params.size == 1 && this.returnType.classifier == Unit::class && params.first().kotlin == Boolean::class)
+
+        fun format(type: String): String {
+            val inner = raw.removePrefix("<$type-").removeSuffix(">")
+
+            // Boolean getter
+            if (type == "get" && isBoolean) {
+                // 已经以 isXxx 命名的属性
+                if (inner.startsWith("is") && inner.length > 2 && inner[2].isUpperCase()) {
+                    return inner
+                }
+                // 否则构造 isXxx
+                return "is" + inner.replaceFirstChar { it.uppercase() }
+            }
+
+            // Boolean setter
+            if (type == "set" && isBoolean) {
+                // 情况 1：属性原名是 isXxx，那么 setter 是 setXxx
+                if (inner.startsWith("is") && inner.length > 2 && inner[2].isUpperCase()) {
+                    val stripped = inner.removePrefix("is")
+                    val cap = stripped.replaceFirstChar { it.uppercase() }
+                    return "is$cap"
+                }
+                // 情况 2：普通 Boolean 属性，setter 与普通一致（但属性名是 isXxx）
+                val cap = inner.replaceFirstChar { it.uppercase() }
+                return "is$cap"
+            }
+
+            // 普通属性逻辑
+            val prop = inner.split("-").joinToString("") {
+                it.replaceFirstChar { c -> c.uppercase() }
+            }
+            return type + prop
+        }
+
+        return when {
+            raw.startsWith("<set-") -> format("set")
+            raw.startsWith("<get-") -> format("get")
+            else -> raw
+        }
+    }
+
+/**
  * 当前 [KType] 的 [Class] 类型
  *
  * 获取保留的来源Class 如封装Int或是基本Int
@@ -776,9 +872,9 @@ inline fun KCallable<*>.findParameterIndexByName(name: String, isCountExtensionR
     var count = 0
     parameters.forEach {
         if (it.name == name) return count
-        if (it.kind == KParameter.Kind.INSTANCE && !isCountThisRef)
+        if (it.isInstance && !isCountThisRef)
             return@forEach
-        if (it.kind == KParameter.Kind.EXTENSION_RECEIVER && !isCountExtensionRef)
+        if (it.isExtension && !isCountExtensionRef)
             return@forEach
         count++
     }
@@ -842,53 +938,11 @@ infix fun KClass<*>?.implements(other: KClass<*>?): Boolean {
 inline infix fun KClass<*>?.notImplements(other: KClass<*>?) = extends(other).not()
 
 /**
- * [Any] 是否可以转换为 [other]
- *
- * @param other 需要判断的 [KClass]
- * @return [Boolean]
- */
-inline infix fun Any?.isCase(other: KClass<*>?) = other?.isInstance(this) ?: false
-
-/**
- * [Any] 是否可以转换为 [T]
- *
- * @param T 需要判断的 [KClass]
- * @return [Boolean]
- */
-inline fun <reified T> Any?.isCase() = isCase(T::class)
-
-/**
  * 当前 [KClass] 的 ClassLoader
  *
  * @return [ClassLoader]
  */
 val KClass<*>.classLoader by lazyDomain { this.java.classLoader!! }
-
-/**
- * 当前 [KFunction] 是否是 Getter 函数
- *
- * Getter 函数的类型可能是 [KProperty.Getter] 或函数名为 <get-xxx>
- */
-val KFunction<*>.isGetter by lazyDomain {
-    when {
-        this is KProperty.Getter<*> -> true
-        this.name.startsWith("<get-") && this.name.endsWith(">") -> true
-        else -> false
-    }
-}
-
-/**
- * 当前 [KFunction] 是否是 Setter 函数
- *
- * Setter 函数的类型可能是 [KMutableProperty.Setter] 或函数名为 <set-xxx>
- */
-val KFunction<*>.isSetter by lazyDomain {
-    when {
-        this is KMutableProperty.Setter<*> -> true
-        this.name.startsWith("<set-") && this.name.endsWith(">") -> true
-        else -> false
-    }
-}
 
 /**
  * 通过 [KVariousClass] 获取 [KClass]
@@ -916,7 +970,7 @@ inline fun KVariousClass.toKClassOrNull(loader: ClassLoader? = null, initialize:
  * @return [KClass]
  * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
  */
-inline fun String.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) =
+fun String.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) =
     KReflectionTool.findClassByName(name = this, loader, initialize)
 
 /**
@@ -960,7 +1014,7 @@ inline fun <reified T> String.toKClassOrNull(loader: ClassLoader? = null, initia
  * @return [KClass]
  * @throws NoClassDefFoundError 如果找不到 [KClass] 或设置了错误的 [ClassLoader]
  */
-inline fun KClass<*>.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) = name.toKClass(loader, initialize)
+inline fun KClass<*>.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) = nameWithDollar.toKClass(loader, initialize)
 
 /**
  * 通过此[KClass]的字符串类名转换为 [loader] 中的实体类 - 意为重新获取
@@ -972,7 +1026,7 @@ inline fun KClass<*>.toKClass(loader: ClassLoader? = null, initialize: Boolean =
  */
 @JvmName("toKClass_Generics")
 inline fun <reified T> KClass<T & Any>.toKClass(loader: ClassLoader? = null, initialize: Boolean = false) =
-    name.toKClass<T>(loader, initialize)
+    nameWithDollar.toKClass<T>(loader, initialize)
 
 /**
  * 通过此[KClass]的字符串类名转换为 [loader] 中的实体类 - 意为重新获取
@@ -995,7 +1049,7 @@ inline fun KClass<*>.toKClassOrNull(loader: ClassLoader? = null, initialize: Boo
  */
 @JvmName("toKClassOrNull_Generics")
 inline fun <reified T> KClass<T & Any>.toKClassOrNull(loader: ClassLoader? = null, initialize: Boolean = false) =
-    name.toKClassOrNull<T>(loader, initialize)
+    nameWithDollar.toKClassOrNull<T>(loader, initialize)
 
 /**
  * 通过 [clazz] 和 [this] 获取其中的 [KCallable]
@@ -1180,7 +1234,7 @@ fun lazyKClassOrNull(variousClass: KVariousClass, initialize: Boolean = false, l
  * @param loader [KClass] 所在的 [ClassLoader] - 不填使用默认 [ClassLoader]
  * @return [Boolean] 是否存在
  */
-inline fun String.hasKClass(loader: ClassLoader? = null) = KReflectionTool.hasClassByName(name = this, loader)
+fun String.hasKClass(loader: ClassLoader? = null) = KReflectionTool.hasClassByName(name = this, loader)
 
 /**
  * 查找变量是否存在
@@ -1226,14 +1280,14 @@ inline fun KClass<*>.hasConstructor(initiate: KConstructorConditions = { emptyPa
  * @param conditions 条件方法体
  * @return [Boolean] 是否存在
  */
-inline fun KCallable<*>.hasModifiers(conditions: KModifierConditions) = conditions(KModifierRules.with(instance = this))
+fun KCallable<*>.hasModifiers(conditions: KModifierConditions) = conditions(KModifierRules.with(instance = this))
 
 /**
  * 查找 [KClass] 中匹配的描述符
  * @param conditions 条件方法体
  * @return [Boolean] 是否存在
  */
-inline fun KClass<*>.hasModifiers(conditions: KModifierConditions) = conditions(KModifierRules.with(instance = this))
+fun KClass<*>.hasModifiers(conditions: KModifierConditions) = conditions(KModifierRules.with(instance = this))
 
 /**
  * 查找并得到变量
@@ -1522,9 +1576,9 @@ val KCallable<*>.isPublic by lazyDomain { visibility == KVisibility.PUBLIC }
  */
 val KCallable<*>.descriptor by lazyDomain {
     runCatching {
-        KCallableImplKClass.java.getDeclaredMethod("getDescriptor").also { it.isAccessible = true }
+        DescriptorKCallable::class.java.getDeclaredMethod("getDescriptor").also { it.isAccessible = true }
             .invoke(
-                if (this.isCase(KCallableImplKClass)) this else runCatching { ref }.getOrNull()?.impl
+                if (this.isCase(DescriptorKCallable::class)) this else runCatching { ref }.getOrNull()?.impl
                     ?: error("No descriptive implementation found!!!")
             ) as? CallableMemberDescriptor?
     }.getOrElse {
@@ -1555,11 +1609,33 @@ val KFunction<*>.constructorDescriptor by lazyDomain {
 }
 
 /**
+ * 获取当前类所有成员
+ */
+val KClass<*>.allCallablesAndSuper: List<KCallable<*>> by lazyDomain {
+    allFunctionsAndSuper + allConstructors + allPropertysAndSuper
+}
+
+/**
+ * 获取当前类所有成员
+ */
+val KClass<*>.allCallables: List<KCallable<*>> by lazyDomain {
+    allFunctions + allConstructors + allPropertys
+}
+
+/**
+ * 获取当前类所有方法并且包括其超类的所有方法
+ */
+val KClass<*>.allFunctionsAndSuper: List<KFunction<*>> by lazyDomain {
+    allFunctions + (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.allSuperclass.flatMap { it.declaredMethods.toList() } else listOf()) + java.allSuperclass.flatMap { it.declaredMethods.toList() })
+        .mapNotNull { it.kotlin } else ((if (existTop) top.kotlin.allSuperclasses.flatMap { it.allFunctions } else arrayListOf()) + allSuperclasses.flatMap { it.allFunctions })).distinct()
+}
+
+/**
  * 获取当前类所有方法
  */
 val KClass<*>.allFunctions: List<KFunction<*>> by lazyDomain {
-    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods).asSequence()
-        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions).asSequence()).toList()
+    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredMethods else arrayOf()) + java.declaredMethods)
+        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopFunctions else arrayListOf()) + declaredFunctions))
 }
 
 /**
@@ -1599,8 +1675,8 @@ inline fun KClass<*>.allFunctionSignatures(loader: ClassLoader? = null, result: 
  * 获取当前类所有构造方法
  */
 val KClass<*>.allConstructors: List<KFunction<*>> by lazyDomain {
-    (if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredConstructors.asSequence()
-        .mapNotNull { it.kotlin } else constructors.asSequence()).toList()
+    (if (KYukiReflection.Configs.isUseJvmObtainCallables) java.declaredConstructors
+        .mapNotNull { it.kotlin } else constructors).toList()
 }
 
 /**
@@ -1618,9 +1694,17 @@ inline fun KClass<*>.allConstructors(isAccessible: Boolean = true, result: (inde
 /**
  * 获取当前类所有变量
  */
+val KClass<*>.allPropertysAndSuper: List<KProperty<*>> by lazyDomain {
+    allPropertys + (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.allSuperclass.flatMap { it.declaredFields.toList() } else listOf()) + java.allSuperclass.flatMap { it.declaredFields.toList() })
+        .mapNotNull { it.kotlin } else ((if (existTop) top.kotlin.allSuperclasses.flatMap { it.allPropertys } else arrayListOf()) + allSuperclasses.flatMap { it.allPropertys })).distinct()
+}
+
+/**
+ * 获取当前类所有变量
+ */
 val KClass<*>.allPropertys: List<KProperty<*>> by lazyDomain {
-    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields).asSequence()
-        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys).asSequence()).toList()
+    (if (KYukiReflection.Configs.isUseJvmObtainCallables) ((if (existTop) top.kotlin.java.declaredFields else arrayOf()) + java.declaredFields)
+        .mapNotNull { it.kotlin } else ((if (existTop) top.declaredTopPropertys else arrayListOf()) + declaredPropertys)).toList()
 }
 
 /**

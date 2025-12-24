@@ -176,7 +176,7 @@ class KPropertySignatureSupport(private val declaringClass: KClass<*>? = null, v
         /**
          * 验证签名是否正确存在
          */
-        val hasSignature by lazy { (declaringClass?.name?.let { it != DexSignUtil.getTypeName("L$name;") } ?: false) }
+        val hasSignature by lazy { (declaringClass?.nameWithDollar?.let { it != DexSignUtil.getTypeName("L$name;") } ?: false) }
 
         override fun toString(): String {
             return if (!hasSignature)

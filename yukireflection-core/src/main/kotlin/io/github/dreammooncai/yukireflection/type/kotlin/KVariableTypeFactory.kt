@@ -877,18 +877,6 @@ val KVarianceKClass get() = klassOf<KVariance>()
 val KMutablePropertyKClass get() = klassOf<KMutableProperty<*>>()
 
 /**
- * 获得 [kotlin.reflect.jvm.internal.KCallableImpl] 类型
- * @return [KClass]<[kotlin.reflect.jvm.internal.KCallableImpl]>
- */
-val KCallableImplKClass get() = "kotlin.reflect.jvm.internal.KCallableImpl".toKClass()
-
-/**
- * 获得 [kotlin.reflect.jvm.internal.KPackageImpl] 类型
- * @return [KClass]<[kotlin.reflect.jvm.internal.KPackageImpl]>
- */
-val KPackageImplKClass get() = "kotlin.reflect.jvm.internal.KPackageImpl".toKClass()
-
-/**
  * 获得 [kotlin.reflect.jvm.internal.KClassImpl] 类型
  * @return [KClass]<[kotlin.reflect.jvm.internal.KClassImpl]>
  */
@@ -898,4 +886,4 @@ val KClassImplKClass get() = "kotlin.reflect.jvm.internal.KClassImpl".toKClass()
  * 获得 [kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope.OptimizedImplementation] 类型
  * @return [KClass]<[kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope.OptimizedImplementation]>
  */
-val DeserializedMemberScope_OptimizedImplementationKClass get() = "kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope\$OptimizedImplementation".toKClass()
+val DeserializedMemberScope_OptimizedImplementationKClass get() = $$"kotlin.reflect.jvm.internal.impl.serialization.deserialization.descriptors.DeserializedMemberScope$OptimizedImplementation".toKClass()
