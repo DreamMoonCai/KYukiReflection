@@ -26,7 +26,7 @@ class KTypeBuild internal constructor(private val classSet: KClassifier) : KBase
      *
      * 构建时会保留已有type的泛型参数注解和空信息
      */
-    internal constructor(type: KType):this(type.kotlin){
+    @PublishedApi internal constructor(type: KType):this(type.kotlin){
         isNullable = type.isMarkedNullable
         paramCount = type.arguments.size
         rulesData.paramTypes = type.arguments.toTypedArray()

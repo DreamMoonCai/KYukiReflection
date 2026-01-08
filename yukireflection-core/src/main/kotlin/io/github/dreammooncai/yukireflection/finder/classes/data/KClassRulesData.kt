@@ -61,7 +61,7 @@ import kotlin.reflect.KClass
  * @param functionRules [KFunction] 查找条件数据数组
  * @param constroctorRules Constructor[KFunction] 查找条件数据数组
  */
-internal class KClassRulesData internal constructor(
+@PublishedApi internal class KClassRulesData internal constructor(
     var fromPackages: MutableList<PackageRulesData> = mutableListOf(),
     var fullName: NameRulesData? = null,
     var simpleName: NameRulesData? = null,

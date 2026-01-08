@@ -19,7 +19,7 @@
  *
  * This file is created by fankes on 2023/1/21.
  */
-@file:Suppress("unused", "MemberVisibilityCanBePrivate", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE", "UnusedImport")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate", "UnusedImport")
 
 package io.github.dreammooncai.yukireflection
 
@@ -81,7 +81,7 @@ object KYukiReflection {
 
 
         /** 结束方法体 */
-        internal fun build() = Unit
+        @PublishedApi internal fun build() = Unit
     }
 
     /**

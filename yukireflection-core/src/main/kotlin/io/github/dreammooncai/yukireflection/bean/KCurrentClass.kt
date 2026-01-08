@@ -20,7 +20,7 @@
  * This file is created by fankes on 2022/4/4.
  * This file is modified by fankes on 2023/1/21.
  */
-@file:Suppress("unused", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+@file:Suppress("unused")
 
 package io.github.dreammooncai.yukireflection.bean
 
@@ -38,10 +38,10 @@ import kotlin.reflect.KClass
  * @param classSet 当前实例的 [KClass]
  * @param instance 当前实例本身
  */
-class KCurrentClass internal constructor(private val classSet: KClass<*>, internal val instance: Any) {
+class KCurrentClass @PublishedApi internal constructor(@PublishedApi internal val classSet: KClass<*>, @PublishedApi internal val instance: Any) {
 
     /** 是否开启忽略错误警告功能 */
-    internal var isIgnoreErrorLogs = false
+    @PublishedApi internal var isIgnoreErrorLogs = false
 
     /**
      * 获得当前 [classSet] 的 [KClass.name]
@@ -120,7 +120,7 @@ class KCurrentClass internal constructor(private val classSet: KClass<*>, intern
      * - 请使用 [superClass] 方法来获取 [SuperClass]
      * @param superClassSet 父类 [KClass] 对象
      */
-    inner class SuperClass internal constructor(private val superClassSet: KClass<*>) {
+    inner class SuperClass internal constructor(@PublishedApi internal val superClassSet: KClass<*>) {
 
         /**
          * 获得当前 [classSet] 中父类的 [KClass.name]

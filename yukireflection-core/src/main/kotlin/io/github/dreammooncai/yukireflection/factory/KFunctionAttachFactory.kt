@@ -1,4 +1,4 @@
-@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS")
+@file:Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE","MISSING_DEPENDENCY_SUPERCLASS")
 package io.github.dreammooncai.yukireflection.factory
 
 import io.github.dreammooncai.yukireflection.finder.callable.KFunctionFinder

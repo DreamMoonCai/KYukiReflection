@@ -1,7 +1,6 @@
 @file:Suppress(
     "UNCHECKED_CAST",
     "NOTHING_TO_INLINE",
-    "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE",
     "MISSING_DEPENDENCY_SUPERCLASS",
     "INVISIBLE_MEMBER",
     "INVISIBLE_REFERENCE"
@@ -99,7 +98,7 @@ open class KLazyClass<T> internal constructor(
      * @param initialize 是否初始化
      * @param loader [ClassLoader] 装载实例
      */
-    class NonNull<T> internal constructor(
+    class NonNull<T> @PublishedApi internal constructor(
         instance: Any,
         initialize: Boolean,
         loader: KClassLoaderInitializer?,
@@ -114,7 +113,7 @@ open class KLazyClass<T> internal constructor(
      * @param initialize 是否初始化
      * @param loader [ClassLoader] 装载实例
      */
-    class Nullable<T> internal constructor(
+    class Nullable<T> @PublishedApi internal constructor(
         instance: Any,
         initialize: Boolean,
         loader: KClassLoaderInitializer?,
@@ -2109,7 +2108,7 @@ open class BindingInstanceSupport<T>(
      * @property isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
      * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
      */
-    class NonNull<T> internal constructor(
+    class NonNull<T> @PublishedApi internal constructor(
         private val thisRefClass: KClass<*>,
         private val thisRef: Any? = null,
         private val extensionRef: Any? = null,
@@ -2135,7 +2134,7 @@ open class BindingInstanceSupport<T>(
      * @property isLazy 是否只加载一次[KPropertyFinder.Result] 默认是 否则每次get/set都将重新查找
      * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
      */
-    class Nullable<T> internal constructor(
+    class Nullable<T> @PublishedApi internal constructor(
         private val thisRefClass: KClass<*>,
         private val thisRef: Any? = null,
         private val extensionRef: Any? = null,
@@ -2348,7 +2347,7 @@ open class BindingInstanceSignatureSupport<T>(
      * @property isLazy 是否只加载一次[KPropertySignatureFinder.Result] 默认是 否则每次get/set都将重新查找
      * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
      */
-    class NonNull<T> internal constructor(
+    class NonNull<T> @PublishedApi internal constructor(
         private val thisRefClass: KClass<*>,
         private val thisRef: Any? = null,
         private val declaringClass: KClass<*>? = null,
@@ -2374,7 +2373,7 @@ open class BindingInstanceSignatureSupport<T>(
      * @property isLazy 是否只加载一次[KPropertySignatureFinder.Result] 默认是 否则每次get/set都将重新查找
      * @property mappingRules 属性映射规则 默认匹配名称和返回类型 [KType]
      */
-    class Nullable<T> internal constructor(
+    class Nullable<T> @PublishedApi internal constructor(
         private val thisRefClass: KClass<*>,
         private val thisRef: Any? = null,
         private val declaringClass: KClass<*>? = null,

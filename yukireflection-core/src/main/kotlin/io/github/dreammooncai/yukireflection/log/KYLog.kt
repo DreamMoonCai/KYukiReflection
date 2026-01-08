@@ -57,7 +57,7 @@ object KYLog {
         var isEnable = true
 
         /** 结束方法体 */
-        internal fun build() = Unit
+        @PublishedApi internal fun build() = Unit
     }
 
     /**

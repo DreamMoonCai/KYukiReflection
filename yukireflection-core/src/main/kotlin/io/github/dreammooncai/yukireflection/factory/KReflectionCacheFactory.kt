@@ -1,7 +1,6 @@
 @file:Suppress(
     "UNCHECKED_CAST",
     "NOTHING_TO_INLINE",
-    "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE",
     "MISSING_DEPENDENCY_SUPERCLASS",
     "INVISIBLE_MEMBER",
     "INVISIBLE_REFERENCE"
@@ -27,7 +26,7 @@ import kotlin.reflect.KProperty
 /**
  * 缓存属性弱引用列表
  */
-private val cacheProperty = WeakHashMap<String,KPropertyFinder.Result>()
+@PublishedApi internal val cacheProperty = WeakHashMap<String,KPropertyFinder.Result>()
 
 /**
  * 查找并得到变量 - 查询的结果将按照描述符缓存使用
@@ -58,7 +57,7 @@ inline fun KClass<*>.cacheProperty(attachProperty:KProperty<*>,loader: ClassLoad
 /**
  * 缓存属性签名弱引用列表
  */
-private val cachePropertySignature = WeakHashMap<String,KPropertySignatureFinder.Result>()
+@PublishedApi internal val cachePropertySignature = WeakHashMap<String,KPropertySignatureFinder.Result>()
 
 /**
  * 查找并得到方法签名 - 查询的结果将按照描述符缓存使用
@@ -105,7 +104,7 @@ inline fun KClass<*>.cachePropertySignature(attachProperty:KProperty<*>,loader: 
 /**
  * 缓存函数弱引用列表
  */
-private val cacheFunction = WeakHashMap<String,KFunctionFinder.Result>()
+@PublishedApi internal val cacheFunction = WeakHashMap<String,KFunctionFinder.Result>()
 
 /**
  * 查找并得到方法 - 查询的结果将按照描述符缓存使用
@@ -139,7 +138,7 @@ inline fun KClass<*>.cacheFunction(attachFunction:KFunction<*>,loader: ClassLoad
 /**
  * 缓存函数签名弱引用列表
  */
-private val cacheFunctionSignature = WeakHashMap<String,KFunctionSignatureFinder.Result>()
+@PublishedApi internal val cacheFunctionSignature = WeakHashMap<String,KFunctionSignatureFinder.Result>()
 
 /**
  * 查找并得到方法签名 - 查询的结果将按照描述符缓存使用
@@ -190,7 +189,7 @@ inline fun KClass<*>.cacheFunctionSignature(attachFunction:KFunction<*>,loader: 
 /**
  * 缓存函数签名弱引用列表
  */
-private val cacheConstructor = WeakHashMap<String,KConstructorFinder.Result>()
+@PublishedApi internal val cacheConstructor = WeakHashMap<String,KConstructorFinder.Result>()
 
 /**
  * 查找并得到构造方法 - 查询的结果将按照描述符缓存使用

@@ -20,7 +20,7 @@
  * This file is created by fankes on 2022/2/4.
  * This file is modified by fankes on 2023/1/21.
  */
-@file:Suppress("unused", "MemberVisibilityCanBePrivate", "UNCHECKED_CAST", "KotlinConstantConditions", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate", "UNCHECKED_CAST", "KotlinConstantConditions")
 
 package io.github.dreammooncai.yukireflection.finder.callable
 
@@ -55,9 +55,9 @@ import kotlin.reflect.jvm.javaConstructor
  * 可通过指定类型查找指定 Constructor [KFunction] 或一组 Constructor [KFunction]
  * @param classSet 当前需要查找的 [KClass] 实例
  */
-class KConstructorFinder internal constructor(override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_CONSTRUCTOR, classSet) {
+class KConstructorFinder @PublishedApi internal constructor(@PublishedApi override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_CONSTRUCTOR, classSet) {
 
-    override var rulesData = KConstructorRulesData()
+    @PublishedApi override var rulesData = KConstructorRulesData()
 
     /** 当前使用的 [classSet] */
     private var usedClassSet = classSet
@@ -320,10 +320,10 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
      *
      * 可累计失败次数直到查找成功
      */
-    inner class RemedyPlan internal constructor() {
+    inner class RemedyPlan @PublishedApi internal constructor() {
 
         /** 失败尝试次数数组 */
-        private val remedyPlans = mutableSetOf<Pair<KConstructorFinder, Result>>()
+        @PublishedApi internal val remedyPlans = mutableSetOf<Pair<KConstructorFinder, Result>>()
 
         /**
          * 创建需要重新查找的 Constructor [KFunction]
@@ -337,7 +337,7 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
             Result().apply { remedyPlans.add(KConstructorFinder(classSet).apply(initiate) to this) }
 
         /** 开始重查找 */
-        internal fun build() {
+        @PublishedApi internal fun build() {
             if (classSet == null) return
             if (remedyPlans.isNotEmpty()) {
                 val errors = mutableListOf<Throwable>()
@@ -368,7 +368,7 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
          *
          * 可在这里处理是否成功的回调
          */
-        inner class Result internal constructor() {
+        inner class Result @PublishedApi internal constructor() {
 
             /** 找到结果时的回调 */
             internal var onFindCallback: (MutableList<KFunction<*>>.() -> Unit)? = null
@@ -388,9 +388,9 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
      * @param isNoSuch 是否没有找到 Constructor [KFunction] - 默认否
      * @param throwable 错误信息
      */
-    inner class Result internal constructor(
+    inner class Result @PublishedApi internal constructor(
         val isNoSuch: Boolean = false,
-        internal val throwable: Throwable? = null
+        @PublishedApi internal val throwable: Throwable? = null
     ) : BaseResult {
 
         /**
@@ -533,7 +533,7 @@ class KConstructorFinder internal constructor(override val classSet: KClass<*>? 
          * - 请使用 [get]、[wait]、[all]、[waitAll] 方法来获取 [Instance]
          * @param constructor 当前 Constructor [KFunction] 实例对象
          */
-        inner class Instance internal constructor(private val constructor: KFunction<*>?):BaseInstance {
+        inner class Instance @PublishedApi internal constructor(private val constructor: KFunction<*>?):BaseInstance {
 
             override fun callResult(vararg args: Any?): Any? = call(*args)
 

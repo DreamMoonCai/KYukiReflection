@@ -1,7 +1,6 @@
 @file:Suppress(
     "UNCHECKED_CAST",
     "NOTHING_TO_INLINE",
-    "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE",
     "MISSING_DEPENDENCY_SUPERCLASS",
     "RecursivePropertyAccessor",
     "INVISIBLE_MEMBER",

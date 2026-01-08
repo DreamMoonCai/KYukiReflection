@@ -1,4 +1,4 @@
-@file:Suppress("UnusedImport", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE","MISSING_DEPENDENCY_SUPERCLASS", "NOTHING_TO_INLINE")
+@file:Suppress("UnusedImport","MISSING_DEPENDENCY_SUPERCLASS", "NOTHING_TO_INLINE")
 
 package io.github.dreammooncai.yukireflection.factory
 

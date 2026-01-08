@@ -20,7 +20,7 @@
  * This file is created by fankes on 2022/9/4.
  * This file is modified by fankes on 2023/1/25.
  */
-@file:Suppress("unused", "MemberVisibilityCanBePrivate", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+@file:Suppress("unused")
 
 package io.github.dreammooncai.yukireflection.finder.classes
 
@@ -46,9 +46,9 @@ import kotlin.reflect.KFunction
  *
  * @param classSet 当前需要查找的 List<[KClass]> 数组
  */
-class KClassFinder internal constructor(classSet: Collection<KClass<*>>? = null) : KClassBaseFinder(classSet) {
+class KClassFinder @PublishedApi internal constructor(classSet: Collection<KClass<*>>? = null) : KClassBaseFinder(classSet) {
 
-    override var rulesData = KClassRulesData()
+    @PublishedApi override var rulesData = KClassRulesData()
 
     /**
      * 设置 [KClass] 完整名称

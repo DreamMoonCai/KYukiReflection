@@ -20,7 +20,7 @@
  * This file is created by fankes on 2022/9/20.
  * This file is modified by fankes on 2023/1/21.
  */
-@file:Suppress("unused", "UNCHECKED_CAST", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+@file:Suppress("unused", "UNCHECKED_CAST")
 
 package io.github.dreammooncai.yukireflection.bean
 
@@ -41,7 +41,7 @@ import kotlin.reflect.*
  * @param type 拥有类型声明信息的Kotlin类型 可能包含泛型信息
  * @property ArrayList this存储当前泛型参数数组
  */
-class KGenericClass internal constructor(val type: KType) :List<KTypeProjection> by type.arguments {
+class KGenericClass @PublishedApi internal constructor(val type: KType) :List<KTypeProjection> by type.arguments {
 
     /**
      * 是否检查方差

@@ -1,4 +1,4 @@
-@file:Suppress("unused", "MemberVisibilityCanBePrivate", "UNCHECKED_CAST", "KotlinConstantConditions", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate", "UNCHECKED_CAST", "KotlinConstantConditions")
 
 package io.github.dreammooncai.yukireflection.finder.signature
 
@@ -20,7 +20,7 @@ import java.lang.reflect.Method
  * 可通过指定类型查找指定 [KFunctionSignatureSupport] 或一组 [KFunctionSignatureSupport]
  * @param classSet 当前需要查找的 [KClass] 实例
  */
-class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,private val loader: ClassLoader? = null) : KFunctionFinder(classSet) {
+class KFunctionSignatureFinder @PublishedApi internal constructor(classSet: KClass<*>? = null,private val loader: ClassLoader? = null) : KFunctionFinder(classSet) {
     /** 当前找到的 [KFunctionSignatureSupport] 数组 */
     internal var callableSignatureInstances = mutableListOf<KFunctionSignatureSupport>()
 
@@ -66,10 +66,10 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
      *
      * 可累计失败次数直到查找成功
      */
-    inner class RemedyPlan internal constructor() {
+    inner class RemedyPlan @PublishedApi internal constructor() {
 
         /** 失败尝试次数数组 */
-        private val remedyPlans = mutableListOf<Pair<KFunctionSignatureFinder, Result>>()
+        @PublishedApi internal val remedyPlans = mutableListOf<Pair<KFunctionSignatureFinder, Result>>()
 
         /**
          * 创建需要重新查找的 [KFunctionSignatureSupport]
@@ -83,7 +83,7 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
         inline fun functionSignature(initiate: KFunctionSignatureConditions) = Result().apply { remedyPlans.add(KFunctionSignatureFinder(classSet).apply(initiate) to this) }
 
         /** 开始重查找 */
-        internal fun build() {
+        @PublishedApi internal fun build() {
             if (classSet == null) return
             if (remedyPlans.isNotEmpty()) {
                 val errors = mutableListOf<Throwable>()
@@ -114,7 +114,7 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
          *
          * 可在这里处理是否成功的回调
          */
-        inner class Result internal constructor() {
+        inner class Result @PublishedApi internal constructor() {
 
             /** 找到结果时的回调 */
             internal var onFindCallback: (MutableList<KFunctionSignatureSupport>.() -> Unit)? = null
@@ -134,9 +134,9 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
      * @param isNoSuch 是否没有找到 [KFunctionSignatureSupport.member] - 默认否
      * @param throwable 错误信息
      */
-    inner class Result internal constructor(
+    inner class Result @PublishedApi internal constructor(
         val isNoSuch: Boolean = false,
-        internal val throwable: Throwable? = null
+        @PublishedApi internal val throwable: Throwable? = null
     ) : BaseResult {
 
         /**
@@ -289,7 +289,7 @@ class KFunctionSignatureFinder internal constructor(classSet: KClass<*>? = null,
          * @param instance 当前 [Method] 所在类的实例对象
          * @param method 当前 [Method] 实例对象
          */
-        inner class Instance internal constructor(private val instance: Any?, private val method: Method?):BaseInstance {
+        inner class Instance @PublishedApi internal constructor(private val instance: Any?, private val method: Method?):BaseInstance {
 
             init {
                 method.also { it?.isAccessible = true }

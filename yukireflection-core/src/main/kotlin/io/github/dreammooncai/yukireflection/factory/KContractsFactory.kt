@@ -92,7 +92,7 @@ inline val KCallable<*>.ref: CallableReference
  *
  * 如下所示 ↓
  *
- *     if (property.isVar()) {
+ *     if (property.isVar) {
  *         property.set(a) // 自动转换 [KMutableProperty]
  *     }
  *

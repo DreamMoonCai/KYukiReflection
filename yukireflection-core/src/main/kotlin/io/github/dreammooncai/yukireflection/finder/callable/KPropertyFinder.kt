@@ -20,7 +20,7 @@
  * This file is created by fankes on 2022/2/4.
  * This file is modified by fankes on 2023/1/21.
  */
-@file:Suppress("unused", "UNCHECKED_CAST", "MemberVisibilityCanBePrivate", "KotlinConstantConditions", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+@file:Suppress("unused", "UNCHECKED_CAST", "MemberVisibilityCanBePrivate", "KotlinConstantConditions")
 
 package io.github.dreammooncai.yukireflection.finder.callable
 
@@ -50,9 +50,9 @@ import kotlin.reflect.full.instanceParameter
  * 可通过指定类型查找指定 [KProperty] 或一组 [KProperty]
  * @param classSet 当前需要查找的 [KClass] 实例
  */
-open class KPropertyFinder internal constructor(final override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_PROPERTY, classSet) {
+open class KPropertyFinder @PublishedApi internal constructor(@PublishedApi final override val classSet: KClass<*>? = null) : KCallableBaseFinder(tag = TAG_PROPERTY, classSet) {
 
-    override var rulesData = KPropertyRulesData()
+    @PublishedApi override var rulesData = KPropertyRulesData()
 
     /** 当前使用的 [classSet] */
     internal var usedClassSet = classSet
@@ -234,10 +234,10 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
      *
      * 可累计失败次数直到查找成功
      */
-    inner class RemedyPlan internal constructor() {
+    inner class RemedyPlan @PublishedApi internal constructor() {
 
         /** 失败尝试次数数组 */
-        private val remedyPlans = mutableSetOf<Pair<KPropertyFinder, Result>>()
+        @PublishedApi internal val remedyPlans = mutableSetOf<Pair<KPropertyFinder, Result>>()
 
         /**
          * 创建需要重新查找的 [KProperty]
@@ -251,7 +251,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
         inline fun property(initiate: KPropertyConditions) = Result().apply { remedyPlans.add(KPropertyFinder(classSet).apply(initiate) to this) }
 
         /** 开始重查找 */
-        internal fun build() {
+        @PublishedApi internal fun build() {
             if (classSet == null) return
             if (remedyPlans.isNotEmpty()) {
                 val errors = mutableListOf<Throwable>()
@@ -282,7 +282,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
          *
          * 可在这里处理是否成功的回调
          */
-        inner class Result internal constructor() {
+        inner class Result @PublishedApi internal constructor() {
 
             /** 找到结果时的回调 */
             internal var onFindCallback: (MutableList<KProperty<*>>.() -> Unit)? = null
@@ -303,7 +303,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
      * @param isNoSuch 是否没有找到 [KProperty] - 默认否
      * @param throwable 错误信息
      */
-    inner class Result internal constructor(
+    inner class Result @PublishedApi internal constructor(
         val isNoSuch: Boolean = false,
         internal val throwable: Throwable? = null
     ) : BaseResult {
@@ -473,7 +473,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
          * @param instance 当前 [KProperty] 所在类的实例对象
          * @param property 当前 [KProperty] 实例对象
          */
-        inner class Instance internal constructor(private var instance: Any?, private val property: KProperty<*>?): BaseInstance {
+        inner class Instance @PublishedApi internal constructor(private var instance: Any?, private val property: KProperty<*>?): BaseInstance {
 
             init {
                 if (instance == null){
@@ -577,7 +577,7 @@ open class KPropertyFinder internal constructor(final override val classSet: KCl
              * - 若要直接获取不确定的实例对象 - 请调用 [any] 方法
              * @return [Any] or null
              */
-            private val self get() = runCatching { baseCall() }.getOrElse { if (it is IllegalArgumentException) errorMsg("Non static method but no instance is passed in.",it) else throw it }
+            @PublishedApi internal val self get() = runCatching { baseCall() }.getOrElse { if (it is IllegalArgumentException) errorMsg("Non static method but no instance is passed in.",it) else throw it }
 
             /**
              * 获得当前 [KProperty] 自身 [self] 实例的类操作对象

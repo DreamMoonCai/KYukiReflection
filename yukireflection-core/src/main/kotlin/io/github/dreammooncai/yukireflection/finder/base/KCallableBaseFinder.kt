@@ -44,7 +44,7 @@ abstract class KCallableBaseFinder internal constructor(private val tag: String,
     }
 
     /** 是否使用了重查找功能 */
-    internal var isUsingRemedyPlan = false
+    @PublishedApi internal var isUsingRemedyPlan = false
 
     /** 是否开启忽略错误警告功能 */
     internal var isIgnoreErrorLogs = false

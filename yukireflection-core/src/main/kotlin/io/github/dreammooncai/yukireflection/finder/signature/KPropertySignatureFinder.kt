@@ -1,4 +1,4 @@
-@file:Suppress("unused", "MemberVisibilityCanBePrivate", "UNCHECKED_CAST", "KotlinConstantConditions", "NON_PUBLIC_CALL_FROM_PUBLIC_INLINE")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate", "UNCHECKED_CAST", "KotlinConstantConditions")
 
 package io.github.dreammooncai.yukireflection.finder.signature
 
@@ -27,7 +27,7 @@ import kotlin.reflect.KFunction
  * 可通过指定类型查找指定 [KPropertySignatureSupport] 或一组 [KPropertySignatureSupport]
  * @param classSet 当前需要查找的 [KClass] 实例
  */
-class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null, private val loader: ClassLoader? = null) : KPropertyFinder(classSet) {
+class KPropertySignatureFinder @PublishedApi internal constructor(classSet: KClass<*>? = null, private val loader: ClassLoader? = null) : KPropertyFinder(classSet) {
     /** 当前找到的 [KPropertySignatureSupport] 数组 */
     internal var callableSignatureInstances = mutableListOf<KPropertySignatureSupport>()
 
@@ -73,10 +73,10 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
      *
      * 可累计失败次数直到查找成功
      */
-    inner class RemedyPlan internal constructor() {
+    inner class RemedyPlan @PublishedApi internal constructor() {
 
         /** 失败尝试次数数组 */
-        private val remedyPlans = mutableListOf<Pair<KPropertySignatureFinder, Result>>()
+        @PublishedApi internal val remedyPlans = mutableListOf<Pair<KPropertySignatureFinder, Result>>()
 
         /**
          * 创建需要重新查找的 [KPropertySignatureSupport]
@@ -90,7 +90,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
         inline fun propertySignature(initiate: KPropertySignatureConditions) = Result().apply { remedyPlans.add(KPropertySignatureFinder(classSet).apply(initiate) to this) }
 
         /** 开始重查找 */
-        internal fun build() {
+        @PublishedApi internal fun build() {
             if (classSet == null) return
             if (remedyPlans.isNotEmpty()) {
                 val errors = mutableListOf<Throwable>()
@@ -121,7 +121,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
          *
          * 可在这里处理是否成功的回调
          */
-        inner class Result internal constructor() {
+        inner class Result @PublishedApi internal constructor() {
 
             /** 找到结果时的回调 */
             internal var onFindCallback: (MutableList<KPropertySignatureSupport>.() -> Unit)? = null
@@ -142,7 +142,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
      * @param isNoSuch 是否没有找到 [KPropertySignatureSupport.member] - 默认否
      * @param throwable 错误信息
      */
-    inner class Result internal constructor(
+    inner class Result @PublishedApi internal constructor(
         val isNoSuch: Boolean = false,
         internal val throwable: Throwable? = null
     ) : BaseResult {
@@ -311,7 +311,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
          * @param instance 当前 [Field]、get/set [Method] 所在类的实例对象
          * @param member 当前 [Field]、get/set [Method] 实例对象
          */
-        inner class Instance internal constructor(private val instance: Any?, private val member: Member?,private val setter:Method? = null):BaseInstance {
+        inner class Instance @PublishedApi internal constructor(private val instance: Any?, private val member: Member?,private val setter:Method? = null):BaseInstance {
 
             init {
                 member?.isAccessible = true
@@ -351,7 +351,7 @@ class KPropertySignatureFinder internal constructor(classSet: KClass<*>? = null,
              * - 若要直接获取不确定的实例对象 - 请调用 [any] 方法
              * @return [Any] or null
              */
-            private val self get() = runCatching { baseCall() }.getOrElse { if (it is IllegalArgumentException) errorMsg("Non static method but no instance is passed in.",it) else throw it }
+            @PublishedApi internal val self get() = runCatching { baseCall() }.getOrElse { if (it is IllegalArgumentException) errorMsg("Non static method but no instance is passed in.",it) else throw it }
 
             /**
              * 获得当前 [Field]、get/set [Method] 自身 [self] 实例的类操作对象
